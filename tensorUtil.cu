@@ -631,8 +631,8 @@ Tensor *transformBboxSQD(const Tensor *delta, const Tensor *anchor, Tensor *res,
           /* compute and put 4 result elements to res, according to SqueezeDet's source code */
 
           /* TODO: don't know why (maybe the resize), always has some shift compared to groundtruth*/
-          uint8_t cx = (a[0] + d[0] * a[2]) * x_scale + x_shift;
-          uint8_t cy = (a[1] + d[1] * a[3]) * y_scale + y_shift;
+          uint8_t cx = (a[0] + d[0] * a[2]) * x_scale;
+          uint8_t cy = (a[1] + d[1] * a[3]) * y_scale;
           uint8_t w = (a[2] * (d[2] < 1 ? expf(d[2]) : d[2] * E)) * x_scale;
           uint8_t h = (a[3] * (d[3] < 1 ? expf(d[3]) : d[3] * E)) * y_scale;
           res[si] = min(max(cx - w * 0.5, 0), img_width - 1);

@@ -2,3 +2,6 @@
 *.bak
 *.o
 *.out
+GPATH
+GRTAGS
+GTAGS

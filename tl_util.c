@@ -6,6 +6,10 @@
 
 #include "tl_util.h"
 
+/* TODO: maybe platform dependent */
+static size_t dtype_size[TL_DTYPE_SIZE] = {32, 32, 16, 8, 32, 16, 8, 32};
+static char *dtype_fmt[TL_DTYPE_SIZE] = {"%f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"};
+
 void *tl_alloc(size_t size)
 {
      void *p;
@@ -39,96 +43,60 @@ void *tl_repeat(void *data, size_t size, int times)
 
 int tl_compute_length(int ndim, int *dims)
 {
+     int i, len;
+
      if (dims) {
-          int i, len = 1;
-          for (i = 0; i < ndim; i++)
+          for (i = 0, len = 1; i < ndim; i++) {
+               if (dims[i] <= 0)
+                    tl_err_bt("ERROR: tl_compute_length: dims[%d] = %d <= 0\n",
+                              i, dims[i]);
                len *= dims[i];
+          }
           return len;
      }
-     tl_err_msg("Warning: tl_compute_length: null dims\n");
-     return 0;
+     tl_err_bt("ERROR: tl_compute_length: null dims\n");
 }
 
 size_t tl_size_of(tl_dtype dtype)
 {
-     size_t size;
-
-     switch(dtype) {
-     case TL_BOOL:
-          size = sizeof(tl_bool_t);
-          break;
-     case TL_FLOAT:
-          size = sizeof(float);
-          break;
-     case TL_INT32:
-          size = sizeof(int32_t);
-          break;
-     case TL_INT16:
-          size = sizeof(int16_t);
-          break;
-     case TL_INT8:
-          size = sizeof(int8_t);
-          break;
-     case TL_UINT32:
-          size = sizeof(uint32_t);
-          break;
-     case TL_UINT16:
-          size = sizeof(uint16_t);
-          break;
-     case TL_UINT8:
-          size = sizeof(uint8_t);
-          break;
-     default:
-          tl_err_quit("ERROR: tl_size_of: unknown tl_dtype %d\n", dtype);
-     }
-     return size;
+     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
+          tl_err_bt("ERROR: tl_size_of: unknown tl_dtype %d\n", dtype);
+     return dtype_size[dtype];
 }
 
-int tl_pointer_sub(void *p1, void *p2, tl_dtype dtype)
+char *tl_fmt(tl_dtype dtype)
 {
-     switch (dtype) {
-     case TL_BOOL:
-          return (tl_bool_t *)p1 - (tl_bool_t *)p2;
-     case TL_FLOAT:
-          return (float *)p1 - (float *)p2;
-     case TL_INT32:
-          return (int32_t *)p1 - (int32_t *)p2;
-     case TL_INT16:
-          return (int16_t *)p1 - (int16_t *)p2;
-     case TL_INT8:
-          return (int8_t *)p1 - (int8_t *)p2;
-     case TL_UINT32:
-          return (uint32_t *)p1 - (uint32_t *)p2;
-     case TL_UINT16:
-          return (uint16_t *)p1 - (uint16_t *)p2;
-     case TL_UINT8:
-          return (uint8_t *)p1 - (uint8_t *)p2;
-     default:
-          tl_err_quit("ERROR: tl_pointer_sub: unknown tl_dtype %d\n", dtype);
-     }
+     char *ret;
+
+     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
+          tl_err_bt("ERROR: tl_fmt: unknown tl_dtype %d\n", dtype);
+     ret = (char *)tl_alloc(strlen(dtype_fmt[dtype]) + 1);
+     strcpy(ret, dtype_fmt[dtype]);
+
+     return ret;
 }
 
-void *tl_pointer_add(void *p, int offset, tl_dtype dtype)
+int tl_pointer_cmp(void *p1, void *p2, tl_dtype dtype)
 {
      switch (dtype) {
-     case TL_BOOL:
-          return (tl_bool_t *)p + offset;
      case TL_FLOAT:
-          return (float *)p + offset;
+          return *(float *)p1 - *(float *)p2;
      case TL_INT32:
-          return (int32_t *)p + offset;
-     case TL_INT16:
-          return (int16_t *)p + offset;
-     case TL_INT8:
-          return (int8_t *)p + offset;
+          return *(int32_t *)p1 - *(int32_t *)p2;;
      case TL_UINT32:
-          return (uint32_t *)p + offset;
-     case TL_UINT16:
-          return (uint16_t *)p + offset;
+          return *(uint32_t *)p1 - *(uint32_t *)p2;;
+     case TL_INT8:
+          return *(int8_t *)p1 - *(int8_t *)p2;;
      case TL_UINT8:
-          return (uint8_t *)p + offset;
+          return *(uint8_t *)p1 - *(uint8_t *)p2;;
+     case TL_INT16:
+          return *(int16_t *)p1 - *(int16_t *)p2;;
+     case TL_UINT16:
+          return *(uint16_t *)p1 - *(uint16_t *)p2;;
+     case TL_BOOL:
+          return *(tl_bool_t *)p1 - *(tl_bool_t *)p2;;
      default:
-          tl_err_quit("ERROR: tl_pointer_add: unknown tl_dtype %d\n",p dtype);
+          tl_err_bt("ERROR: tl_pointer_cmp: unknown tl_dtype %d\n", dtype);
      }
 }
 
@@ -193,6 +161,20 @@ void tl_err_quit(const char *fmt, ...)
      va_start(ap, fmt);
      err_doit(0, 0, fmt, ap);
      va_end(ap);
+     exit(1);
+}
+
+/*
+ * Fatal error unrelated to a system call.
+ * Print a message, dump core, and terminate.
+ */
+void tl_err_bt(const char *fmt, ...)
+{
+     va_list ap;
+     va_start(ap, fmt);
+     err_doit(0, 0, fmt, ap);
+     va_end(ap);
+     abort();
      exit(1);
 }
 

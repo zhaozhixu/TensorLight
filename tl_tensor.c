@@ -407,6 +407,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      void *data_s, *data_d, *data_a, *nowp, *maxp;
      size_t dsize;
      tl_dtype dtype;
+     tl_gcmp_func cmp;
 
      if (!dst)
           dst = tl_tensor_create_slice(src, dim, 1, src->dtype);
@@ -422,6 +423,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      /* reduceArgMaxKernel<<<block_num, block_size>>>(src->data, dst->data, arg->data, src->dims[dim], reduce_vol, index_vol, block_size, thread_num); */
 
      dtype = src->dtype;
+     cmp = tl_gcmp_getfunc(dtype);
      dsize = tl_size_of(dtype);
      nowp = tl_alloc(dsize);
      maxp = tl_alloc(dsize);
@@ -439,7 +441,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
           tl_passign(maxp, 0, nowp, 0, dsize);
           for (i = 1, maxi = 0; i < dim_size; i++) {
                tl_passign(nowp, 0, data_s, si+i*reduce_vol);
-               if (tl_pointer_cmp(nowp, maxp, dtype) > 0) {
+               if (cmp(nowp, maxp) > 0) {
                     tl_passign(maxp, 0, nowp, 0, dsize);
                     maxi = i;
                }
@@ -464,7 +466,12 @@ tl_tensor *tl_tensor_mul(const tl_tensor *src1, const tl_tensor *src2, tl_tensor
      }
 
      int thread_num, block_size, block_num;
-     int di, si;
+     int di;
+     size_t dsize;
+     tl_dtype dtype;
+     void *s1_data, *s2_data, *d_data;
+     void *mul_res;
+     tl_gmul_func mul;
 
      if (!dst)
           dst = tl_tensor_create(NULL, src1->ndim, src2->dims, src1->dtype);
@@ -472,10 +479,19 @@ tl_tensor *tl_tensor_mul(const tl_tensor *src1, const tl_tensor *src2, tl_tensor
      block_size = MAX_THREADS_PER_BLOCK;
      block_num = thread_num / block_size + 1;
 
+     s1_data = src1->data;
+     s2_data = src2->data;
+     d_data = dst->data;
+     dtype = src1->dtype;
+     dsize = tl_size_of(dtype);
+     mul = tl_gmul_getfunc(dtype);
+     mul_res = tl_alloc(dsize);
      for (di = 0; di < thread_num; di++) {
-
-          dst[di] = src1[di] * src2[di];
+          mul(tl_padd(s1_data, di, dsize),
+              tl_padd(s2_data, di, dsize), mul_res);
+          tl_passign(d_data, di, mul_res, 0, dsize);
      }
+
      return dst;
 }
 

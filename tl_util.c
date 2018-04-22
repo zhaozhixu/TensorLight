@@ -6,10 +6,6 @@
 
 #include "tl_util.h"
 
-/* TODO: maybe platform dependent */
-static size_t dtype_size[TL_DTYPE_SIZE] = {32, 32, 16, 8, 32, 16, 8, 32};
-static char *dtype_fmt[TL_DTYPE_SIZE] = {"%f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"};
-
 void *tl_alloc(size_t size)
 {
      void *p;
@@ -55,49 +51,6 @@ int tl_compute_length(int ndim, int *dims)
           return len;
      }
      tl_err_bt("ERROR: tl_compute_length: null dims\n");
-}
-
-size_t tl_size_of(tl_dtype dtype)
-{
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_size_of: unknown tl_dtype %d\n", dtype);
-     return dtype_size[dtype];
-}
-
-char *tl_fmt(tl_dtype dtype)
-{
-     char *ret;
-
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_fmt: unknown tl_dtype %d\n", dtype);
-     ret = (char *)tl_alloc(strlen(dtype_fmt[dtype]) + 1);
-     strcpy(ret, dtype_fmt[dtype]);
-
-     return ret;
-}
-
-int tl_pointer_cmp(void *p1, void *p2, tl_dtype dtype)
-{
-     switch (dtype) {
-     case TL_FLOAT:
-          return *(float *)p1 - *(float *)p2;
-     case TL_INT32:
-          return *(int32_t *)p1 - *(int32_t *)p2;;
-     case TL_UINT32:
-          return *(uint32_t *)p1 - *(uint32_t *)p2;;
-     case TL_INT8:
-          return *(int8_t *)p1 - *(int8_t *)p2;;
-     case TL_UINT8:
-          return *(uint8_t *)p1 - *(uint8_t *)p2;;
-     case TL_INT16:
-          return *(int16_t *)p1 - *(int16_t *)p2;;
-     case TL_UINT16:
-          return *(uint16_t *)p1 - *(uint16_t *)p2;;
-     case TL_BOOL:
-          return *(tl_bool_t *)p1 - *(tl_bool_t *)p2;;
-     default:
-          tl_err_bt("ERROR: tl_pointer_cmp: unknown tl_dtype %d\n", dtype);
-     }
 }
 
 static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)

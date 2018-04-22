@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "tl_tensor.h"
+#include "tl_type.h"
 
 #define MAXDIM 8
 #define max(a, b) ((a) > (b) ? (a) : (b))

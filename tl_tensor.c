@@ -143,8 +143,8 @@ __global__ void pickElementsKernel(uint8_t *src, uint8_t *dst, int *idx, int str
 int tl_tensor_isvalid(const tl_tensor *t)
 {
      return (t && t->data &&
-             t->ndim < MAXDIM && t->ndim > 0 &&
-             t->len == tl_compute_length(t->ndim, t->dims));
+          t->ndim < MAXDIM && t->ndim > 0 &&
+          t->len == tl_compute_length(t->ndim, t->dims));
 }
 
 int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
@@ -163,7 +163,7 @@ int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
 }
 
 tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
-                            tl_dtype dtype)
+                         tl_dtype dtype)
 {
      int i;
      tl_tensor *t;
@@ -312,7 +312,7 @@ void tl_tensor_save(const char *file_name, const tl_tensor *tensor,
 }
 
 tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int dim, int len,
-                                  tl_dtype dtype)
+                              tl_dtype dtype)
 {
      assert(tl_tensor_isvalid(src));
      assert(dim < src->ndim && dim >= 0);
@@ -329,7 +329,7 @@ tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int dim, int len,
 }
 
 tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int dim,
-                           int start, int len)
+                         int start, int len)
 {
      int i;
      assert(tl_tensor_isvalid(src));
@@ -339,7 +339,7 @@ tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int dim,
           assert(dst->ndim == src->ndim);
           for (i = 0; i < dst->ndim; i++)
                assert(i == dim ? dst->dims[i] == len :
-                      dst->dims[i] == src->dims[i]);
+                    dst->dims[i] == src->dims[i]);
      }
 
      int d_vol, s_vol, vol;
@@ -380,7 +380,7 @@ tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims)
 }
 
 tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
-                                   tl_tensor *arg, int dim)
+                              tl_tensor *arg, int dim)
 {
      int i;
      assert(tl_tensor_isvalid(src));
@@ -390,14 +390,14 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
           assert(src->dtype == dst->dtype);
           for (i = 0; i < dst->ndim; i++)
                assert(i == dim ? dst->dims[i] == 1 :
-                      dst->dims[i] == src->dims[i]);
+                    dst->dims[i] == src->dims[i]);
      }
      if (arg) {
           assert(tl_tensor_isvalid(arg));
           assert(arg->dtype == TL_INT32);
           for (i = 0; i < arg->ndim; i++)
                assert(i == dim ? arg->dims[i] == 1 :
-                      arg->dims[i] == src->dims[i]);
+                    arg->dims[i] == src->dims[i]);
      }
 
      /* suppose the shape of src is [N, C, H, W], dim = 1, then thread_num is N x H x W
@@ -456,7 +456,8 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      return dst;
 }
 
-tl_tensor *tl_tensor_mul(const tl_tensor *src1, const tl_tensor *src2, tl_tensor *dst)
+tl_tensor *tl_tensor_mul(const tl_tensor *src1, const tl_tensor *src2,
+                         tl_tensor *dst)
 {
      assert(tl_tensor_issameshape(src1, src2));
      assert(src1->dtype == src2->dtype);
@@ -488,22 +489,46 @@ tl_tensor *tl_tensor_mul(const tl_tensor *src1, const tl_tensor *src2, tl_tensor
      mul_res = tl_alloc(dsize);
      for (di = 0; di < thread_num; di++) {
           mul(tl_padd(s1_data, di, dsize),
-              tl_padd(s2_data, di, dsize), mul_res);
+               tl_padd(s2_data, di, dsize), mul_res);
           tl_passign(d_data, di, mul_res, 0, dsize);
      }
+     tl_free(mul_res);
 
      return dst;
 }
 
 /* (optional) workspace size equals (sizeof(int) * dst->ndim * dst->len), two of them */
-tl_tensor *transposeTensor(const tl_tensor *src, tl_tensor *dst, int *axes, int **workspace)
+tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
+                              const int *dims, int **workspace)
 {
-     assert(tl_tensor_isvalid(src) && tl_tensor_isvalid(dst));
-     assert(src->len == dst->len);
-     assert(src->ndim == dst->ndim);
+     int i, j, found;
+     assert(tl_tensor_isvalid(src));
+     if (dst) {
+          assert(tl_tensor_isvalid(dst));
+          assert(src->dtype == dst->dtype);
+          assert(src->len == dst->len);
+          assert(src->ndim == dst->ndim);
+          for (i = 0; i < dst->ndim; i++) {
+               for (j = 0, found = 0; j < src->ndim; j++) {
+                    if (dst->dims[i] == src->dims[j]) {
+                         found = 1;
+                         break;
+                    }
+               }
+               assert(found == 1);
+          }
+     }
 
      int *s_ids, *d_ids, *s_dims, *d_dims;
      int thread_num, block_size, block_num;
+     int di, si;
+     int *t_s_ids;
+     int *t_d_ids;
+     size_t dsize;
+     void *s_data, *d_data;
+
+     if (!dst)
+          dst = tl_tensor_create(NULL, src->ndim, dims, src->dtype);
      thread_num = dst->len;
      block_size = MAX_THREADS_PER_BLOCK;
      block_num = thread_num / block_size + 1;
@@ -512,148 +537,42 @@ tl_tensor *transposeTensor(const tl_tensor *src, tl_tensor *dst, int *axes, int 
      if (!workspace) {
           s_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
           d_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
-          /* checkError(cudaMalloc(&s_ids, sizeof(int) * dst->ndim * thread_num)); */
-          /* checkError(cudaMalloc(&d_ids, sizeof(int) * dst->ndim * thread_num)); */
      } else {
           s_ids = workspace[0];
           d_ids = workspace[1];
      }
 
-     /* transposeTensorKernel<<<block_num, block_size>>>(src->data, dst->data, dst->ndim, s_dims, d_dims, s_ids, d_ids, axes, block_size, thread_num); */
-
-     int di, si;
+     dsize = tl_size_of(src->dtype);
+     s_data = src->data;
+     d_data = dst->data;
      for (di = 0; di < thread_num; di++) {
-          int *t_s_ids = s_ids + di * ndim;
-          int *t_d_ids = d_ids + di * ndim;
+          t_s_ids = s_ids + di * ndim;
+          t_d_ids = d_ids + di * ndim;
           get_indexes(di, t_d_ids, ndim, d_dims);
           for (i = 0; i < ndim; i++)
-               t_s_ids[axes[i]] = t_d_ids[i];
-          int si = get_index(t_s_ids, ndim, s_dims);
+               t_s_ids[dims[i]] = t_d_ids[i];
+          si = get_index(t_s_ids, ndim, s_dims);
 
-          dst[di] = src[si];
+          tl_passign(d_data, di, s_data, si, dsize);
      }
 
      if (!workspace) {
           tl_free(s_ids);
           tl_free(d_ids);
-          /* checkError(cudaFree(s_ids)); */
-          /* checkError(cudaFree(d_ids)); */
      }
      tl_free(s_dims);
      tl_free(d_dims);
-     /* checkError(cudaFree(s_dims)); */
-     /* checkError(cudaFree(d_dims)); */
+
      return dst;
-}
-
-/* TODO: multiple type tensor */
-/* transform from bbox delta to bbox coordinates, using hyper param EXP_THRESH = 1.0.
-   delta, anchor, res are all of the same shape [..., 4]
-   width and height are resized image width and height.
-   x_scales and y_scales are (temporary) pointers to width/original_width and height/original_height. */
-tl_tensor *transformBboxSQD(const tl_tensor *delta, const tl_tensor *anchor, tl_tensor *res, int width, int height, int img_width, int img_height)
-{
-     assert(tl_tensor_issameshape(delta, anchor));
-     assert(tl_tensor_issameshape(delta, res));
-     assert(delta->ndim == 5);
-     assert(delta->dims[4] == 4);
-     /* assert(isDeviceMem(delta->data) && isDeviceMem(anchor->data) && isDeviceMem(res->data)); */
-
-     /* take 4 elements from each of delta and anchor,
-        and put 4 result elements to res in one thread */
-     int i, thread_num, block_size, block_num;
-     for (i = 0, thread_num = 1; i < res->ndim-1; i++)
-          thread_num *= res->dims[i];
-     block_size = MAX_THREADS_PER_BLOCK;
-     block_num = thread_num / block_size + 1;
-
-     /* transformBboxSQDKernel<<<block_num, block_size>>>(delta->data, anchor->data, res->data, width, height, img_width, img_height, x_shift, y_shift, block_size, thread_num); */
-
-     int di, si;
-     for (di = 0; di < thread_num; di++) {
-          /* int batch_idx = di / anchor_num; */
-          /* now only support batch_size = 1 */
-          float x_scale = 1.0 * img_width / width;
-          float y_scale = 1.0 * img_height / height;
-
-          /* (not used) si is the index of the first elements to be computed in the thread, then
-             si = 4 * anchor_num * batch_idx + (di - anchor_num * batch_idx),
-             which is the same as the following code: */
-          /* int si = 3 * anchor_num * batch_idx  + di; */
-          /* take 4 elements from each of delta and anchor */
-          int si = di * 4;
-          uint8_t d[4] = {delta[si], delta[si+1], delta[si+2], delta[si+3]};
-          uint8_t a[4] = {anchor[si], anchor[si+1], anchor[si+2], anchor[si+3]};
-          /* compute and put 4 result elements to res, according to SqueezeDet's source code */
-
-          /* TODO: don't know why (maybe the resize), always has some shift compared to groundtruth*/
-          uint8_t cx = (a[0] + d[0] * a[2]) * x_scale;
-          uint8_t cy = (a[1] + d[1] * a[3]) * y_scale;
-          uint8_t w = (a[2] * (d[2] < 1 ? expf(d[2]) : d[2] * E)) * x_scale;
-          uint8_t h = (a[3] * (d[3] < 1 ? expf(d[3]) : d[3] * E)) * y_scale;
-          res[si] = min(max(cx - w * 0.5, 0), img_width - 1);
-          res[si+1] = min(max(cy - h * 0.5, 0), img_height - 1);
-          res[si+2] = max(min(cx + w * 0.5, img_width - 1), 0);
-          res[si+3] = max(min(cy + h * 0.5, img_height - 1), 0);
-     }
-     return res;
 }
 
 void tensorIndexSort(tl_tensor *src, int *idx)
 {
      assert(tl_tensor_isvalid(src));
      assert(idx);
-     assert(isDeviceMem(src->data) && isDeviceMem(idx));
 
      /* the thrust call below can be unreliable, sometimes produces error */
      /* now it works with compilation flag -arch=sm_35 */
      /* TODO: replace thrust call by our own kernel */
      /* thrust::sort_by_key(thrust::device, src->data, src->data + src->len, idx, thrust::greater<uint8_t>()); */
-}
-
-void pickElements(uint8_t *src, uint8_t *dst, int stride, int *idx, int len)
-{
-     assert(src && dst && idx);
-     assert(isDeviceMem(src) && isDeviceMem(dst) && isDeviceMem(idx));
-
-     int thread_num, block_size, block_num;
-     thread_num = len;
-     block_size = MAX_THREADS_PER_BLOCK;
-     block_num = thread_num / block_size + 1;
-
-     pickElementsKernel<<<block_num, block_size>>>(src, dst, idx, stride, block_size, thread_num);
-}
-
-/* void pickElements(uint8_t* src,uint8_t* dst,int stride,int* idx,int len) */
-/* { */
-/*      assert(src && dst && idx); */
-
-/*      for (int i = 0; i < len; i++) { */
-/*           for (int j = 0; j < stride; j++) { */
-/*                fprintf(stderr, "i: %d j: %d idx[i]: %d src[idx[i]]: %.2f", */
-/*                        i, j, idx[i], src[idx[i]]); */
-/*                fprintf(stderr, "\n"); */
-/*                dst[i*stride+j] = src[idx[i]*stride+j]; */
-/*           } */
-/*      } */
-/* } */
-
-/* compute the iou of two bboxes whose elements are {top_left_x, top_left_y, bottom_right_x, bottom_right_y} */
-float computeIou(float *bbox0, float *bbox1)
-{
-     assert(bbox0 && bbox1);
-
-     float lr, tb;              /* left-right, top-bottom for intersection*/
-     float intersection, total;
-     lr = min(bbox0[2], bbox1[2]) - max(bbox0[0], bbox1[0]);
-     if (lr >= 0) {
-          tb = min(bbox0[3], bbox1[3]) - max(bbox0[1], bbox1[1]);
-          if (tb >= 0) {
-               intersection = tb * lr + EPSILON;
-               total = (bbox0[2] - bbox0[0]) * (bbox0[3] - bbox0[1]) +
-                    (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1]) - intersection;
-               return intersection / (total + EPSILON);
-          }
-     }
-     return 0;
 }

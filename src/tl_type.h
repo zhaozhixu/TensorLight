@@ -3,14 +3,14 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
-typedef enum tl_bool_t tl_bool_t;
 enum tl_bool_t {
      TL_FALSE = 0,
      TL_TRUE = 1
 };
+typedef enum tl_bool_t tl_bool_t;
 
-typedef enum tl_dtype tl_dtype;
 enum tl_dtype {
      TL_FLOAT,
      TL_INT32,
@@ -21,6 +21,8 @@ enum tl_dtype {
      TL_UINT8,
      TL_BOOL,
 };
+typedef enum tl_dtype tl_dtype;
+
 #define TL_DTYPE_SIZE 8
 
 /* pointer subtraction and pointer addition */
@@ -34,12 +36,13 @@ enum tl_dtype {
      memmove(tl_padd((pd), (offd), (dsize)),            \
              tl_padd((ps), (offs), (dsize)), (dsize))
 
-typedef int (*tl_gcmp_func) (void *p1, void *p2)
-typedef void (*tl_gmul_func) (void *p1, void *p2, void *r);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef void (*tl_gfprintf_func) (FILE *fp, const char *fmt, void *p);
+typedef int (*tl_gcmp_func) (void *p1, void *p2);
+typedef void (*tl_gmul_func) (void *p1, void *p2, void *r);
 
 size_t tl_size_of(tl_dtype dtype);
 char *tl_fmt(tl_dtype dtype);
@@ -51,6 +54,8 @@ char *tl_fmt(tl_dtype dtype);
 #define tl_pointer_assign(pd, offd, ps, offs, dtype)            \
      tl_passign((pd), (offd), (ps), (offs), tl_size_of(dtype))
 
+void tl_gfprintf(FILE* fp,const char* fmt,void* p, tl_dtype dtype);
+tl_gfprintf_func tl_gfprintf_getfunc(tl_dtype dtype);
 int tl_gcmp(void *p1, void *p2, tl_dtype dtype);
 tl_gcmp_func tl_gcmp_getfunc(tl_dtype dtype);
 void tl_gmul(void *p1, void *p2, void *r, tl_dtype dtype);

@@ -37,7 +37,7 @@ void *tl_repeat(void *data, size_t size, int times)
      return dst;
 }
 
-int tl_compute_length(int ndim, int *dims)
+int tl_compute_length(int ndim, const int *dims)
 {
      int i, len;
 
@@ -51,6 +51,7 @@ int tl_compute_length(int ndim, int *dims)
           return len;
      }
      tl_err_bt("ERROR: tl_compute_length: null dims\n");
+     return -1;                 /* should not reach here */
 }
 
 static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)

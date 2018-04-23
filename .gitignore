@@ -1,7 +1,9 @@
 *~
 *.bak
 *.o
+*.so
 *.out
 GPATH
 GRTAGS
 GTAGS
+obj/

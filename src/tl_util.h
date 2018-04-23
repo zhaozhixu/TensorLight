@@ -14,7 +14,7 @@ extern "C" {
 void *tl_alloc(size_t size);
 void *tl_clone(const void *src, size_t size);
 void *tl_repeat(void *data, size_t size, int times);
-int tl_compute_length(int ndim, int *dims);
+int tl_compute_length(int ndim, const int *dims);
 void tl_err_msg(const char *fmt, ...);
 void tl_err_cont(int error, const char *fmt, ...);
 void tl_err_ret(const char *fmt, ...);

@@ -2,11 +2,11 @@
 #include "tl_type.h"
 
 /* TODO: maybe platform dependent */
-static size_t dtype_size[TL_DTYPE_SIZE] = {
+static const size_t dtype_size[TL_DTYPE_SIZE] = {
      32, 32, 16, 8, 32, 16, 8, 32
 };
 
-static char *dtype_fmt[TL_DTYPE_SIZE] = {
+static const char *dtype_fmt[TL_DTYPE_SIZE] = {
      "%.3f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"
 };
 
@@ -28,6 +28,72 @@ char *tl_fmt(tl_dtype dtype)
      strcpy(ret, dtype_fmt[dtype]);
 
      return ret;
+}
+
+static void gfprintf_float(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(float *)p);
+}
+
+static void gfprintf_int32(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(int32_t *)p);
+}
+
+static void gfprintf_int16(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(int16_t *)p);
+}
+
+static void gfprintf_int8(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(int8_t *)p);
+}
+
+static void gfprintf_uint32(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(uint16_t *)p);
+}
+
+static void gfprintf_uint16(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(uint16_t *)p);
+}
+
+static void gfprintf_uint8(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(uint8_t *)p);
+}
+
+static void gfprintf_bool(FILE *fp, const char *fmt, void *p)
+{
+     fprintf(fp, fmt, *(tl_bool_t *)p);
+}
+
+static tl_gfprintf_func gfprintf_func[TL_DTYPE_SIZE] = {
+     gfprintf_float,
+     gfprintf_int32,
+     gfprintf_int16,
+     gfprintf_int8,
+     gfprintf_uint32,
+     gfprintf_uint16,
+     gfprintf_uint8,
+     gfprintf_bool
+};
+
+void tl_gfprintf(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
+{
+     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
+          tl_err_bt("ERROR: tl_gmul: unknown tl_dtype %d\n", dtype);
+     if (!fmt)
+          (gfprintf_func[dtype])(fp, dtype_fmt[dtype], p);
+     else
+          (gfprintf_func[dtype])(fp, fmt, p);
+}
+
+tl_gfprintf_func tl_gfprintf_getfunc(tl_dtype dtype)
+{
+     return gfprintf_func[dtype];
 }
 
 static int gcmp_float(void *p1, void *p2)
@@ -85,7 +151,7 @@ int tl_gcmp(void *p1, void *p2, tl_dtype dtype)
 {
      if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
           tl_err_bt("ERROR: tl_pointer_cmp: unknown tl_dtype %d\n", dtype);
-     (gcmp_func[dtype])(p1, p2);
+     return (gcmp_func[dtype])(p1, p2);
 }
 
 tl_gcmp_func tl_gcmp_getfunc(tl_dtype dtype)

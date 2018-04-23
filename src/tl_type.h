@@ -5,12 +5,13 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef enum tl_bool_t tl_bool_t;
 enum tl_bool_t {
      TL_FALSE = 0,
      TL_TRUE = 1
 };
-typedef enum tl_bool_t tl_bool_t;
 
+typedef enum tl_dtype tl_dtype;
 enum tl_dtype {
      TL_FLOAT,
      TL_INT32,
@@ -21,7 +22,6 @@ enum tl_dtype {
      TL_UINT8,
      TL_BOOL,
 };
-typedef enum tl_dtype tl_dtype;
 
 #define TL_DTYPE_SIZE 8
 

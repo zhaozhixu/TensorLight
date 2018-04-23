@@ -42,8 +42,12 @@ define concat
 endef
 
 #$(call make-depend,source-file,object-file,depend-file)
-define make-depend
+define make-depend-c
   $(AT)$(CC) -MM -MF $3 -MP -MT $2 $(CFLAGS) $1
+endef
+
+define make-depend-cxx
+  $(AT)$(CXX) -MM -MF $3 -MP -MT $2 $(CFLAGS) $1
 endef
 
 define make-depend-cu
@@ -53,11 +57,12 @@ define make-depend-cu
 endef
 
 # SRCS_C = sqdtrt.cpp trtUtil.cpp common.cpp tensorUtil.cu errorHandle.cu sdt_alloc.c
-SRCS = *.cpp *.c *.cu
+SRCS = *.cpp *.cc *.c *.cu
 OUTDIR = .
 OBJDIR = $(call concat,$(OUTDIR),/obj)
 OBJS   = $(patsubst %.c, $(OBJDIR)/%.o, $(wildcard *.c))
 OBJS  += $(patsubst %.cpp, $(OBJDIR)/%.o, $(wildcard *.cpp))
+OBJS  += $(patsubst %.cc, $(OBJDIR)/%.o, $(wildcard *.cc))
 CUOBJS = $(patsubst %.cu, $(OBJDIR)/%.o, $(wildcard *.cu))
 
 TRIPLE?=x86_64-linux
@@ -80,13 +85,19 @@ $(OUTDIR)/$(LIBTARGET): $(OBJS) $(CUOBJS) $(TESTOBJS)
 
 $(OBJDIR)/%.o: %.c
 	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
-	$(call make-depend,$<,$@,$(subst .o,.d,$@))
+	$(call make-depend-c,$<,$@,$(subst .o,.d,$@))
 	$(ECHO) Compiling: $<
 	$(AT)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp
 	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
-	$(call make-depend,$<,$@,$(subst .o,.d,$@))
+	$(call make-depend-cxx,$<,$@,$(subst .o,.d,$@))
+	$(ECHO) Compiling: $<
+	$(AT)$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.cc
+	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
+	$(call make-depend-cxx,$<,$@,$(subst .o,.d,$@))
 	$(ECHO) Compiling: $<
 	$(AT)$(CXX) $(CXXFLAGS) -c -o $@ $<
 

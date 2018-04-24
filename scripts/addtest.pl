@@ -47,7 +47,6 @@ chomp $test_add_str;
 
 my $suite_tpl = <<EOF;
 #include "test_tsl.h"
-#include "../src/tl_util.h"
 #include "../src/tl_${suite_name}.h"
 
 static void setup(void)

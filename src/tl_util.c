@@ -10,17 +10,19 @@ void *tl_alloc(size_t size)
 {
      void *p;
 
+     assert(size > 0);
      p = malloc(size);
      if (p == NULL)
-          tl_err_sys("malloc(%luz) failed", size);
+          tl_err_dump("malloc(%luz) failed", size);
 
      return p;
 }
 
 void *tl_clone(const void *src, size_t size)
 {
-     assert(src);
      void *p;
+
+     assert(src);
      p = tl_alloc(size);
      memmove(p, src, size);
      return p;
@@ -28,32 +30,17 @@ void *tl_clone(const void *src, size_t size)
 
 void *tl_repeat(void *data, size_t size, int times)
 {
-     assert(data && times > 0);
      void *p, *dst;
      int i;
+
+     assert(data && times > 0);
      dst = p = tl_alloc(size * times);
      for (i = 0; i < times; i++, p = (char *)p + size * times)
           memmove(p, data, size);
      return dst;
 }
 
-int tl_compute_length(int ndim, const int *dims)
-{
-     int i, len;
-
-     if (dims) {
-          for (i = 0, len = 1; i < ndim; i++) {
-               if (dims[i] <= 0)
-                    tl_err_bt("ERROR: tl_compute_length: dims[%d] = %d <= 0\n",
-                              i, dims[i]);
-               len *= dims[i];
-          }
-          return len;
-     }
-     tl_err_bt("ERROR: tl_compute_length: null dims\n");
-     return -1;                 /* should not reach here */
-}
-
+/* The following functions are taken from APUE, the 3rd version. */
 static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)
 {
      char buf[TL_MAXLINE];

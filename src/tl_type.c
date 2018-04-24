@@ -10,11 +10,14 @@ static const char *dtype_fmt[TL_DTYPE_SIZE] = {
      "%.3f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"
 };
 
+static inline void check_dtype(tl_dtype dtype)
+{
+     assert(dtype >= 0 && dtype < TL_DTYPE_SIZE);
+}
 
 size_t tl_size_of(tl_dtype dtype)
 {
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_size_of: unknown tl_dtype %d\n", dtype);
+     check_dtype(dtype);
      return dtype_size[dtype];
 }
 
@@ -22,8 +25,7 @@ char *tl_fmt(tl_dtype dtype)
 {
      char *ret;
 
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_fmt: unknown tl_dtype %d\n", dtype);
+     check_dtype(dtype);
      ret = (char *)tl_alloc(strlen(dtype_fmt[dtype]) + 1);
      strcpy(ret, dtype_fmt[dtype]);
 
@@ -83,8 +85,7 @@ static tl_gfprintf_func gfprintf_func[TL_DTYPE_SIZE] = {
 
 void tl_gfprintf(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
 {
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_gmul: unknown tl_dtype %d\n", dtype);
+     check_dtype(dtype);
      if (!fmt)
           (gfprintf_func[dtype])(fp, dtype_fmt[dtype], p);
      else
@@ -93,6 +94,7 @@ void tl_gfprintf(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
 
 tl_gfprintf_func tl_gfprintf_getfunc(tl_dtype dtype)
 {
+     check_dtype(dtype);
      return gfprintf_func[dtype];
 }
 
@@ -149,13 +151,13 @@ static tl_gcmp_func gcmp_func[TL_DTYPE_SIZE] = {
 
 int tl_gcmp(void *p1, void *p2, tl_dtype dtype)
 {
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_pointer_cmp: unknown tl_dtype %d\n", dtype);
+     check_dtype(dtype);
      return (gcmp_func[dtype])(p1, p2);
 }
 
 tl_gcmp_func tl_gcmp_getfunc(tl_dtype dtype)
 {
+     check_dtype(dtype);
      return gcmp_func[dtype];
 }
 
@@ -212,12 +214,12 @@ static tl_gmul_func gmul_func[TL_DTYPE_SIZE] = {
 
 void tl_gmul(void *p1, void *p2, void *r, tl_dtype dtype)
 {
-     if (dtype < 0 || dtype >= TL_DTYPE_SIZE)
-          tl_err_bt("ERROR: tl_gmul: unknown tl_dtype %d\n", dtype);
+     check_dtype(dtype);
      (gmul_func[dtype])(p1, p2, r);
 }
 
 tl_gmul_func tl_gmul_getfunc(tl_dtype dtype)
 {
+     check_dtype(dtype);
      return gmul_func[dtype];
 }

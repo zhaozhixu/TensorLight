@@ -1,7 +1,6 @@
 #ifndef _TL_TENSOR_H_
 #define _TL_TENSOR_H_
 
-#include "tl_util.h"
 #include "tl_type.h"
 
 typedef struct tl_tensor tl_tensor;
@@ -13,13 +12,10 @@ struct tl_tensor {
      void     *data;
 };
 
-#define MAXDIM 8
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int tl_tensor_isvalid(const tl_tensor *t);
 int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2);
 tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
                                  tl_dtype dtype);

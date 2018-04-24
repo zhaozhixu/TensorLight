@@ -119,6 +119,7 @@ tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...)
      va_end(ap);
 
      t = tl_tensor_create(NULL, ndim, dims, dtype);
+     tl_free(dims);
      return t;
 }
 

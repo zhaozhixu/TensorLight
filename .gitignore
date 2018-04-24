@@ -3,6 +3,8 @@
 *.o
 *.so
 *.out
+check_output.xml
+test_tsl
 GPATH
 GRTAGS
 GTAGS

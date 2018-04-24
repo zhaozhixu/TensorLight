@@ -12,6 +12,8 @@ struct tl_tensor {
      void     *data;
 };
 
+#define TL_MAXDIM 8
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,7 +26,7 @@ tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...);
 tl_tensor *tl_tensor_clone(const tl_tensor *src);
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *tensor, const char *fmt);
-void tl_tensor_save(const char *file_name, const tl_tensor *tensor,
+int tl_tensor_save(const char *file_name, const tl_tensor *tensor,
                          const char *fmt);
 tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int dim, int len,
                                        tl_dtype dtype);

@@ -30,7 +30,7 @@ static inline int compute_length(int ndim, const int *dims)
 {
      int i, len;
 
-     assert(ndim > 0);
+     assert(ndim > 0 && ndim <= TL_MAXDIM);
      assert(dims);
      for (i = 0, len = 1; i < ndim; i++) {
           assert(dims[i] > 0);
@@ -43,9 +43,9 @@ static inline void check_dim(int ndim, const int *dims)
 {
      int i;
 
-     assert(ndim > 0);
+     assert(ndim > 0 && ndim <= TL_MAXDIM);
      assert(dims);
-     for (i = 0, len = 1; i < ndim; i++)
+     for (i = 0; i < ndim; i++)
           assert(dims[i] > 0);
 }
 
@@ -109,7 +109,7 @@ tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...)
      int *dims;
      va_list ap;
 
-     assert(ndim > 0);
+     assert(ndim > 0 && ndim <= TL_MAXDIM);
      dims = (int *)tl_alloc(sizeof(int) * ndim);
      va_start(ap, ndim);
      for (i = 0; i < ndim; i++) {
@@ -222,7 +222,7 @@ tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int dim, int len,
      int *dims;
 
      assert(dim < src->ndim && dim >= 0);
-     assert(len+start <= src->dims[dim]);
+     assert(len <= src->dims[dim]);
 
      dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
      dims[dim] = len;

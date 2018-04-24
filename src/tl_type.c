@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "tl_util.h"
 #include "tl_type.h"
 

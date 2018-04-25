@@ -4,7 +4,7 @@
 
 /* TODO: maybe platform dependent */
 static const size_t dtype_size[TL_DTYPE_SIZE] = {
-     32, 32, 16, 8, 32, 16, 8, 32
+     4, 4, 2, 1, 4, 2, 1, 4
 };
 
 static const char *dtype_fmt[TL_DTYPE_SIZE] = {
@@ -33,44 +33,68 @@ char *tl_fmt(tl_dtype dtype)
      return ret;
 }
 
-static void gfprintf_float(FILE *fp, const char *fmt, void *p)
+static int gfprintf_float(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(float *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_FLOAT], *(float *)p);
+     else
+          return fprintf(fp, fmt, *(float *)p);
 }
 
-static void gfprintf_int32(FILE *fp, const char *fmt, void *p)
+static int gfprintf_int32(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(int32_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_INT32], *(int32_t *)p);
+     else
+          return fprintf(fp, fmt, *(int32_t *)p);
 }
 
-static void gfprintf_int16(FILE *fp, const char *fmt, void *p)
+static int gfprintf_int16(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(int16_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_INT16], *(int16_t *)p);
+     else
+          return fprintf(fp, fmt, *(int16_t *)p);
 }
 
-static void gfprintf_int8(FILE *fp, const char *fmt, void *p)
+static int gfprintf_int8(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(int8_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_INT8], *(int8_t *)p);
+     else
+          return fprintf(fp, fmt, *(int8_t *)p);
 }
 
-static void gfprintf_uint32(FILE *fp, const char *fmt, void *p)
+static int gfprintf_uint32(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(uint16_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_UINT32], *(uint32_t *)p);
+     else
+          return fprintf(fp, fmt, *(uint16_t *)p);
 }
 
-static void gfprintf_uint16(FILE *fp, const char *fmt, void *p)
+static int gfprintf_uint16(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(uint16_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_UINT16], *(uint16_t *)p);
+     else
+          return fprintf(fp, fmt, *(uint16_t *)p);
 }
 
-static void gfprintf_uint8(FILE *fp, const char *fmt, void *p)
+static int gfprintf_uint8(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(uint8_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_UINT8], *(uint8_t *)p);
+     else
+          return fprintf(fp, fmt, *(uint8_t *)p);
 }
 
-static void gfprintf_bool(FILE *fp, const char *fmt, void *p)
+static int gfprintf_bool(FILE *fp, const char *fmt, void *p)
 {
-     fprintf(fp, fmt, *(tl_bool_t *)p);
+     if (!fmt)
+          return fprintf(fp, dtype_fmt[TL_BOOL], *(tl_bool_t *)p);
+     else
+          return fprintf(fp, fmt, *(tl_bool_t *)p);
 }
 
 static tl_gfprintf_func gfprintf_func[TL_DTYPE_SIZE] = {
@@ -84,13 +108,10 @@ static tl_gfprintf_func gfprintf_func[TL_DTYPE_SIZE] = {
      gfprintf_bool
 };
 
-void tl_gfprintf(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
+int tl_gfprintf(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
 {
      check_dtype(dtype);
-     if (!fmt)
-          (gfprintf_func[dtype])(fp, dtype_fmt[dtype], p);
-     else
-          (gfprintf_func[dtype])(fp, fmt, p);
+     return (gfprintf_func[dtype])(fp, fmt, p);
 }
 
 tl_gfprintf_func tl_gfprintf_getfunc(tl_dtype dtype)

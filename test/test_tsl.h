@@ -4,14 +4,15 @@
 #include <stdio.h>
 #include <check.h>
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 Suite *make_master_suite(void);
+Suite *make_type_suite(void);
 /* end of declarations */
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

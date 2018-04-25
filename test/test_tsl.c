@@ -11,6 +11,7 @@ int main(int argc, char **argv)
      SRunner *sr;
 
      sr = srunner_create(make_master_suite());
+     srunner_add_suite(sr, make_type_suite());
      /* end of adding suites */
 
      srunner_set_xml (sr, "result/check_output.xml");

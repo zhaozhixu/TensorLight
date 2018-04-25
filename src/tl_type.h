@@ -27,7 +27,7 @@ enum tl_dtype {
 
 /* pointer subtraction and pointer addition */
 #define tl_psub(p1, p2, dsize)                      \
-     (((uint8_t *)(p1) - (uint8_t *)(p2) / (dsize))
+     (((uint8_t *)(p1) - (uint8_t *)(p2)) / ((ptrdiff_t)dsize))
 #define tl_padd(p, offset, dsize)               \
      ((uint8_t *)(p) + (offset) * (dsize))
 
@@ -40,7 +40,7 @@ enum tl_dtype {
 extern "C" {
 #endif
 
-typedef void (*tl_gfprintf_func) (FILE *fp, const char *fmt, void *p);
+typedef int (*tl_gfprintf_func) (FILE *fp, const char *fmt, void *p);
 typedef int (*tl_gcmp_func) (void *p1, void *p2);
 typedef void (*tl_gmul_func) (void *p1, void *p2, void *r);
 
@@ -54,7 +54,7 @@ char *tl_fmt(tl_dtype dtype);
 #define tl_pointer_assign(pd, offd, ps, offs, dtype)            \
      tl_passign((pd), (offd), (ps), (offs), tl_size_of(dtype))
 
-void tl_gfprintf(FILE* fp,const char* fmt,void* p, tl_dtype dtype);
+int tl_gfprintf(FILE* fp, const char* fmt,void* p, tl_dtype dtype);
 tl_gfprintf_func tl_gfprintf_getfunc(tl_dtype dtype);
 int tl_gcmp(void *p1, void *p2, tl_dtype dtype);
 tl_gcmp_func tl_gcmp_getfunc(tl_dtype dtype);

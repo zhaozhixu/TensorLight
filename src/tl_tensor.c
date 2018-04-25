@@ -137,6 +137,7 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
 {
      int ndim, len, *dims; /* pointer short cut */
      void *data;
+     tl_dtype dtype;
      size_t dsize;
 
      /* dimision size and how deep current chars go */
@@ -151,7 +152,8 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
      len = t->len;
      dims = t->dims;
      data = t->data;
-     dsize = tl_size_of(t->dtype);
+     dtype = t->dtype;
+     dsize = tl_size_of(dtype);
 
      dim_sizes = (int *)tl_alloc(sizeof(int) * ndim);
      dim_levels = (int *)tl_alloc(sizeof(int) * ndim);
@@ -194,7 +196,7 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
           fprintf(stream, "%s", left_buf);
           if (*left_buf == '\0')
                fprintf(stream, " ");
-          tl_gfprintf(stream,fmt, tl_padd(data, i, dsize), t->dtype);
+          tl_gfprintf(stream, fmt, tl_padd(data, i, dsize), dtype);
           lp = left_buf, rp = right_buf;
      }
      for (j = 0; j < ndim; j++)

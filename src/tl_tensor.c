@@ -30,7 +30,7 @@ static inline int compute_length(int ndim, const int *dims)
 {
      int i, len;
 
-     assert(ndim > 0 && ndim <= TL_MAXDIM);
+     assert(ndim > 0);
      assert(dims);
      for (i = 0, len = 1; i < ndim; i++) {
           assert(dims[i] > 0);
@@ -43,7 +43,7 @@ static inline void check_dim(int ndim, const int *dims)
 {
      int i;
 
-     assert(ndim > 0 && ndim <= TL_MAXDIM);
+     assert(ndim > 0);
      assert(dims);
      for (i = 0; i < ndim; i++)
           assert(dims[i] > 0);
@@ -109,7 +109,7 @@ tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...)
      int *dims;
      va_list ap;
 
-     assert(ndim > 0 && ndim <= TL_MAXDIM);
+     assert(ndim > 0);
      dims = (int *)tl_alloc(sizeof(int) * ndim);
      va_start(ap, ndim);
      for (i = 0; i < ndim; i++) {
@@ -135,26 +135,32 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src)
 
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
 {
-     /* dimision size and how deep current chars go */
-     int dim_sizes[TL_MAXDIM], dim_levels[TL_MAXDIM];
      int ndim, len, *dims; /* pointer short cut */
      void *data;
+     size_t dsize;
+
+     /* dimision size and how deep current chars go */
+     int *dim_sizes, *dim_levels;
      /* buffer for brackets */
-     char left_buf[TL_MAXDIM+1], right_buf[TL_MAXDIM+1];
+     char *left_buf, *right_buf;
      char *lp, *rp;
      size_t right_len;
-     size_t dsize;
      int i, j, k;
 
      ndim = t->ndim;
      len = t->len;
      dims = t->dims;
      data = t->data;
+     dsize = tl_size_of(t->dtype);
+
+     dim_sizes = (int *)tl_alloc(sizeof(int) * ndim);
+     dim_levels = (int *)tl_alloc(sizeof(int) * ndim);
+     dim_sizes[ndim-1] = dims[ndim-1];
+     dim_levels[ndim-1] = 0;
+     left_buf = (char *)tl_alloc(sizeof(char) * (ndim+1));
+     right_buf = (char *)tl_alloc(sizeof(char) * (ndim+1));
      lp = left_buf;
      rp = right_buf;
-     dim_sizes[ndim-1] = t->dims[ndim-1];
-     dim_levels[ndim-1] = 0;
-     dsize = tl_size_of(t->dtype);
 
      for (i = ndim-2; i >= 0; i--) {
           dim_sizes[i] = dims[i] * dim_sizes[i+1];
@@ -194,6 +200,11 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
      for (j = 0; j < ndim; j++)
           fprintf(stream, "]");
      fprintf(stream, "\n");
+
+     tl_free(dim_sizes);
+     tl_free(dim_levels);
+     tl_free(left_buf);
+     tl_free(right_buf);
 }
 
 void tl_tensor_print(const tl_tensor *tensor, const char *fmt)

@@ -12,8 +12,6 @@ struct tl_tensor {
      void     *data;
 };
 
-#define TL_MAXDIM 8
-
 #ifdef __cplusplus
 extern "C" {
 #endif

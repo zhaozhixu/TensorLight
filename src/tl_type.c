@@ -22,15 +22,10 @@ size_t tl_size_of(tl_dtype dtype)
      return dtype_size[dtype];
 }
 
-char *tl_fmt(tl_dtype dtype)
+const char *tl_fmt(tl_dtype dtype)
 {
-     char *ret;
-
      check_dtype(dtype);
-     ret = (char *)tl_alloc(strlen(dtype_fmt[dtype]) + 1);
-     strcpy(ret, dtype_fmt[dtype]);
-
-     return ret;
+     return dtype_fmt[dtype];
 }
 
 static int gfprintf_float(FILE *fp, const char *fmt, void *p)

@@ -152,39 +152,31 @@ END_TEST
 
 START_TEST(test_tl_fmt)
 {
-     char *fmt;
+     const char *fmt;
 
      fmt = tl_fmt(TL_FLOAT);
      ck_assert_str_eq(fmt, "%.3f");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_INT32);
      ck_assert_str_eq(fmt, "%d");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_INT16);
      ck_assert_str_eq(fmt, "%d");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_INT8);
      ck_assert_str_eq(fmt, "%d");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_UINT32);
      ck_assert_str_eq(fmt, "%u");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_UINT16);
      ck_assert_str_eq(fmt, "%u");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_UINT8);
      ck_assert_str_eq(fmt, "%u");
-     tl_free(fmt);
 
      fmt = tl_fmt(TL_BOOL);
      ck_assert_str_eq(fmt, "%d");
-     tl_free(fmt);
 }
 END_TEST
 

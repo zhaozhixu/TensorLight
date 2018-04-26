@@ -45,7 +45,7 @@ typedef int (*tl_gcmp_func) (void *p1, void *p2);
 typedef void (*tl_gmul_func) (void *p1, void *p2, void *r);
 
 size_t tl_size_of(tl_dtype dtype);
-char *tl_fmt(tl_dtype dtype);
+const char *tl_fmt(tl_dtype dtype);
 
 #define tl_pointer_sub(p1, p2, dtype)           \
      tl_psub((p1), (p2), tl_size_of(dtype))

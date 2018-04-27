@@ -60,6 +60,7 @@ int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
 {
      int ndim;
 
+     assert(t1 && t2);
      if (t1->ndim == t2->ndim) {
           ndim = t1->ndim;
           while (--ndim >= 0)
@@ -94,6 +95,7 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
 
 void tl_tensor_free(tl_tensor *t, int do_free_data)
 {
+     assert(t);
      tl_free(t->dims);
      if (do_free_data) {
           tl_free(t->data);
@@ -105,9 +107,31 @@ void tl_tensor_free(tl_tensor *t, int do_free_data)
 tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...)
 {
      tl_tensor *t;
-     int i;
      int *dims;
      va_list ap;
+     int i;
+
+     assert(ndim > 0);
+     dims = (int *)tl_alloc(sizeof(int) * ndim);
+     va_start(ap, ndim);
+     for (i = 0; i < ndim; i++) {
+          dims[i] = va_arg(ap, int);
+          assert(dims[i] > 0);
+     }
+     va_end(ap);
+
+     t = tl_tensor_create(NULL, ndim, dims, dtype);
+     tl_free(dims);
+     return t;
+}
+
+/* same as tl_tensor_zeros(), just for completeness */
+tl_tensor *tl_tensor_vcreate(tl_dtype dtype, int ndim, ...)
+{
+     tl_tensor *t;
+     int *dims;
+     va_list ap;
+     int i;
 
      assert(ndim > 0);
      dims = (int *)tl_alloc(sizeof(int) * ndim);
@@ -128,6 +152,7 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src)
      void *data;
      tl_tensor *dst;
 
+     assert(src);
      data = tl_clone(src->data, src->len*tl_size_of(src->dtype));
      dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
      return dst;
@@ -148,6 +173,7 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
      size_t right_len;
      int i, j, k;
 
+     assert(stream && t);
      ndim = t->ndim;
      len = t->len;
      dims = t->dims;
@@ -209,13 +235,12 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
      tl_free(right_buf);
 }
 
-void tl_tensor_print(const tl_tensor *tensor, const char *fmt)
+void tl_tensor_print(const tl_tensor *t, const char *fmt)
 {
-     tl_tensor_fprint(stdout, tensor, fmt);
+     tl_tensor_fprint(stdout, t, fmt);
 }
 
-int tl_tensor_save(const char *file_name, const tl_tensor *tensor,
-                    const char *fmt)
+int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt)
 {
      FILE *fp;
 
@@ -224,7 +249,7 @@ int tl_tensor_save(const char *file_name, const tl_tensor *tensor,
           tl_err_ret("ERROR: cannot open %s", file_name);
           return -1;
      }
-     tl_tensor_fprint(fp, tensor, fmt);
+     tl_tensor_fprint(fp, t, fmt);
      fclose(fp);
      return 0;
 }
@@ -235,8 +260,9 @@ tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int dim, int len,
      tl_tensor *dst;
      int *dims;
 
+     assert(src);
      assert(dim < src->ndim && dim >= 0);
-     assert(len <= src->dims[dim]);
+     assert(len <= src->dims[dim] && len > 0);
 
      dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
      dims[dim] = len;
@@ -255,11 +281,12 @@ tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int dim,
      int si, di;
      size_t dsize;
 
+     assert(src);
+     assert(dim < src->ndim && dim >= 0);
+     assert(len + start <= src->dims[dim]);
      if (dst) {
           assert(src->dtype == dst->dtype);
           assert(dst->ndim == src->ndim);
-          assert(dim < src->ndim && dim >= 0);
-          assert(len+start <= src->dims[dim]);
 #ifndef NDEBUG
           for (i = 0; i < src->ndim; i++)
                assert(i == dim ? dst->dims[i] == len :
@@ -289,6 +316,28 @@ tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims)
 {
      tl_tensor *dst;
 
+     assert(src);
+     assert(src->len == compute_length(ndim, dims));
+     dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
+     return dst;
+}
+
+tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...)
+{
+     tl_tensor *dst;
+     int *dims;
+     va_list ap;
+     int i;
+
+     assert(src);
+     assert(ndim > 0);
+     dims = (int *)tl_alloc(sizeof(int) * ndim);
+     va_start(ap, ndim);
+     for (i = 0; i < ndim; i++) {
+          dims[i] = va_arg(ap, int);
+          assert(dims[i] > 0);
+     }
+     va_end(ap);
      assert(src->len == compute_length(ndim, dims));
      dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
      return dst;
@@ -307,6 +356,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      tl_dtype dtype;
      tl_gcmp_func cmp;
 
+     assert(src);
      assert(dim < src->ndim && dim >= 0);
      if (dst) {
           assert(src->dtype == dst->dtype);
@@ -419,6 +469,7 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      size_t dsize;
      void *s_data, *d_data;
 
+     assert(src);
      if (dst) {
           assert(src->dtype == dst->dtype);
           assert(src->len == dst->len);

@@ -10,6 +10,7 @@ extern "C" {
 
 Suite *make_master_suite(void);
 Suite *make_type_suite(void);
+Suite *make_tensor_suite(void);
 /* end of declarations */
 
 #ifdef __cplusplus

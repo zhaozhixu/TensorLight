@@ -340,6 +340,7 @@ tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...)
      va_end(ap);
      assert(src->len == compute_length(ndim, dims));
      dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
+     tl_free(dims);
      return dst;
 }
 

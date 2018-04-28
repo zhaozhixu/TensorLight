@@ -307,7 +307,7 @@ START_TEST(test_tl_pointer_assign)
 }
 END_TEST
 
-START_TEST(test_tl_gfprintf)
+START_TEST(test_tl_fprintf)
 {
      FILE *fp;
      float val_float = 1.2345;
@@ -322,7 +322,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_float, TL_FLOAT), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_float, TL_FLOAT), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "1.235");
@@ -330,7 +330,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, "%.1f", &val_float, TL_FLOAT), 0);
+     ck_assert_int_ge(tl_fprintf(fp, "%.1f", &val_float, TL_FLOAT), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "1.2");
@@ -338,7 +338,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_int32, TL_INT32), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_int32, TL_INT32), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "-1");
@@ -346,7 +346,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_int16, TL_INT16), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_int16, TL_INT16), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "-1");
@@ -354,7 +354,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_int8, TL_INT8), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_int8, TL_INT8), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "-1");
@@ -362,7 +362,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_uint32, TL_UINT32), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_uint32, TL_UINT32), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "1");
@@ -370,7 +370,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_uint16, TL_UINT16), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_uint16, TL_UINT16), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "1");
@@ -378,7 +378,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_uint8, TL_UINT8), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_uint8, TL_UINT8), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "1");
@@ -386,7 +386,7 @@ START_TEST(test_tl_gfprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     ck_assert_int_ge(tl_gfprintf(fp, NULL, &val_bool, TL_BOOL), 0);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_bool, TL_BOOL), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
      ck_assert_str_eq(s, "1");
@@ -394,7 +394,7 @@ START_TEST(test_tl_gfprintf)
 }
 END_TEST
 
-START_TEST(test_tl_gfprintf_getfunc)
+START_TEST(test_tl_fprintf_getfunc)
 {
      FILE *fp;
      float val_float = 1.2345;
@@ -405,12 +405,12 @@ START_TEST(test_tl_gfprintf_getfunc)
      uint16_t val_uint16 = 1;
      uint8_t val_uint8 = 1;
      tl_bool_t val_bool = TL_TRUE;
-     tl_gfprintf_func gfprintf_func;
+     tl_fprintf_func gfprintf_func;
      char s[10];
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_FLOAT);
+     gfprintf_func = tl_fprintf_getfunc(TL_FLOAT);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_float), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -419,7 +419,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_FLOAT);
+     gfprintf_func = tl_fprintf_getfunc(TL_FLOAT);
      ck_assert_int_ge(gfprintf_func(fp, "%.1f", &val_float), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -428,7 +428,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_INT32);
+     gfprintf_func = tl_fprintf_getfunc(TL_INT32);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_int32), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -437,7 +437,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_INT16);
+     gfprintf_func = tl_fprintf_getfunc(TL_INT16);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_int16), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -446,7 +446,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_INT8);
+     gfprintf_func = tl_fprintf_getfunc(TL_INT8);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_int8), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -455,7 +455,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_UINT32);
+     gfprintf_func = tl_fprintf_getfunc(TL_UINT32);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_uint32), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -464,7 +464,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_UINT16);
+     gfprintf_func = tl_fprintf_getfunc(TL_UINT16);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_uint16), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -473,7 +473,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_UINT8);
+     gfprintf_func = tl_fprintf_getfunc(TL_UINT8);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_uint8), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -482,7 +482,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
-     gfprintf_func = tl_gfprintf_getfunc(TL_BOOL);
+     gfprintf_func = tl_fprintf_getfunc(TL_BOOL);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_bool), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
@@ -491,7 +491,7 @@ START_TEST(test_tl_gfprintf_getfunc)
 }
 END_TEST
 
-START_TEST(test_tl_gcmp)
+START_TEST(test_tl_cmp)
 {
      float val1_float = 1, val2_float = 2;
      int32_t val1_int32 = 1, val2_int32 = 2;
@@ -502,41 +502,41 @@ START_TEST(test_tl_gcmp)
      uint8_t val1_uint8 = 1, val2_uint8 = 2;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE;
 
-     ck_assert(tl_gcmp(&val1_float, &val2_float, TL_FLOAT) < 0);
-     ck_assert(tl_gcmp(&val2_float, &val1_float, TL_FLOAT) > 0);
-     ck_assert(tl_gcmp(&val1_float, &val1_float, TL_FLOAT) == 0);
+     ck_assert(tl_cmp(&val1_float, &val2_float, TL_FLOAT) < 0);
+     ck_assert(tl_cmp(&val2_float, &val1_float, TL_FLOAT) > 0);
+     ck_assert(tl_cmp(&val1_float, &val1_float, TL_FLOAT) == 0);
 
-     ck_assert(tl_gcmp(&val1_int32, &val2_int32, TL_INT32) < 0);
-     ck_assert(tl_gcmp(&val2_int32, &val1_int32, TL_INT32) > 0);
-     ck_assert(tl_gcmp(&val1_int32, &val1_int32, TL_INT32) == 0);
+     ck_assert(tl_cmp(&val1_int32, &val2_int32, TL_INT32) < 0);
+     ck_assert(tl_cmp(&val2_int32, &val1_int32, TL_INT32) > 0);
+     ck_assert(tl_cmp(&val1_int32, &val1_int32, TL_INT32) == 0);
 
-     ck_assert(tl_gcmp(&val1_int16, &val2_int16, TL_INT16) < 0);
-     ck_assert(tl_gcmp(&val2_int16, &val1_int16, TL_INT16) > 0);
-     ck_assert(tl_gcmp(&val1_int16, &val1_int16, TL_INT16) == 0);
+     ck_assert(tl_cmp(&val1_int16, &val2_int16, TL_INT16) < 0);
+     ck_assert(tl_cmp(&val2_int16, &val1_int16, TL_INT16) > 0);
+     ck_assert(tl_cmp(&val1_int16, &val1_int16, TL_INT16) == 0);
 
-     ck_assert(tl_gcmp(&val1_int8, &val2_int8, TL_INT8) < 0);
-     ck_assert(tl_gcmp(&val2_int8, &val1_int8, TL_INT8) > 0);
-     ck_assert(tl_gcmp(&val1_int8, &val1_int8, TL_INT8) == 0);
+     ck_assert(tl_cmp(&val1_int8, &val2_int8, TL_INT8) < 0);
+     ck_assert(tl_cmp(&val2_int8, &val1_int8, TL_INT8) > 0);
+     ck_assert(tl_cmp(&val1_int8, &val1_int8, TL_INT8) == 0);
 
-     ck_assert(tl_gcmp(&val1_uint32, &val2_uint32, TL_UINT32) < 0);
-     ck_assert(tl_gcmp(&val2_uint32, &val1_uint32, TL_UINT32) > 0);
-     ck_assert(tl_gcmp(&val1_uint32, &val1_uint32, TL_UINT32) == 0);
+     ck_assert(tl_cmp(&val1_uint32, &val2_uint32, TL_UINT32) < 0);
+     ck_assert(tl_cmp(&val2_uint32, &val1_uint32, TL_UINT32) > 0);
+     ck_assert(tl_cmp(&val1_uint32, &val1_uint32, TL_UINT32) == 0);
 
-     ck_assert(tl_gcmp(&val1_uint16, &val2_uint16, TL_UINT16) < 0);
-     ck_assert(tl_gcmp(&val2_uint16, &val1_uint16, TL_UINT16) > 0);
-     ck_assert(tl_gcmp(&val1_uint16, &val1_uint16, TL_UINT16) == 0);
+     ck_assert(tl_cmp(&val1_uint16, &val2_uint16, TL_UINT16) < 0);
+     ck_assert(tl_cmp(&val2_uint16, &val1_uint16, TL_UINT16) > 0);
+     ck_assert(tl_cmp(&val1_uint16, &val1_uint16, TL_UINT16) == 0);
 
-     ck_assert(tl_gcmp(&val1_uint8, &val2_uint8, TL_UINT8) < 0);
-     ck_assert(tl_gcmp(&val2_uint8, &val1_uint8, TL_UINT8) > 0);
-     ck_assert(tl_gcmp(&val1_uint8, &val1_uint8, TL_UINT8) == 0);
+     ck_assert(tl_cmp(&val1_uint8, &val2_uint8, TL_UINT8) < 0);
+     ck_assert(tl_cmp(&val2_uint8, &val1_uint8, TL_UINT8) > 0);
+     ck_assert(tl_cmp(&val1_uint8, &val1_uint8, TL_UINT8) == 0);
 
-     ck_assert(tl_gcmp(&val1_bool, &val2_bool, TL_BOOL) < 0);
-     ck_assert(tl_gcmp(&val2_bool, &val1_bool, TL_BOOL) > 0);
-     ck_assert(tl_gcmp(&val1_bool, &val1_bool, TL_BOOL) == 0);
+     ck_assert(tl_cmp(&val1_bool, &val2_bool, TL_BOOL) < 0);
+     ck_assert(tl_cmp(&val2_bool, &val1_bool, TL_BOOL) > 0);
+     ck_assert(tl_cmp(&val1_bool, &val1_bool, TL_BOOL) == 0);
 }
 END_TEST
 
-START_TEST(test_tl_gcmp_getfunc)
+START_TEST(test_tl_cmp_getfunc)
 {
      float val1_float = 1, val2_float = 2;
      int32_t val1_int32 = 1, val2_int32 = 2;
@@ -546,51 +546,51 @@ START_TEST(test_tl_gcmp_getfunc)
      uint16_t val1_uint16 = 1, val2_uint16 = 2;
      uint8_t val1_uint8 = 1, val2_uint8 = 2;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE;
-     tl_gcmp_func gcmp_func;
+     tl_cmp_func gcmp_func;
 
-     gcmp_func = tl_gcmp_getfunc(TL_FLOAT);
+     gcmp_func = tl_cmp_getfunc(TL_FLOAT);
      ck_assert(gcmp_func(&val1_float, &val2_float) < 0);
      ck_assert(gcmp_func(&val2_float, &val1_float) > 0);
      ck_assert(gcmp_func(&val1_float, &val1_float) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_INT32);
+     gcmp_func = tl_cmp_getfunc(TL_INT32);
      ck_assert(gcmp_func(&val1_int32, &val2_int32) < 0);
      ck_assert(gcmp_func(&val2_int32, &val1_int32) > 0);
      ck_assert(gcmp_func(&val1_int32, &val1_int32) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_INT16);
+     gcmp_func = tl_cmp_getfunc(TL_INT16);
      ck_assert(gcmp_func(&val1_int16, &val2_int16) < 0);
      ck_assert(gcmp_func(&val2_int16, &val1_int16) > 0);
      ck_assert(gcmp_func(&val1_int16, &val1_int16) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_INT8);
+     gcmp_func = tl_cmp_getfunc(TL_INT8);
      ck_assert(gcmp_func(&val1_int8, &val2_int8) < 0);
      ck_assert(gcmp_func(&val2_int8, &val1_int8) > 0);
      ck_assert(gcmp_func(&val1_int8, &val1_int8) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_UINT32);
+     gcmp_func = tl_cmp_getfunc(TL_UINT32);
      ck_assert(gcmp_func(&val1_uint32, &val2_uint32) < 0);
      ck_assert(gcmp_func(&val2_uint32, &val1_uint32) > 0);
      ck_assert(gcmp_func(&val1_uint32, &val1_uint32) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_UINT16);
+     gcmp_func = tl_cmp_getfunc(TL_UINT16);
      ck_assert(gcmp_func(&val1_uint16, &val2_uint16) < 0);
      ck_assert(gcmp_func(&val2_uint16, &val1_uint16) > 0);
      ck_assert(gcmp_func(&val1_uint16, &val1_uint16) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_UINT8);
+     gcmp_func = tl_cmp_getfunc(TL_UINT8);
      ck_assert(gcmp_func(&val1_uint8, &val2_uint8) < 0);
      ck_assert(gcmp_func(&val2_uint8, &val1_uint8) > 0);
      ck_assert(gcmp_func(&val1_uint8, &val1_uint8) == 0);
 
-     gcmp_func = tl_gcmp_getfunc(TL_BOOL);
+     gcmp_func = tl_cmp_getfunc(TL_BOOL);
      ck_assert(gcmp_func(&val1_bool, &val2_bool) < 0);
      ck_assert(gcmp_func(&val2_bool, &val1_bool) > 0);
      ck_assert(gcmp_func(&val1_bool, &val1_bool) == 0);
 }
 END_TEST
 
-START_TEST(test_tl_gmul)
+START_TEST(test_tl_mul)
 {
      float val1_float = 1, val2_float = 2, val3_float;
      int32_t val1_int32 = 1, val2_int32 = 2, val3_int32;
@@ -601,33 +601,33 @@ START_TEST(test_tl_gmul)
      uint8_t val1_uint8 = 1, val2_uint8 = 2, val3_uint8;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE, val3_bool;
 
-     tl_gmul(&val1_float, &val2_float, &val3_float, TL_FLOAT);
+     tl_mul(&val1_float, &val2_float, &val3_float, TL_FLOAT);
      ck_assert(val3_float == 2);
 
-     tl_gmul(&val1_int32, &val2_int32, &val3_int32, TL_INT32);
+     tl_mul(&val1_int32, &val2_int32, &val3_int32, TL_INT32);
      ck_assert(val3_int32 == 2);
 
-     tl_gmul(&val1_int16, &val2_int16, &val3_int16, TL_INT16);
+     tl_mul(&val1_int16, &val2_int16, &val3_int16, TL_INT16);
      ck_assert(val3_int16 == 2);
 
-     tl_gmul(&val1_int8, &val2_int8, &val3_int8, TL_INT8);
+     tl_mul(&val1_int8, &val2_int8, &val3_int8, TL_INT8);
      ck_assert(val3_int8 == 2);
 
-     tl_gmul(&val1_uint32, &val2_uint32, &val3_uint32, TL_UINT32);
+     tl_mul(&val1_uint32, &val2_uint32, &val3_uint32, TL_UINT32);
      ck_assert(val3_uint32 == 2);
 
-     tl_gmul(&val1_uint16, &val2_uint16, &val3_uint16, TL_UINT16);
+     tl_mul(&val1_uint16, &val2_uint16, &val3_uint16, TL_UINT16);
      ck_assert(val3_uint16 == 2);
 
-     tl_gmul(&val1_uint8, &val2_uint8, &val3_uint8, TL_UINT8);
+     tl_mul(&val1_uint8, &val2_uint8, &val3_uint8, TL_UINT8);
      ck_assert(val3_uint8 == 2);
 
-     tl_gmul(&val1_bool, &val2_bool, &val3_bool, TL_BOOL);
+     tl_mul(&val1_bool, &val2_bool, &val3_bool, TL_BOOL);
      ck_assert(val3_bool == TL_FALSE);
 }
 END_TEST
 
-START_TEST(test_tl_gmul_getfunc)
+START_TEST(test_tl_mul_getfunc)
 {
      float val1_float = 1, val2_float = 2, val3_float;
      int32_t val1_int32 = 1, val2_int32 = 2, val3_int32;
@@ -637,37 +637,37 @@ START_TEST(test_tl_gmul_getfunc)
      uint16_t val1_uint16 = 1, val2_uint16 = 2, val3_uint16;
      uint8_t val1_uint8 = 1, val2_uint8 = 2, val3_uint8;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE, val3_bool;
-     tl_gmul_func mul_func;
+     tl_mul_func mul_func;
 
-     mul_func = tl_gmul_getfunc(TL_FLOAT);
+     mul_func = tl_mul_getfunc(TL_FLOAT);
      mul_func(&val1_float, &val2_float, &val3_float);
      ck_assert(val3_float == 2);
 
-     mul_func = tl_gmul_getfunc(TL_INT32);
+     mul_func = tl_mul_getfunc(TL_INT32);
      mul_func(&val1_int32, &val2_int32, &val3_int32);
      ck_assert(val3_int32 == 2);
 
-     mul_func = tl_gmul_getfunc(TL_INT16);
+     mul_func = tl_mul_getfunc(TL_INT16);
      mul_func(&val1_int16, &val2_int16, &val3_int16);
      ck_assert(val3_int16 == 2);
 
-     mul_func = tl_gmul_getfunc(TL_INT8);
+     mul_func = tl_mul_getfunc(TL_INT8);
      mul_func(&val1_int8, &val2_int8, &val3_int8);
      ck_assert(val3_int8 == 2);
 
-     mul_func = tl_gmul_getfunc(TL_UINT32);
+     mul_func = tl_mul_getfunc(TL_UINT32);
      mul_func(&val1_uint32, &val2_uint32, &val3_uint32);
      ck_assert(val3_uint32 == 2);
 
-     mul_func = tl_gmul_getfunc(TL_UINT16);
+     mul_func = tl_mul_getfunc(TL_UINT16);
      mul_func(&val1_uint16, &val2_uint16, &val3_uint16);
      ck_assert(val3_uint16 == 2);
 
-     mul_func = tl_gmul_getfunc(TL_UINT8);
+     mul_func = tl_mul_getfunc(TL_UINT8);
      mul_func(&val1_uint8, &val2_uint8, &val3_uint8);
      ck_assert(val3_uint8 == 2);
 
-     mul_func = tl_gmul_getfunc(TL_BOOL);
+     mul_func = tl_mul_getfunc(TL_BOOL);
      mul_func(&val1_bool, &val2_bool, &val3_bool);
      ck_assert(val3_bool == TL_FALSE);
 }
@@ -691,12 +691,12 @@ Suite *make_type_suite(void)
      tcase_add_test(tc_type, test_tl_pointer_sub);
      tcase_add_test(tc_type, test_tl_pointer_add);
      tcase_add_test(tc_type, test_tl_pointer_assign);
-     tcase_add_test(tc_type, test_tl_gfprintf);
-     tcase_add_test(tc_type, test_tl_gfprintf_getfunc);
-     tcase_add_test(tc_type, test_tl_gcmp);
-     tcase_add_test(tc_type, test_tl_gcmp_getfunc);
-     tcase_add_test(tc_type, test_tl_gmul);
-     tcase_add_test(tc_type, test_tl_gmul_getfunc);
+     tcase_add_test(tc_type, test_tl_fprintf);
+     tcase_add_test(tc_type, test_tl_fprintf_getfunc);
+     tcase_add_test(tc_type, test_tl_cmp);
+     tcase_add_test(tc_type, test_tl_cmp_getfunc);
+     tcase_add_test(tc_type, test_tl_mul);
+     tcase_add_test(tc_type, test_tl_mul_getfunc);
      /* end of adding tests */
 
      suite_add_tcase(s, tc_type);

@@ -26,18 +26,18 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src);
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *t, const char *fmt);
 int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt);
-tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int dim, int len,
+tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int axis, int len,
                                        tl_dtype dtype);
-tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int dim,
+tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
                                 int start, int len);
 tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims);
 tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...);
 tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
-                                    tl_tensor *arg, int dim);
+                                    tl_tensor *arg, int axis);
 tl_tensor *tl_tensor_mul(const tl_tensor *src1, const tl_tensor *src2,
                               tl_tensor *dst);
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
-                                    const int *dims, int **workspace);
+                                    const int *axes, int **workspace);
 
 #ifdef __cplusplus
 }

@@ -40,9 +40,9 @@ enum tl_dtype {
 extern "C" {
 #endif
 
-typedef int (*tl_gfprintf_func) (FILE *fp, const char *fmt, void *p);
-typedef int (*tl_gcmp_func) (void *p1, void *p2);
-typedef void (*tl_gmul_func) (void *p1, void *p2, void *r);
+typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
+typedef int (*tl_cmp_func) (void *p1, void *p2);
+typedef void (*tl_mul_func) (void *p1, void *p2, void *r);
 
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_fmt(tl_dtype dtype);
@@ -54,12 +54,12 @@ const char *tl_fmt(tl_dtype dtype);
 #define tl_pointer_assign(pd, offd, ps, offs, dtype)            \
      tl_passign((pd), (offd), (ps), (offs), tl_size_of(dtype))
 
-int tl_gfprintf(FILE* fp, const char* fmt,void* p, tl_dtype dtype);
-tl_gfprintf_func tl_gfprintf_getfunc(tl_dtype dtype);
-int tl_gcmp(void *p1, void *p2, tl_dtype dtype);
-tl_gcmp_func tl_gcmp_getfunc(tl_dtype dtype);
-void tl_gmul(void *p1, void *p2, void *r, tl_dtype dtype);
-tl_gmul_func tl_gmul_getfunc(tl_dtype dtype);
+int tl_fprintf(FILE* fp, const char* fmt,void* p, tl_dtype dtype);
+tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);
+int tl_cmp(void *p1, void *p2, tl_dtype dtype);
+tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);
+void tl_mul(void *p1, void *p2, void *r, tl_dtype dtype);
+tl_mul_func tl_mul_getfunc(tl_dtype dtype);
 
 #ifdef __cplusplus
 }

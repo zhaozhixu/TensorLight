@@ -1,5 +1,6 @@
 #include "test_tsl.h"
 #include "../src/tl_tensor.h"
+#include "../src/tl_util.h"
 
 static void setup(void)
 {
@@ -419,25 +420,59 @@ END_TEST
 
 START_TEST(test_tl_tensor_transpose)
 {
-     /* tl_tensor *src, *dst; */
-     /* int dims[3] = {2, 3, 2}; */
-     /* int dims_trans[3] = {}; */
-     /* uint8_t data[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}; */
-     /* int *ws[2]; */
-     /* int i; */
+     tl_tensor *src, *dst;
+     int dims1[3] = {2, 3, 2};
+     int dims2[3] = {3, 2, 2};
+     uint8_t data[12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+     int axes1[3] = {0, 2, 1};
+     uint8_t dst_data1[12] = {1, 3, 5, 2, 4, 6, 7, 9, 11, 8, 10, 12};
+     int axes2[3] = {1, 2, 0};
+     uint8_t dst_data2[12] = {1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12};
+     int *ws[2];
+     int i;
 
-     /* src = tl_tensor_create(data, 3, dims, TL_UINT8); */
-     /* dst = tl_tensor_transpose(src, NULL, dims_trans, NULL); */
-     /* ck_assert_int_eq(dst->ndim, 3); */
-     /* ck_assert_int_eq(dst->dtype, TL_UINT8); */
-     /* ck_assert_int_eq(dst->len, 12); */
-     /* ck_assert(dst->dims[0] == 2); */
-     /* ck_assert(dst->dims[1] == 3); */
-     /* for (i = 0; i < dst->len; i++) */
-     /*      ck_assert(((int8_t *)dst->data)[i] == dst_data[i]); */
-     /* tl_tensor_free(dst, TL_TRUE); */
+     src = tl_tensor_create(data, 3, dims1, TL_UINT8);
 
-     /* tl_tensor_free(src, TL_FALSE); */
+     dst = tl_tensor_transpose(src, NULL, axes1, NULL);
+     ck_assert_int_eq(dst->ndim, 3);
+     ck_assert_int_eq(dst->dtype, TL_UINT8);
+     ck_assert_int_eq(dst->len, 12);
+     ck_assert(dst->dims[0] == 2);
+     ck_assert(dst->dims[1] == 2);
+     ck_assert(dst->dims[2] == 3);
+     for (i = 0; i < dst->len; i++)
+          ck_assert(((int8_t *)dst->data)[i] == dst_data1[i]);
+     tl_tensor_free(dst, TL_TRUE);
+
+     dst = tl_tensor_create(NULL, 3, dims2, TL_UINT8);
+     dst = tl_tensor_transpose(src, dst, axes2, NULL);
+     ck_assert_int_eq(dst->ndim, 3);
+     ck_assert_int_eq(dst->dtype, TL_UINT8);
+     ck_assert_int_eq(dst->len, 12);
+     ck_assert(dst->dims[0] == 3);
+     ck_assert(dst->dims[1] == 2);
+     ck_assert(dst->dims[2] == 2);
+     for (i = 0; i < dst->len; i++)
+          ck_assert(((int8_t *)dst->data)[i] == dst_data2[i]);
+     tl_tensor_free(dst, TL_TRUE);
+
+     dst = tl_tensor_create(NULL, 3, dims2, TL_UINT8);
+     ws[0] = (int *)tl_alloc(sizeof(int) * dst->ndim * dst->len);
+     ws[1] = (int *)tl_alloc(sizeof(int) * dst->ndim * dst->len);
+     dst = tl_tensor_transpose(src, dst, axes2, ws);
+     ck_assert_int_eq(dst->ndim, 3);
+     ck_assert_int_eq(dst->dtype, TL_UINT8);
+     ck_assert_int_eq(dst->len, 12);
+     ck_assert(dst->dims[0] == 3);
+     ck_assert(dst->dims[1] == 2);
+     ck_assert(dst->dims[2] == 2);
+     for (i = 0; i < dst->len; i++)
+          ck_assert(((int8_t *)dst->data)[i] == dst_data2[i]);
+     tl_tensor_free(dst, TL_TRUE);
+     tl_free(ws[0]);
+     tl_free(ws[1]);
+
+     tl_tensor_free(src, TL_FALSE);
 }
 END_TEST
 /* end of tests */

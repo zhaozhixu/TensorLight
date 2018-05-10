@@ -590,7 +590,7 @@ START_TEST(test_tl_cmp_getfunc)
 }
 END_TEST
 
-START_TEST(test_tl_mul)
+START_TEST(test_tl_elew)
 {
      float val1_float = 1, val2_float = 2, val3_float;
      int32_t val1_int32 = 1, val2_int32 = 2, val3_int32;
@@ -601,33 +601,184 @@ START_TEST(test_tl_mul)
      uint8_t val1_uint8 = 1, val2_uint8 = 2, val3_uint8;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE, val3_bool;
 
-     tl_mul(&val1_float, &val2_float, &val3_float, TL_FLOAT);
+     /* TL_MUL */
+     tl_elew(&val1_float, &val2_float, &val3_float, TL_MUL, TL_FLOAT);
      ck_assert(val3_float == 2);
 
-     tl_mul(&val1_int32, &val2_int32, &val3_int32, TL_INT32);
+     tl_elew(&val1_int32, &val2_int32, &val3_int32, TL_MUL, TL_INT32);
      ck_assert(val3_int32 == 2);
 
-     tl_mul(&val1_int16, &val2_int16, &val3_int16, TL_INT16);
+     tl_elew(&val1_int16, &val2_int16, &val3_int16, TL_MUL, TL_INT16);
      ck_assert(val3_int16 == 2);
 
-     tl_mul(&val1_int8, &val2_int8, &val3_int8, TL_INT8);
+     tl_elew(&val1_int8, &val2_int8, &val3_int8, TL_MUL, TL_INT8);
      ck_assert(val3_int8 == 2);
 
-     tl_mul(&val1_uint32, &val2_uint32, &val3_uint32, TL_UINT32);
+     tl_elew(&val1_uint32, &val2_uint32, &val3_uint32, TL_MUL, TL_UINT32);
      ck_assert(val3_uint32 == 2);
 
-     tl_mul(&val1_uint16, &val2_uint16, &val3_uint16, TL_UINT16);
+     tl_elew(&val1_uint16, &val2_uint16, &val3_uint16, TL_MUL, TL_UINT16);
      ck_assert(val3_uint16 == 2);
 
-     tl_mul(&val1_uint8, &val2_uint8, &val3_uint8, TL_UINT8);
+     tl_elew(&val1_uint8, &val2_uint8, &val3_uint8, TL_MUL, TL_UINT8);
      ck_assert(val3_uint8 == 2);
 
-     tl_mul(&val1_bool, &val2_bool, &val3_bool, TL_BOOL);
+     tl_elew(&val1_bool, &val2_bool, &val3_bool, TL_MUL, TL_BOOL);
      ck_assert(val3_bool == TL_FALSE);
+
+     /* TL_DIV */
+     tl_elew(&val2_float, &val1_float, &val3_float, TL_DIV, TL_FLOAT);
+     ck_assert(val3_float == 2);
+
+     tl_elew(&val2_int32, &val1_int32, &val3_int32, TL_DIV, TL_INT32);
+     ck_assert(val3_int32 == 2);
+
+     tl_elew(&val2_int16, &val1_int16, &val3_int16, TL_DIV, TL_INT16);
+     ck_assert(val3_int16 == 2);
+
+     tl_elew(&val2_int8, &val1_int8, &val3_int8, TL_DIV, TL_INT8);
+     ck_assert(val3_int8 == 2);
+
+     tl_elew(&val2_uint32, &val1_uint32, &val3_uint32, TL_DIV, TL_UINT32);
+     ck_assert(val3_uint32 == 2);
+
+     tl_elew(&val2_uint16, &val1_uint16, &val3_uint16, TL_DIV, TL_UINT16);
+     ck_assert(val3_uint16 == 2);
+
+     tl_elew(&val2_uint8, &val1_uint8, &val3_uint8, TL_DIV, TL_UINT8);
+     ck_assert(val3_uint8 == 2);
+
+     /* tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_DIV, TL_BOOL); */
+     /* ck_assert(val3_bool == 2); */
+
+     /* TL_SUM */
+     tl_elew(&val2_float, &val1_float, &val3_float, TL_SUM, TL_FLOAT);
+     ck_assert(val3_float == 3);
+
+     tl_elew(&val2_int32, &val1_int32, &val3_int32, TL_SUM, TL_INT32);
+     ck_assert(val3_int32 == 3);
+
+     tl_elew(&val2_int16, &val1_int16, &val3_int16, TL_SUM, TL_INT16);
+     ck_assert(val3_int16 == 3);
+
+     tl_elew(&val2_int8, &val1_int8, &val3_int8, TL_SUM, TL_INT8);
+     ck_assert(val3_int8 == 3);
+
+     tl_elew(&val2_uint32, &val1_uint32, &val3_uint32, TL_SUM, TL_UINT32);
+     ck_assert(val3_uint32 == 3);
+
+     tl_elew(&val2_uint16, &val1_uint16, &val3_uint16, TL_SUM, TL_UINT16);
+     ck_assert(val3_uint16 == 3);
+
+     tl_elew(&val2_uint8, &val1_uint8, &val3_uint8, TL_SUM, TL_UINT8);
+     ck_assert(val3_uint8 == 3);
+
+     tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_SUM, TL_BOOL);
+     ck_assert(val3_bool == 1);
+
+     /* TL_SUB */
+     tl_elew(&val2_float, &val1_float, &val3_float, TL_SUB, TL_FLOAT);
+     ck_assert(val3_float == 1);
+
+     tl_elew(&val2_int32, &val1_int32, &val3_int32, TL_SUB, TL_INT32);
+     ck_assert(val3_int32 == 1);
+
+     tl_elew(&val2_int16, &val1_int16, &val3_int16, TL_SUB, TL_INT16);
+     ck_assert(val3_int16 == 1);
+
+     tl_elew(&val2_int8, &val1_int8, &val3_int8, TL_SUB, TL_INT8);
+     ck_assert(val3_int8 == 1);
+
+     tl_elew(&val2_uint32, &val1_uint32, &val3_uint32, TL_SUB, TL_UINT32);
+     ck_assert(val3_uint32 == 1);
+
+     tl_elew(&val2_uint16, &val1_uint16, &val3_uint16, TL_SUB, TL_UINT16);
+     ck_assert(val3_uint16 == 1);
+
+     tl_elew(&val2_uint8, &val1_uint8, &val3_uint8, TL_SUB, TL_UINT8);
+     ck_assert(val3_uint8 == 1);
+
+     tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_SUB, TL_BOOL);
+     ck_assert(val3_bool == 1);
+
+     /* TL_MAX */
+     tl_elew(&val2_float, &val1_float, &val3_float, TL_MAX, TL_FLOAT);
+     ck_assert(val3_float == 2);
+
+     tl_elew(&val2_int32, &val1_int32, &val3_int32, TL_MAX, TL_INT32);
+     ck_assert(val3_int32 == 2);
+
+     tl_elew(&val2_int16, &val1_int16, &val3_int16, TL_MAX, TL_INT16);
+     ck_assert(val3_int16 == 2);
+
+     tl_elew(&val2_int8, &val1_int8, &val3_int8, TL_MAX, TL_INT8);
+     ck_assert(val3_int8 == 2);
+
+     tl_elew(&val2_uint32, &val1_uint32, &val3_uint32, TL_MAX, TL_UINT32);
+     ck_assert(val3_uint32 == 2);
+
+     tl_elew(&val2_uint16, &val1_uint16, &val3_uint16, TL_MAX, TL_UINT16);
+     ck_assert(val3_uint16 == 2);
+
+     tl_elew(&val2_uint8, &val1_uint8, &val3_uint8, TL_MAX, TL_UINT8);
+     ck_assert(val3_uint8 == 2);
+
+     tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_MAX, TL_BOOL);
+     ck_assert(val3_bool == 1);
+
+     /* TL_MIN */
+     tl_elew(&val2_float, &val1_float, &val3_float, TL_MIN, TL_FLOAT);
+     ck_assert(val3_float == 1);
+
+     tl_elew(&val2_int32, &val1_int32, &val3_int32, TL_MIN, TL_INT32);
+     ck_assert(val3_int32 == 1);
+
+     tl_elew(&val2_int16, &val1_int16, &val3_int16, TL_MIN, TL_INT16);
+     ck_assert(val3_int16 == 1);
+
+     tl_elew(&val2_int8, &val1_int8, &val3_int8, TL_MIN, TL_INT8);
+     ck_assert(val3_int8 == 1);
+
+     tl_elew(&val2_uint32, &val1_uint32, &val3_uint32, TL_MIN, TL_UINT32);
+     ck_assert(val3_uint32 == 1);
+
+     tl_elew(&val2_uint16, &val1_uint16, &val3_uint16, TL_MIN, TL_UINT16);
+     ck_assert(val3_uint16 == 1);
+
+     tl_elew(&val2_uint8, &val1_uint8, &val3_uint8, TL_MIN, TL_UINT8);
+     ck_assert(val3_uint8 == 1);
+
+     tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_MIN, TL_BOOL);
+     ck_assert(val3_bool == 0);
+
+     /* TL_POW */
+     tl_elew(&val2_float, &val1_float, &val3_float, TL_POW, TL_FLOAT);
+     ck_assert(val3_float == 2);
+
+     tl_elew(&val2_int32, &val1_int32, &val3_int32, TL_POW, TL_INT32);
+     ck_assert(val3_int32 == 2);
+
+     tl_elew(&val2_int16, &val1_int16, &val3_int16, TL_POW, TL_INT16);
+     ck_assert(val3_int16 == 2);
+
+     tl_elew(&val2_int8, &val1_int8, &val3_int8, TL_POW, TL_INT8);
+     ck_assert(val3_int8 == 2);
+
+     tl_elew(&val2_uint32, &val1_uint32, &val3_uint32, TL_POW, TL_UINT32);
+     ck_assert(val3_uint32 == 2);
+
+     tl_elew(&val2_uint16, &val1_uint16, &val3_uint16, TL_POW, TL_UINT16);
+     ck_assert(val3_uint16 == 2);
+
+     tl_elew(&val2_uint8, &val1_uint8, &val3_uint8, TL_POW, TL_UINT8);
+     ck_assert(val3_uint8 == 2);
+
+     tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_POW, TL_BOOL);
+     ck_assert(val3_bool == 1);
 }
 END_TEST
 
-START_TEST(test_tl_mul_getfunc)
+START_TEST(test_tl_elew_getfunc)
 {
      float val1_float = 1, val2_float = 2, val3_float;
      int32_t val1_int32 = 1, val2_int32 = 2, val3_int32;
@@ -637,38 +788,38 @@ START_TEST(test_tl_mul_getfunc)
      uint16_t val1_uint16 = 1, val2_uint16 = 2, val3_uint16;
      uint8_t val1_uint8 = 1, val2_uint8 = 2, val3_uint8;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE, val3_bool;
-     tl_mul_func mul_func;
+     tl_elew_func elew_func;
 
-     mul_func = tl_mul_getfunc(TL_FLOAT);
-     mul_func(&val1_float, &val2_float, &val3_float);
+     elew_func = tl_elew_getfunc(TL_FLOAT);
+     elew_func(&val2_float, &val1_float, &val3_float, TL_MUL);
      ck_assert(val3_float == 2);
 
-     mul_func = tl_mul_getfunc(TL_INT32);
-     mul_func(&val1_int32, &val2_int32, &val3_int32);
+     elew_func = tl_elew_getfunc(TL_INT32);
+     elew_func(&val2_int32, &val1_int32, &val3_int32, TL_DIV);
      ck_assert(val3_int32 == 2);
 
-     mul_func = tl_mul_getfunc(TL_INT16);
-     mul_func(&val1_int16, &val2_int16, &val3_int16);
-     ck_assert(val3_int16 == 2);
+     elew_func = tl_elew_getfunc(TL_INT16);
+     elew_func(&val2_int16, &val1_int16, &val3_int16, TL_SUM);
+     ck_assert(val3_int16 == 3);
 
-     mul_func = tl_mul_getfunc(TL_INT8);
-     mul_func(&val1_int8, &val2_int8, &val3_int8);
+     elew_func = tl_elew_getfunc(TL_INT8);
+     elew_func(&val2_int8, &val1_int8, &val3_int8, TL_MAX);
      ck_assert(val3_int8 == 2);
 
-     mul_func = tl_mul_getfunc(TL_UINT32);
-     mul_func(&val1_uint32, &val2_uint32, &val3_uint32);
-     ck_assert(val3_uint32 == 2);
+     elew_func = tl_elew_getfunc(TL_UINT32);
+     elew_func(&val2_uint32, &val1_uint32, &val3_uint32, TL_MIN);
+     ck_assert(val3_uint32 == 1);
 
-     mul_func = tl_mul_getfunc(TL_UINT16);
-     mul_func(&val1_uint16, &val2_uint16, &val3_uint16);
+     elew_func = tl_elew_getfunc(TL_UINT16);
+     elew_func(&val2_uint16, &val1_uint16, &val3_uint16, TL_POW);
      ck_assert(val3_uint16 == 2);
 
-     mul_func = tl_mul_getfunc(TL_UINT8);
-     mul_func(&val1_uint8, &val2_uint8, &val3_uint8);
+     elew_func = tl_elew_getfunc(TL_UINT8);
+     elew_func(&val2_uint8, &val1_uint8, &val3_uint8, TL_MUL);
      ck_assert(val3_uint8 == 2);
 
-     mul_func = tl_mul_getfunc(TL_BOOL);
-     mul_func(&val1_bool, &val2_bool, &val3_bool);
+     elew_func = tl_elew_getfunc(TL_BOOL);
+     elew_func(&val2_bool, &val1_bool, &val3_bool, TL_MUL);
      ck_assert(val3_bool == TL_FALSE);
 }
 END_TEST
@@ -695,8 +846,8 @@ Suite *make_type_suite(void)
      tcase_add_test(tc_type, test_tl_fprintf_getfunc);
      tcase_add_test(tc_type, test_tl_cmp);
      tcase_add_test(tc_type, test_tl_cmp_getfunc);
-     tcase_add_test(tc_type, test_tl_mul);
-     tcase_add_test(tc_type, test_tl_mul_getfunc);
+     tcase_add_test(tc_type, test_tl_elew);
+     tcase_add_test(tc_type, test_tl_elew_getfunc);
      /* end of adding tests */
 
      suite_add_tcase(s, tc_type);

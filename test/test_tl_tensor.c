@@ -379,7 +379,7 @@ START_TEST(test_tl_tensor_maxreduce)
 }
 END_TEST
 
-START_TEST(test_tl_tensor_mul)
+START_TEST(test_tl_tensor_elew)
 {
      tl_tensor *src1, *src2, *dst;
      int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
@@ -390,7 +390,7 @@ START_TEST(test_tl_tensor_mul)
 
      src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8);
      src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8);
-     dst = tl_tensor_mul(src1, src2, NULL);
+     dst = tl_tensor_elew(src1, src2, NULL, TL_MUL);
      ck_assert_int_eq(dst->ndim, 2);
      ck_assert_int_eq(dst->dtype, TL_INT8);
      ck_assert_int_eq(dst->len, 6);
@@ -403,7 +403,7 @@ START_TEST(test_tl_tensor_mul)
      src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8);
      src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8);
      dst = tl_tensor_create(NULL, 2, dims, TL_INT8);
-     dst = tl_tensor_mul(src1, src2, dst);
+     dst = tl_tensor_elew(src1, src2, dst, TL_MUL);
      ck_assert_int_eq(dst->ndim, 2);
      ck_assert_int_eq(dst->dtype, TL_INT8);
      ck_assert_int_eq(dst->len, 6);
@@ -500,7 +500,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_reshape);
      tcase_add_test(tc_tensor, test_tl_tensor_vreshape);
      tcase_add_test(tc_tensor, test_tl_tensor_maxreduce);
-     tcase_add_test(tc_tensor, test_tl_tensor_mul);
+     tcase_add_test(tc_tensor, test_tl_tensor_elew);
      tcase_add_test(tc_tensor, test_tl_tensor_transpose);
      /* end of adding tests */
 

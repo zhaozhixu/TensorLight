@@ -11,6 +11,8 @@ enum tl_bool_t {
      TL_TRUE = 1
 };
 
+/* keep the size and the enum order in sync with tl_type.c */
+#define TL_DTYPE_SIZE 8
 typedef enum tl_dtype tl_dtype;
 enum tl_dtype {
      TL_FLOAT,
@@ -23,10 +25,21 @@ enum tl_dtype {
      TL_BOOL,
 };
 
-#define TL_DTYPE_SIZE 8
+/* keep the size and the enum order in sync with tl_type.c */
+#define TL_ELEW_OP_SIZE 7
+typedef enum tl_elew_op tl_elew_op;
+enum tl_elew_op {
+     TL_MUL,
+     TL_DIV,
+     TL_SUM,
+     TL_SUB,
+     TL_MAX,
+     TL_MIN,
+     TL_POW
+};
 
 /* pointer subtraction and pointer addition */
-#define tl_psub(p1, p2, dsize)                      \
+#define tl_psub(p1, p2, dsize)                                  \
      (((uint8_t *)(p1) - (uint8_t *)(p2)) / ((ptrdiff_t)dsize))
 #define tl_padd(p, offset, dsize)               \
      ((uint8_t *)(p) + (offset) * (dsize))
@@ -42,7 +55,7 @@ extern "C" {
 
 typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
 typedef int (*tl_cmp_func) (void *p1, void *p2);
-typedef void (*tl_mul_func) (void *p1, void *p2, void *r);
+typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
 
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_fmt(tl_dtype dtype);
@@ -58,8 +71,8 @@ int tl_fprintf(FILE* fp, const char* fmt,void* p, tl_dtype dtype);
 tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);
 int tl_cmp(void *p1, void *p2, tl_dtype dtype);
 tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);
-void tl_mul(void *p1, void *p2, void *r, tl_dtype dtype);
-tl_mul_func tl_mul_getfunc(tl_dtype dtype);
+void tl_elew(void *p1, void *p2, void *r, tl_elew_op elew_op, tl_dtype dtype);
+tl_elew_func tl_elew_getfunc(tl_dtype dtype);
 
 #ifdef __cplusplus
 }

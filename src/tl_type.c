@@ -29,9 +29,15 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-/* TODO: maybe platform dependent */
 static const size_t dtype_size[TL_DTYPE_SIZE] = {
-     4, 4, 2, 1, 4, 2, 1, 4
+     sizeof(float),
+     sizeof(int32_t),
+     sizeof(int16_t),
+     sizeof(int8_t),
+     sizeof(uint32_t),
+     sizeof(uint16_t),
+     sizeof(uint8_t),
+     sizeof(tl_bool_t)
 };
 
 static const char *dtype_fmt[TL_DTYPE_SIZE] = {

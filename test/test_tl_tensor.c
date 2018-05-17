@@ -39,6 +39,16 @@ START_TEST(test_tl_tensor_create)
      int32_t data[6] = {1, 2, 3, 4, 5, 6};
      int i;
 
+     t = tl_tensor_create(NULL, 1, dims, TL_DOUBLE);
+     ck_assert_int_eq(t->ndim, 1);
+     ck_assert_int_eq(t->dtype, TL_DOUBLE);
+     ck_assert_int_eq(t->len, 1);
+     for (i = 0; i < t->ndim; i++)
+          ck_assert(t->dims[i] == dims[i]);
+     for (i = 0; i < t->len; i++)
+          ck_assert(((double *)t->data)[i] == 0);
+     tl_tensor_free_data_too(t);
+
      t = tl_tensor_create(NULL, 1, dims, TL_FLOAT);
      ck_assert_int_eq(t->ndim, 1);
      ck_assert_int_eq(t->dtype, TL_FLOAT);

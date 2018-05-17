@@ -34,19 +34,21 @@ static void teardown(void)
 
 START_TEST(test_tl_size_of)
 {
-     ck_assert_int_eq(tl_size_of(TL_FLOAT), 4);
-     ck_assert_int_eq(tl_size_of(TL_INT32), 4);
-     ck_assert_int_eq(tl_size_of(TL_INT16), 2);
-     ck_assert_int_eq(tl_size_of(TL_INT8), 1);
-     ck_assert_int_eq(tl_size_of(TL_UINT32), 4);
-     ck_assert_int_eq(tl_size_of(TL_UINT16), 2);
-     ck_assert_int_eq(tl_size_of(TL_UINT8), 1);
-     ck_assert_int_eq(tl_size_of(TL_BOOL), 4);
+     ck_assert_int_eq(tl_size_of(TL_DOUBLE), sizeof(double));
+     ck_assert_int_eq(tl_size_of(TL_FLOAT), sizeof(float));
+     ck_assert_int_eq(tl_size_of(TL_INT32), sizeof(int32_t));
+     ck_assert_int_eq(tl_size_of(TL_INT16), sizeof(int16_t));
+     ck_assert_int_eq(tl_size_of(TL_INT8), sizeof(int8_t));
+     ck_assert_int_eq(tl_size_of(TL_UINT32), sizeof(uint32_t));
+     ck_assert_int_eq(tl_size_of(TL_UINT16), sizeof(uint16_t));
+     ck_assert_int_eq(tl_size_of(TL_UINT8), sizeof(uint8_t));
+     ck_assert_int_eq(tl_size_of(TL_BOOL), sizeof(tl_bool_t));
 }
 END_TEST
 
 START_TEST(test_tl_psub)
 {
+     double p_double[2];
      float p_float[2];
      int32_t p_int32[2];
      int16_t p_int16[2];
@@ -55,6 +57,10 @@ START_TEST(test_tl_psub)
      uint16_t p_uint16[2];
      uint8_t p_uint8[2];
      tl_bool_t p_bool[2];
+
+     ck_assert_int_eq(tl_psub(&p_double[1], &p_double[0], tl_size_of(TL_DOUBLE)), 1);
+     ck_assert_int_eq(tl_psub(&p_double[0], &p_double[1], tl_size_of(TL_DOUBLE)), -1);
+     ck_assert_int_eq(tl_psub(&p_double[0], &p_double[0], tl_size_of(TL_DOUBLE)), 0);
 
      ck_assert_int_eq(tl_psub(&p_float[1], &p_float[0], tl_size_of(TL_FLOAT)), 1);
      ck_assert_int_eq(tl_psub(&p_float[0], &p_float[1], tl_size_of(TL_FLOAT)), -1);
@@ -92,6 +98,7 @@ END_TEST
 
 START_TEST(test_tl_padd)
 {
+     double p_double[3];
      float p_float[3];
      int32_t p_int32[3];
      int16_t p_int16[3];
@@ -100,6 +107,10 @@ START_TEST(test_tl_padd)
      uint16_t p_uint16[3];
      uint8_t p_uint8[3];
      tl_bool_t p_bool[3];
+
+     ck_assert_ptr_eq(tl_padd(&p_double[1], 1, tl_size_of(TL_DOUBLE)), &p_double[2]);
+     ck_assert_ptr_eq(tl_padd(&p_double[1], -1, tl_size_of(TL_DOUBLE)), &p_double[0]);
+     ck_assert_ptr_eq(tl_padd(&p_double[1], 0, tl_size_of(TL_DOUBLE)), &p_double[1]);
 
      ck_assert_ptr_eq(tl_padd(&p_float[1], 1, tl_size_of(TL_FLOAT)), &p_float[2]);
      ck_assert_ptr_eq(tl_padd(&p_float[1], -1, tl_size_of(TL_FLOAT)), &p_float[0]);
@@ -137,6 +148,7 @@ END_TEST
 
 START_TEST(test_tl_passign)
 {
+     double p_double[2] = {0, 1};
      float p_float[2] = {0, 1};
      int32_t p_int32[2] = {0, 1};
      int16_t p_int16[2] = {0, 1};
@@ -145,6 +157,9 @@ START_TEST(test_tl_passign)
      uint16_t p_uint16[2] = {0, 1};
      uint8_t p_uint8[2] = {0, 1};
      tl_bool_t p_bool[2] = {0, 1};
+
+     tl_passign(p_double, 0, p_double, 1, tl_size_of(TL_DOUBLE));
+     ck_assert(p_double[0] == p_double[1]);
 
      tl_passign(p_float, 0, p_float, 1, tl_size_of(TL_FLOAT));
      ck_assert(p_float[0] == p_float[1]);
@@ -176,6 +191,9 @@ START_TEST(test_tl_fmt)
 {
      const char *fmt;
 
+     fmt = tl_fmt(TL_DOUBLE);
+     ck_assert_str_eq(fmt, "%.3f");
+
      fmt = tl_fmt(TL_FLOAT);
      ck_assert_str_eq(fmt, "%.3f");
 
@@ -204,6 +222,7 @@ END_TEST
 
 START_TEST(test_tl_pointer_sub)
 {
+     double p_double[2];
      float p_float[2];
      int32_t p_int32[2];
      int16_t p_int16[2];
@@ -212,6 +231,10 @@ START_TEST(test_tl_pointer_sub)
      uint16_t p_uint16[2];
      uint8_t p_uint8[2];
      tl_bool_t p_bool[2];
+
+     ck_assert_int_eq(tl_pointer_sub(&p_double[1], &p_double[0], (TL_DOUBLE)), 1);
+     ck_assert_int_eq(tl_pointer_sub(&p_double[0], &p_double[1], (TL_DOUBLE)), -1);
+     ck_assert_int_eq(tl_pointer_sub(&p_double[0], &p_double[0], (TL_DOUBLE)), 0);
 
      ck_assert_int_eq(tl_pointer_sub(&p_float[1], &p_float[0], (TL_FLOAT)), 1);
      ck_assert_int_eq(tl_pointer_sub(&p_float[0], &p_float[1], (TL_FLOAT)), -1);
@@ -249,6 +272,7 @@ END_TEST
 
 START_TEST(test_tl_pointer_add)
 {
+     double p_double[3];
      float p_float[3];
      int32_t p_int32[3];
      int16_t p_int16[3];
@@ -257,6 +281,10 @@ START_TEST(test_tl_pointer_add)
      uint16_t p_uint16[3];
      uint8_t p_uint8[3];
      tl_bool_t p_bool[3];
+
+     ck_assert_ptr_eq(tl_pointer_add(&p_double[1], 1, (TL_DOUBLE)), &p_double[2]);
+     ck_assert_ptr_eq(tl_pointer_add(&p_double[1], -1, (TL_DOUBLE)), &p_double[0]);
+     ck_assert_ptr_eq(tl_pointer_add(&p_double[1], 0, (TL_DOUBLE)), &p_double[1]);
 
      ck_assert_ptr_eq(tl_pointer_add(&p_float[1], 1, (TL_FLOAT)), &p_float[2]);
      ck_assert_ptr_eq(tl_pointer_add(&p_float[1], -1, (TL_FLOAT)), &p_float[0]);
@@ -294,6 +322,7 @@ END_TEST
 
 START_TEST(test_tl_pointer_assign)
 {
+     double p_double[2] = {0, 1};
      float p_float[2] = {0, 1};
      int32_t p_int32[2] = {0, 1};
      int16_t p_int16[2] = {0, 1};
@@ -302,6 +331,9 @@ START_TEST(test_tl_pointer_assign)
      uint16_t p_uint16[2] = {0, 1};
      uint8_t p_uint8[2] = {0, 1};
      tl_bool_t p_bool[2] = {0, 1};
+
+     tl_pointer_assign(p_double, 0, p_double, 1, (TL_DOUBLE));
+     ck_assert(p_double[0] == p_double[1]);
 
      tl_pointer_assign(p_float, 0, p_float, 1, (TL_FLOAT));
      ck_assert(p_float[0] == p_float[1]);
@@ -332,7 +364,8 @@ END_TEST
 START_TEST(test_tl_fprintf)
 {
      FILE *fp;
-     float val_float = 1.2345;
+     double val_double = 0.12345;
+     float val_float = 0.12345;
      int32_t val_int32 = -1;
      int16_t val_int16 = -1;
      int8_t val_int8 = -1;
@@ -344,10 +377,18 @@ START_TEST(test_tl_fprintf)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
+     ck_assert_int_ge(tl_fprintf(fp, NULL, &val_double, TL_DOUBLE), 0);
+     rewind(fp);
+     ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
+     ck_assert_str_eq(s, "0.123");
+     fclose(fp);
+
+     fp = tmpfile();
+     ck_assert_ptr_ne(fp, NULL);
      ck_assert_int_ge(tl_fprintf(fp, NULL, &val_float, TL_FLOAT), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
-     ck_assert_str_eq(s, "1.235");
+     ck_assert_str_eq(s, "0.123");
      fclose(fp);
 
      fp = tmpfile();
@@ -355,7 +396,15 @@ START_TEST(test_tl_fprintf)
      ck_assert_int_ge(tl_fprintf(fp, "%.1f", &val_float, TL_FLOAT), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
-     ck_assert_str_eq(s, "1.2");
+     ck_assert_str_eq(s, "0.1");
+     fclose(fp);
+
+     fp = tmpfile();
+     ck_assert_ptr_ne(fp, NULL);
+     ck_assert_int_ge(tl_fprintf(fp, "%.1f", &val_double, TL_DOUBLE), 0);
+     rewind(fp);
+     ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
+     ck_assert_str_eq(s, "0.1");
      fclose(fp);
 
      fp = tmpfile();
@@ -419,7 +468,8 @@ END_TEST
 START_TEST(test_tl_fprintf_getfunc)
 {
      FILE *fp;
-     float val_float = 1.2345;
+     double val_double = 0.12345;
+     float val_float = 0.12345;
      int32_t val_int32 = -1;
      int16_t val_int16 = -1;
      int8_t val_int8 = -1;
@@ -432,11 +482,20 @@ START_TEST(test_tl_fprintf_getfunc)
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
+     gfprintf_func = tl_fprintf_getfunc(TL_DOUBLE);
+     ck_assert_int_ge(gfprintf_func(fp, NULL, &val_double), 0);
+     rewind(fp);
+     ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
+     ck_assert_str_eq(s, "0.123");
+     fclose(fp);
+
+     fp = tmpfile();
+     ck_assert_ptr_ne(fp, NULL);
      gfprintf_func = tl_fprintf_getfunc(TL_FLOAT);
      ck_assert_int_ge(gfprintf_func(fp, NULL, &val_float), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
-     ck_assert_str_eq(s, "1.235");
+     ck_assert_str_eq(s, "0.123");
      fclose(fp);
 
      fp = tmpfile();
@@ -445,7 +504,16 @@ START_TEST(test_tl_fprintf_getfunc)
      ck_assert_int_ge(gfprintf_func(fp, "%.1f", &val_float), 0);
      rewind(fp);
      ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
-     ck_assert_str_eq(s, "1.2");
+     ck_assert_str_eq(s, "0.1");
+     fclose(fp);
+
+     fp = tmpfile();
+     ck_assert_ptr_ne(fp, NULL);
+     gfprintf_func = tl_fprintf_getfunc(TL_DOUBLE);
+     ck_assert_int_ge(gfprintf_func(fp, "%.1f", &val_double), 0);
+     rewind(fp);
+     ck_assert_ptr_ne(fgets(s, 10, fp), NULL);
+     ck_assert_str_eq(s, "0.1");
      fclose(fp);
 
      fp = tmpfile();
@@ -515,6 +583,7 @@ END_TEST
 
 START_TEST(test_tl_cmp)
 {
+     double val1_double = 1, val2_double = 2;
      float val1_float = 1, val2_float = 2;
      int32_t val1_int32 = 1, val2_int32 = 2;
      int16_t val1_int16 = 1, val2_int16 = 2;
@@ -523,6 +592,10 @@ START_TEST(test_tl_cmp)
      uint16_t val1_uint16 = 1, val2_uint16 = 2;
      uint8_t val1_uint8 = 1, val2_uint8 = 2;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE;
+
+     ck_assert(tl_cmp(&val1_double, &val2_double, TL_DOUBLE) < 0);
+     ck_assert(tl_cmp(&val2_double, &val1_double, TL_DOUBLE) > 0);
+     ck_assert(tl_cmp(&val1_double, &val1_double, TL_DOUBLE) == 0);
 
      ck_assert(tl_cmp(&val1_float, &val2_float, TL_FLOAT) < 0);
      ck_assert(tl_cmp(&val2_float, &val1_float, TL_FLOAT) > 0);
@@ -560,6 +633,7 @@ END_TEST
 
 START_TEST(test_tl_cmp_getfunc)
 {
+     double val1_double = 1, val2_double = 2;
      float val1_float = 1, val2_float = 2;
      int32_t val1_int32 = 1, val2_int32 = 2;
      int16_t val1_int16 = 1, val2_int16 = 2;
@@ -569,6 +643,11 @@ START_TEST(test_tl_cmp_getfunc)
      uint8_t val1_uint8 = 1, val2_uint8 = 2;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE;
      tl_cmp_func gcmp_func;
+
+     gcmp_func = tl_cmp_getfunc(TL_DOUBLE);
+     ck_assert(gcmp_func(&val1_double, &val2_double) < 0);
+     ck_assert(gcmp_func(&val2_double, &val1_double) > 0);
+     ck_assert(gcmp_func(&val1_double, &val1_double) == 0);
 
      gcmp_func = tl_cmp_getfunc(TL_FLOAT);
      ck_assert(gcmp_func(&val1_float, &val2_float) < 0);
@@ -614,6 +693,7 @@ END_TEST
 
 START_TEST(test_tl_elew)
 {
+     double val1_double = 1, val2_double = 2, val3_double;
      float val1_float = 1, val2_float = 2, val3_float;
      int32_t val1_int32 = 1, val2_int32 = 2, val3_int32;
      int16_t val1_int16 = 1, val2_int16 = 2, val3_int16;
@@ -624,6 +704,9 @@ START_TEST(test_tl_elew)
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE, val3_bool;
 
      /* TL_MUL */
+     tl_elew(&val1_double, &val2_double, &val3_double, TL_MUL, TL_DOUBLE);
+     ck_assert(val3_double == 2);
+
      tl_elew(&val1_float, &val2_float, &val3_float, TL_MUL, TL_FLOAT);
      ck_assert(val3_float == 2);
 
@@ -649,6 +732,9 @@ START_TEST(test_tl_elew)
      ck_assert(val3_bool == TL_FALSE);
 
      /* TL_DIV */
+     tl_elew(&val2_double, &val1_double, &val3_double, TL_DIV, TL_DOUBLE);
+     ck_assert(val3_double == 2);
+
      tl_elew(&val2_float, &val1_float, &val3_float, TL_DIV, TL_FLOAT);
      ck_assert(val3_float == 2);
 
@@ -674,6 +760,9 @@ START_TEST(test_tl_elew)
      /* ck_assert(val3_bool == 2); */
 
      /* TL_SUM */
+     tl_elew(&val2_double, &val1_double, &val3_double, TL_SUM, TL_DOUBLE);
+     ck_assert(val3_double == 3);
+
      tl_elew(&val2_float, &val1_float, &val3_float, TL_SUM, TL_FLOAT);
      ck_assert(val3_float == 3);
 
@@ -699,6 +788,9 @@ START_TEST(test_tl_elew)
      ck_assert(val3_bool == 1);
 
      /* TL_SUB */
+     tl_elew(&val2_double, &val1_double, &val3_double, TL_SUB, TL_DOUBLE);
+     ck_assert(val3_double == 1);
+
      tl_elew(&val2_float, &val1_float, &val3_float, TL_SUB, TL_FLOAT);
      ck_assert(val3_float == 1);
 
@@ -724,6 +816,9 @@ START_TEST(test_tl_elew)
      ck_assert(val3_bool == 1);
 
      /* TL_MAX */
+     tl_elew(&val2_double, &val1_double, &val3_double, TL_MAX, TL_DOUBLE);
+     ck_assert(val3_double == 2);
+
      tl_elew(&val2_float, &val1_float, &val3_float, TL_MAX, TL_FLOAT);
      ck_assert(val3_float == 2);
 
@@ -749,6 +844,9 @@ START_TEST(test_tl_elew)
      ck_assert(val3_bool == 1);
 
      /* TL_MIN */
+     tl_elew(&val2_double, &val1_double, &val3_double, TL_MIN, TL_DOUBLE);
+     ck_assert(val3_double == 1);
+
      tl_elew(&val2_float, &val1_float, &val3_float, TL_MIN, TL_FLOAT);
      ck_assert(val3_float == 1);
 
@@ -774,6 +872,9 @@ START_TEST(test_tl_elew)
      ck_assert(val3_bool == 0);
 
      /* TL_POW */
+     tl_elew(&val2_double, &val1_double, &val3_double, TL_POW, TL_DOUBLE);
+     ck_assert(val3_double == 2);
+
      tl_elew(&val2_float, &val1_float, &val3_float, TL_POW, TL_FLOAT);
      ck_assert(val3_float == 2);
 
@@ -802,6 +903,7 @@ END_TEST
 
 START_TEST(test_tl_elew_getfunc)
 {
+     double val1_double = 1, val2_double = 2, val3_double;
      float val1_float = 1, val2_float = 2, val3_float;
      int32_t val1_int32 = 1, val2_int32 = 2, val3_int32;
      int16_t val1_int16 = 1, val2_int16 = 2, val3_int16;
@@ -811,6 +913,10 @@ START_TEST(test_tl_elew_getfunc)
      uint8_t val1_uint8 = 1, val2_uint8 = 2, val3_uint8;
      tl_bool_t val1_bool = TL_FALSE, val2_bool = TL_TRUE, val3_bool;
      tl_elew_func elew_func;
+
+     elew_func = tl_elew_getfunc(TL_DOUBLE);
+     elew_func(&val2_double, &val1_double, &val3_double, TL_MUL);
+     ck_assert(val3_double == 2);
 
      elew_func = tl_elew_getfunc(TL_FLOAT);
      elew_func(&val2_float, &val1_float, &val3_float, TL_MUL);

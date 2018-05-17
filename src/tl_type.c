@@ -56,13 +56,19 @@ size_t tl_size_of(tl_dtype dtype)
      return dtype_size[dtype];
 }
 
-/* tl_fprintf_func */
 const char *tl_fmt(tl_dtype dtype)
 {
      check_dtype(dtype);
      return dtype_fmt[dtype];
 }
 
+void tl_convert(void *p1, tl_dtype dtype1, void *p2, tl_dtype dtype2)
+{
+     check_dtype(dtype1);
+     check_dtype(dtype2);
+}
+
+/* tl_fprintf_func */
 static int fprintf_double(FILE *fp, const char *fmt, void *p)
 {
      if (!fmt)

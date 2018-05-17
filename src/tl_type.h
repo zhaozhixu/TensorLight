@@ -82,6 +82,7 @@ typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
 
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_fmt(tl_dtype dtype);
+void tl_convert(void *p1, tl_dtype dtype1, void *p2, tl_dtype dtype2);
 
 #define tl_pointer_sub(p1, p2, dtype)           \
      tl_psub((p1), (p2), tl_size_of(dtype))

@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include "tl_util.h"
 
 typedef enum tl_bool_t tl_bool_t;
 enum tl_bool_t {
@@ -73,7 +74,7 @@ enum tl_elew_op {
              tl_padd((ps), (offs), (dsize)), (dsize))
 
 #ifdef __cplusplus
-extern "C" {
+TL_CPPSTART
 #endif
 
 typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
@@ -99,7 +100,7 @@ void tl_elew(void *p1, void *p2, void *r, tl_elew_op elew_op, tl_dtype dtype);
 tl_elew_func tl_elew_getfunc(tl_dtype dtype);
 
 #ifdef __cplusplus
-}
+TL_CPPEND
 #endif
 
 #endif  /* _TL_TYPE_H_ */

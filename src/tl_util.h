@@ -30,7 +30,9 @@
 #define tl_free free
 
 #ifdef __cplusplus
-extern "C" {
+#define TL_CPPSTART extern "C" {
+#define TL_CPPEND }
+TL_CPPSTART
 #endif
 
 void *tl_alloc(size_t size);
@@ -46,7 +48,7 @@ void tl_err_sys(const char *fmt, ...);
 void tl_err_dump(const char *fmt, ...);
 
 #ifdef __cplusplus
-}
+TL_CPPEND
 #endif
 
 #endif	/* _TL_UTIL_H_ */

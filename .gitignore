@@ -5,6 +5,7 @@
 *.out
 check_output.xml
 test_tsl
+core
 GPATH
 GRTAGS
 GTAGS

@@ -2,10 +2,12 @@
 TensorLight is a light-weight tensor operation library for C and CUDA.
 
 ## Prerequisites
+The following steps have been tested for Ubuntu 16.04 but should work with
+other distros as well. 
 Required packages can be installed using the following command:
 
 ```
-sudo apt-get install build-essential perl git
+sudo apt-get install build-essential perl git pkg-config
 ```
 
 If you want to build with CUDA support, you also have to install CUDA 8.0
@@ -24,9 +26,8 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
 2.  Build and install
 
     Use `make` to compile the library and run the tests. Then `make install`
-    to install the library files and headers into the installation directory,
-    or `sudo make install` if you don't have the permissions with the
-    installation directory.
+    to copy the library files and headers into the installation directory,
+    or `sudo make install` if you don't have the permissions with that directory.
     
     There are some options to custom your building and installation process.
     You can just append those options after `make`, such as

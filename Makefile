@@ -88,8 +88,8 @@ uninstall:
 	rm $(INSTALL_HEADERS)
 	rm $(INSTALL_A)
 	rm $(INSTALL_SO)
-	rm $(INSTALL_SO_MAJOR)
 	rm $(INSTALL_SO_MAJOR_MINOR)
+	rm $(INSTALL_SO_MAJOR_MINOR_MICRO)
 	rm $(PKGCONFIG_DIR)/tensorlight.pc
 
 info:

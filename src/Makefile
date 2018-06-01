@@ -37,7 +37,7 @@ INCPATHS = -I/usr/local/include
 LDFLAGS += -L/usr/local/lib -lm
 
 ifeq ($(TL_CUDA), 1)
-CUDA_INSTALL_DIR = /usr/local/cuda
+CUDA_INSTALL_DIR ?= /usr/local/cuda
 INCPATHS += -I$(CUDA_INSTALL_DIR)/include
 LDFLAGS += -L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart -lcublas -lcurand
 endif
@@ -51,14 +51,14 @@ CXXFLAGS += -fPIC
 CUFLAGS += --compiler-options '-fPIC' --linker-options '-Wl,--no-undefined -shared' -shared
 LDFLAGS += -shared -Wl,--no-undefined
 
-SRCS = *.cpp *.cc *.c *.cu
 OBJDIR = obj
 OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(wildcard *.c))
 OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(wildcard *.cpp))
 OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(wildcard *.cc))
+ifeq ($(WITH_CUDA), 1)
+CUOBJS = $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
+else
 CUOBJS =
-ifeq ($(TL_CUDA), 1)
-CUOBJS += $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
 endif
 
 define concat

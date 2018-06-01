@@ -45,8 +45,7 @@ CFLAGS += $(INCPATHS)
 CXXFLAGS += $(INCPATHS)
 CUFLAGS += $(INCPATHS)
 
-OUTDIR = .
-OBJDIR = $(call concat,$(OUTDIR),/obj)
+OBJDIR = obj
 OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(wildcard *.c))
 OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(wildcard *.cpp))
 OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(wildcard *.cc))
@@ -77,11 +76,11 @@ define make-depend-cu
 endef
 
 .PHONY: all clean
-all: $(OUTDIR)/$(TARGET_TEST)
+all: $(TARGET_TEST)
 	$(ECHO) Running tests...
-	$(AT)$(OUTDIR)/$(TARGET_TEST)
+	$(AT)./$(TARGET_TEST)
 
-$(OUTDIR)/$(TARGET_TEST): $(OBJS) $(CUOBJS)
+$(TARGET_TEST): $(OBJS) $(CUOBJS)
 	$(ECHO) Linking: $^ $(SRCOBJS)
 	$(AT)$(CC) -o $@ $^ $(SRCOBJS) $(LDFLAGS)
 

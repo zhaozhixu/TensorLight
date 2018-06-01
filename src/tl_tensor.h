@@ -25,6 +25,10 @@
 
 #include "tl_type.h"
 
+#define TL_MAJOR_VERSION (0)
+#define TL_MINOR_VERSION (1)
+#define TL_MICRO_VERSION (0)
+
 typedef struct tl_tensor tl_tensor;
 struct tl_tensor {
      tl_dtype  dtype;

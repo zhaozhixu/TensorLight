@@ -20,26 +20,28 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
     cd TensorLight
     ```
 
-2.  Build
+2.  Build and install
 
-    Use `make` to compile the library and run the tests.
+    Use `make` to compile the library and run the tests. Then `make install`
+    to install the library files and headers into the installation directory,
+    or `sudo make install` if you don't have the permissions with the
+    installation directory.
+    
     There are some options to custom your building and installation process.
     You can just append those options after `make`, such as
     ```
-    make WITH_CUDA=1 INSTALL_DIR=/usr/local
+    make WITH_CUDA=1
+    sudo make install INSTALL_DIR=/usr/local
     ```
-    
+ 
+    `make` options:
     * WITH_CUDA=[option] set to 1 if you want to build with CUDA
+    
+    `make install` and `make uninstall` options:
     * INSTALL_DIR=[installation directory] default is /usr/local
     * PKGCONFIG_DIR=[pkgconfig directory] default is /usr/lib/pkgconfig
 
-3.  Install
-
-    Use `make install` to install the library files and headers into installation
-    directory, or `sudo make install` if you don't have the permissions with the
-    installation directory.
-
-4.  Other `make` options
+3.  Other `make` options
 
     Use `make info` to see other `make` options.
     Especially, you can use `make clean` to clean up the build directory and all

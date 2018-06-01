@@ -4,9 +4,10 @@
 *.so
 *.out
 check_output.xml
-test_tsl
+test_tensorlight
 core
 GPATH
 GRTAGS
 GTAGS
 obj/
+build/

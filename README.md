@@ -38,7 +38,7 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
  
     `make` options:
     * `WITH_CUDA=<option>` set to 1 if you want to build with CUDA
-    * `CUDA_INSTALL_DIR=<cuda install directory>` default is `/usr/local/cuda`
+    * `CUDA_INSTALL_DIR=<cuda installation directory>` default is `/usr/local/cuda`
     
     `make install` and `make uninstall` options:
     * `INSTALL_DIR=<installation directory>` default is `/usr/local`

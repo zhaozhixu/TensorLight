@@ -10,7 +10,7 @@ sudo apt-get install build-essential perl git
 
 If you want to build with CUDA support, you also have to install CUDA 8.0
 or later according to their website [CUDA Toolkit 8.0](https://developer.nvidia.com/cuda-80-ga2-download-archive).
-Remember to put `nvcc` (usually in /usr/local/cuda/bin) in environment variable `PATH`.
+Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variable `PATH`.
 
 ## Building and Installation
 1.  Clone this repository to your local directory.
@@ -38,11 +38,11 @@ Remember to put `nvcc` (usually in /usr/local/cuda/bin) in environment variable 
  
     `make` options:
     * `WITH_CUDA=<option>` set to 1 if you want to build with CUDA
-    * `CUDA_INSTALL_DIR=<cuda install directory>` default is /usr/local/cuda
+    * `CUDA_INSTALL_DIR=<cuda install directory>` default is `/usr/local/cuda`
     
     `make install` and `make uninstall` options:
-    * `INSTALL_DIR=<installation directory>` default is /usr/local
-    * `PKGCONFIG_DIR=<pkgconfig directory>` default is /usr/lib/pkgconfig
+    * `INSTALL_DIR=<installation directory>` default is `/usr/local`
+    * `PKGCONFIG_DIR=<pkgconfig directory>` default is `/usr/lib/pkgconfig`
 
 3.  Other `make` options
 

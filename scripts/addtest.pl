@@ -68,7 +68,7 @@ my $suite_tpl = <<EOF;
  * SOFTWARE.
  */
 
-#include "test_tsl.h"
+#include "test_tensorlight.h"
 #include "../src/tl_${suite_name}.h"
 
 static void setup(void)
@@ -122,7 +122,7 @@ print TEST $suite_tpl;
 close TEST;
 
 my $declare = "Suite *make_${suite_name}_suite(void);";
-my $header_file = "$root/test/test_tsl.h";
+my $header_file = "$root/test/test_tensorlight.h";
 copy($header_file, "$header_file.bak")
   or die "Cannot backup file $header_file: $!";
 open HEADER_BAK, '<', "$header_file.bak"
@@ -137,7 +137,7 @@ close HEADER;
 close HEADER_BAK;
 
 my $adding_suite = "srunner_add_suite(sr, make_${suite_name}_suite());";
-my $main_file = "$root/test/test_tsl.c";
+my $main_file = "$root/test/test_tensorlight.c";
 copy($main_file, "$main_file.bak")
   or die "Cannot backup file $main_file: $!";
 open MAIN_BAK, '<', "$main_file.bak"

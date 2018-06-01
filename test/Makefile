@@ -1,5 +1,5 @@
 .SUFFIXES:
-TARGET = tsl
+TARGET = tensorlight
 TARGET_TEST = test_$(TARGET)
 
 CC = gcc

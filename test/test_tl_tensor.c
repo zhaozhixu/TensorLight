@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-#include "test_tsl.h"
+#include "test_tensorlight.h"
 #include "../src/tl_tensor.h"
 #include "../src/tl_util.h"
 

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <check.h>
 
-#include "test_tsl.h"
+#include "test_tensorlight.h"
 
 int main(int argc, char **argv)
 {

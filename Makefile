@@ -1,5 +1,5 @@
 .SUFFIXES:
-TARGET = tsl
+TARGET = tensorlight
 MAJOR = 0
 MINOR = 1
 LIBTARGET_A = lib$(TARGET).a

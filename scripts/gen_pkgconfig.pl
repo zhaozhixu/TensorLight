@@ -5,7 +5,7 @@ use strict;
 
 my $usage = <<EOF;
 Usage: $0 PREFIX VERSION OUTDIR
-Generate package information for pkg-config.
+Generate tensorlight package information for pkg-config.
 PREFIX is the directory where the library will be installed.
 VERSION is the library version.
 OUTDIR is the directory where the config file will be generated.
@@ -30,7 +30,7 @@ includedir=${prefix}/include
 Name: TensorLight
 Description: Light-weight Tensor Operation Library
 Version: ${version}
-Libs: -L\$\{libdir\} -ltsl -lm
+Libs: -L\$\{libdir\} -ltensorlight -lm
 Cflags: -I\$\{includedir\}
 EOF
 

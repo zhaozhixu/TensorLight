@@ -1,5 +1,5 @@
 .SUFFIXES:
-TARGET = tsl
+TARGET = tensorlight
 LIBTARGET_A = lib$(TARGET).a
 LIBTARGET_SO = lib$(TARGET).so
 

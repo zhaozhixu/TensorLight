@@ -36,7 +36,7 @@ INCPATHS = -I/usr/local/include `pkg-config --cflags check`
 LDFLAGS += -L/usr/local/lib -lm `pkg-config --libs check` -lpthread
 
 ifeq ($(TL_CUDA), 1)
-CUDA_INSTALL_DIR = /usr/local/cuda
+CUDA_INSTALL_DIR ?= /usr/local/cuda
 INCPATHS += -I$(CUDA_INSTALL_DIR)/include
 LDFLAGS += -L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart -lcublas -lcurand
 endif
@@ -54,7 +54,7 @@ ifeq ($(TL_CUDA), 1)
 CUOBJS += $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
 endif
 
-SRCOBJS = ../src/obj/*.o
+SRCOBJS = ../src/obj/lib$(TARGET).so
 
 define concat
   $1$2$3$4$5$6$7$8

@@ -81,7 +81,7 @@ lib:
 
 clean:
 	$(AT)(cd $(SRC_DIR) && make clean);\
-	(cd $(TEST_DIR) && make clean);\
+	(cd $(TEST_DIR) && make clean)
 	rm -rf $(BUILD_DIR)
 
 uninstall:

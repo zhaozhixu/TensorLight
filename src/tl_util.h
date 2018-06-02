@@ -47,6 +47,18 @@ void tl_err_exit(int error, const char *fmt, ...);
 void tl_err_sys(const char *fmt, ...);
 void tl_err_dump(const char *fmt, ...);
 
+#ifdef TL_CUDA
+#include <cuda_runtime.h>
+
+#define TL_CUDA_CK(status)                                              \
+     do {                                                               \
+          if (status != cudaSuccess)                                    \
+               tl_err_bt("CUDA_ERROR(%d) %s: %s\n", status,             \
+                         cudaGetErrorName(status), cudaGetErrorString(status)); \
+     } while(0)
+#endif  /* TL_CUDA */
+
+
 #ifdef __cplusplus
 TL_CPPEND
 #endif

@@ -35,8 +35,11 @@ endif
 INCPATHS = -I/usr/local/include `pkg-config --cflags check`
 LDFLAGS += -L/usr/local/lib -lm `pkg-config --libs check` -lpthread
 
-ifeq ($(TL_CUDA), 1)
+ifeq ($(WITH_CUDA), 1)
 CUDA_INSTALL_DIR ?= /usr/local/cuda
+CFLAGS += -DTL_CUDA
+CXXFLAGS += -DTL_CUDA
+CUFLAGS += -DTL_CUDA
 INCPATHS += -I$(CUDA_INSTALL_DIR)/include
 LDFLAGS += -L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart -lcublas -lcurand
 endif
@@ -50,7 +53,7 @@ OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(wildcard *.c))
 OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(wildcard *.cpp))
 OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(wildcard *.cc))
 CUOBJS =
-ifeq ($(TL_CUDA), 1)
+ifeq ($(WITH_CUDA), 1)
 CUOBJS += $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
 endif
 

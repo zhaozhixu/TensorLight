@@ -312,9 +312,9 @@ tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
      assert(start < src->dims[axis] && start >= 0);
      assert(len + start <= src->dims[axis]);
      if (dst) {
+#ifndef NDEBUG
           assert(src->dtype == dst->dtype);
           assert(dst->ndim == src->ndim);
-#ifndef NDEBUG
           for (i = 0; i < src->ndim; i++)
                assert(i == axis ? dst->dims[i] == len :
                       dst->dims[i] == src->dims[i]);
@@ -387,8 +387,8 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      assert(src);
      assert(axis < src->ndim && axis >= 0);
      if (dst) {
-          assert(src->dtype == dst->dtype);
 #ifndef NDEBUG
+          assert(src->dtype == dst->dtype);
           for (i = 0; i < dst->ndim; i++)
                assert(i == axis ? dst->dims[i] == 1 :
                       dst->dims[i] == src->dims[i]);
@@ -397,10 +397,12 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
           dst = tl_tensor_create_slice(src, axis, 1, src->dtype);
      }
      if (arg) {
+#ifndef NDEBUG
           assert(arg->dtype == TL_INT32);
           for (i = 0; i < arg->ndim; i++)
                assert(i == axis ? arg->dims[i] == 1 :
                       arg->dims[i] == src->dims[i]);
+#endif
      }
 
      for (i = axis+1, thread_num = 1; i < dst->ndim; i++)
@@ -505,13 +507,13 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      for (i = 0; i < src->ndim; i++)
           assert(tmp[i] && "axes don't match src tensor's shape");
      tl_free(tmp);
-#endif
      assert(src);
+#endif
      if (dst) {
+#ifndef NDEBUG
           assert(src->dtype == dst->dtype);
           assert(src->len == dst->len);
           assert(src->ndim == dst->ndim);
-#ifndef NDEBUG
           for (i = 0; i < dst->ndim; i++)
                assert(src->dims[axes[i]] = dst->dims[i]);
 #endif

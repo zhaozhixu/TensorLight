@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <limits.h>
+#include <stdint.h>
 #include <float.h>
 #include "tl_type.h"
 

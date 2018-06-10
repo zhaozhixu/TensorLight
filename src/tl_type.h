@@ -26,17 +26,17 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include "tl_util.h"
 
-typedef enum tl_bool_t tl_bool_t;
 enum tl_bool_t {
      TL_FALSE = 0,
      TL_TRUE = 1
 };
+typedef enum tl_bool_t tl_bool_t;
 
 /* keep the size and the enum order in sync with tl_type.c */
 #define TL_DTYPE_SIZE 9
-typedef enum tl_dtype tl_dtype;
 enum tl_dtype {
      TL_DOUBLE,
      TL_FLOAT,
@@ -48,10 +48,10 @@ enum tl_dtype {
      TL_UINT8,
      TL_BOOL,
 };
+typedef enum tl_dtype tl_dtype;
 
 /* keep the size and the enum order in sync with tl_type.c */
 #define TL_ELEW_OP_SIZE 7
-typedef enum tl_elew_op tl_elew_op;
 enum tl_elew_op {
      TL_MUL,
      TL_DIV,
@@ -61,6 +61,7 @@ enum tl_elew_op {
      TL_MIN,
      TL_POW
 };
+typedef enum tl_elew_op tl_elew_op;
 
 /* pointer subtraction and pointer addition */
 #define tl_psub(p1, p2, dsize)                                  \
@@ -77,13 +78,10 @@ typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
 typedef int (*tl_cmp_func) (void *p1, void *p2);
 typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
 
-#ifdef __cplusplus
-TL_CPPSTART
-#endif
-
-size_t tl_size_of(tl_dtype dtype);
-const char *tl_fmt(tl_dtype dtype);
-void tl_cast(void *p1, tl_dtype dtype1, void *p2, tl_dtype dtype2);
+static inline void tl_check_dtype(tl_dtype dtype)
+{
+     assert(dtype >= 0 && dtype < TL_DTYPE_SIZE);
+}
 
 #define tl_pointer_sub(p1, p2, dtype)           \
      tl_psub((p1), (p2), tl_size_of(dtype))
@@ -91,6 +89,14 @@ void tl_cast(void *p1, tl_dtype dtype1, void *p2, tl_dtype dtype2);
      tl_padd((p), (offset), tl_size_of(dtype))
 #define tl_pointer_assign(pd, offd, ps, offs, dtype)            \
      tl_passign((pd), (offd), (ps), (offs), tl_size_of(dtype))
+
+#ifdef __cplusplus
+TL_CPPSTART
+#endif
+
+size_t tl_size_of(tl_dtype dtype);
+const char *tl_fmt(tl_dtype dtype);
+void tl_cast(void *p1, tl_dtype dtype1, const void *p2, tl_dtype dtype2);
 
 int tl_fprintf(FILE* fp, const char* fmt,void* p, tl_dtype dtype);
 tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);

@@ -22,7 +22,6 @@
 
 #include <math.h>
 #include <limits.h>
-#include <assert.h>
 #include "tl_util.h"
 #include "tl_type.h"
 
@@ -45,27 +44,16 @@ static const char *dtype_fmt[TL_DTYPE_SIZE] = {
      "%.3f", "%.3f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"
 };
 
-static inline void check_dtype(tl_dtype dtype)
-{
-     assert(dtype >= 0 && dtype < TL_DTYPE_SIZE);
-}
-
 size_t tl_size_of(tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return dtype_size[dtype];
 }
 
 const char *tl_fmt(tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return dtype_fmt[dtype];
-}
-
-void tl_cast(void *p1, tl_dtype dtype1, void *p2, tl_dtype dtype2)
-{
-     check_dtype(dtype1);
-     check_dtype(dtype2);
 }
 
 /* tl_fprintf_func */
@@ -155,13 +143,13 @@ static tl_fprintf_func fprintf_func[TL_DTYPE_SIZE] = {
 
 int tl_fprintf(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return fprintf_func[dtype](fp, fmt, p);
 }
 
 tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return fprintf_func[dtype];
 }
 
@@ -225,13 +213,13 @@ static tl_cmp_func cmp_func[TL_DTYPE_SIZE] = {
 
 int tl_cmp(void *p1, void *p2, tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return cmp_func[dtype](p1, p2);
 }
 
 tl_cmp_func tl_cmp_getfunc(tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return cmp_func[dtype];
 }
 
@@ -276,7 +264,7 @@ static void min_double(void *p1, void *p2, void *r)
 
 static void pow_double(void *p1, void *p2, void *r)
 {
-     *(double *)r = powf(*(double *)p1, *(double *)p2);
+     *(double *)r = pow(*(double *)p1, *(double *)p2);
 }
 
 static elew_op_func elew_op_double[TL_ELEW_OP_SIZE] = {
@@ -788,12 +776,12 @@ static tl_elew_func elew_func[TL_DTYPE_SIZE] = {
 
 void tl_elew(void *p1, void *p2, void *r, tl_elew_op elew_op, tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      elew_func[dtype](p1, p2, r, elew_op);
 }
 
 tl_elew_func tl_elew_getfunc(tl_dtype dtype)
 {
-     check_dtype(dtype);
+     tl_check_dtype(dtype);
      return elew_func[dtype];
 }

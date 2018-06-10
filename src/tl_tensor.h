@@ -29,7 +29,6 @@
 #define TL_MINOR_VERSION (1)
 #define TL_MICRO_VERSION (0)
 
-typedef struct tl_tensor tl_tensor;
 struct tl_tensor {
      tl_dtype  dtype;
      int       len;
@@ -37,6 +36,7 @@ struct tl_tensor {
      int      *dims;
      void     *data;
 };
+typedef struct tl_tensor tl_tensor;
 
 #ifdef __cplusplus
 TL_CPPSTART

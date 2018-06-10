@@ -7,7 +7,7 @@ other distros as well.
 Required packages can be installed using the following command:
 
 ```
-sudo apt-get install build-essential perl git pkg-config
+sudo apt-get install build-essential perl git pkg-config check
 ```
 
 If you want to build with CUDA support, you also have to install CUDA 8.0

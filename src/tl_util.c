@@ -57,7 +57,7 @@ void *tl_repeat(void *data, size_t size, int times)
 
      assert(data && times > 0);
      dst = p = tl_alloc(size * times);
-     for (i = 0; i < times; i++, p = (char *)p + size * times)
+     for (i = 0; i < times; i++, p = (char *)p + size)
           memmove(p, data, size);
      return dst;
 }

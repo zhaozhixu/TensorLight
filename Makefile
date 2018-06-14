@@ -1,8 +1,5 @@
-.SUFFIXES:
-TARGET = tensorlight
-MAJOR = 0
-MINOR = 1
-MICRO = 0
+include config.mk
+TARGET ?= tensorlight
 LIBTARGET_A = lib$(TARGET).a
 LIBTARGET_SO = lib$(TARGET).so
 LIBTARGET_SO_MAJOR_MINOR = $(LIBTARGET_SO).$(MAJOR).$(MINOR)
@@ -11,13 +8,13 @@ LIBTARGET_SO_MAJOR_MINOR_MICRO = $(LIBTARGET_SO).$(MAJOR).$(MINOR).$(MICRO)
 SRC_DIR = src
 OBJ_DIR = $(SRC_DIR)/obj
 TEST_DIR = test
-BUILD_DIR = build
+BUILD_DIR ?= build
 BUILD_INCLUDE_DIR = $(BUILD_DIR)/include
 BUILD_LIB_DIR = $(BUILD_DIR)/lib
 INSTALL_DIR ?= /usr/local
 INSTALL_INCLUDE_DIR = $(INSTALL_DIR)/include
 INSTALL_LIB_DIR = $(INSTALL_DIR)/lib
-PKGCONFIG_DIR ?= /usr/lib/pkgconfig
+PKGCONFIG_DIR ?= /usr/local/lib/pkgconfig
 
 OBJ_A = $(OBJ_DIR)/$(LIBTARGET_A)
 OBJ_SO = $(OBJ_DIR)/$(LIBTARGET_SO)

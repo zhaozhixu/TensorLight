@@ -98,7 +98,7 @@ size_t tl_size_of(tl_dtype dtype);
 const char *tl_fmt(tl_dtype dtype);
 void tl_cast(void *p1, tl_dtype dtype1, const void *p2, tl_dtype dtype2);
 
-int tl_fprintf(FILE* fp, const char* fmt,void* p, tl_dtype dtype);
+int tl_fprintf(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
 tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);
 int tl_cmp(void *p1, void *p2, tl_dtype dtype);
 tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);

@@ -3,6 +3,7 @@
 *.o
 *.so
 *.out
+*.el
 check_output.xml
 test_tensorlight
 core

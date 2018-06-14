@@ -38,7 +38,6 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
     ./configure --cuda-enable=1
     ```
     if you want to build with CUDA support.
-    
     Detailed `./configure` options can be printed using `./configure -h`.
 
     After that, use `make` to compile the library and run the tests. Then `make install`

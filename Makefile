@@ -67,7 +67,7 @@ all: lib test
 
 install:
 	$(call make-install-dir)
-	$(AT)perl scripts/gen_pkgconfig.pl $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
+	$(AT)perl scripts/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
 
 test: lib
 	$(AT)(cd $(TEST_DIR) && make)
@@ -87,7 +87,7 @@ uninstall:
 	rm $(INSTALL_SO)
 	rm $(INSTALL_SO_MAJOR_MINOR)
 	rm $(INSTALL_SO_MAJOR_MINOR_MICRO)
-	rm $(PKGCONFIG_DIR)/tensorlight.pc
+	rm $(PKGCONFIG_DIR)/$(TARGET).pc
 
 info:
 	@echo "Available make targets:"

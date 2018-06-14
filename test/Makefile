@@ -1,4 +1,5 @@
 include ../config.mk
+
 TARGET ?= tensorlight
 TARGET_TEST = test_$(TARGET)
 

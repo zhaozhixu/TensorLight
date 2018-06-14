@@ -8,14 +8,16 @@ Usage: $0 [<option>[=<value>]...
 Generate configuration makefile for building TensorLight.
 
 options:
-  -h, --help  print this information
-  --target=<name>  target name, default is tensorlight
-  --build-dir=<path>  building directory, default is build
-  --install-dir=<path>  installation directory, default is /usr/local
-  --pkgconfig-dir=<path>  pkgconfig directory, default is /usr/local/lib/pkgconfig
-  --cuda-enable=<value>  set to 1 if build with CUDA, default is 0
-  --cuda-install-dir=<path>  cuda installation directory, default is /usr/local/cuda
-  --debug=1 set to 1 when debugging, default is 0
+  -h, --help                 print this information
+  --target=<name>            target name, default is tensorlight
+  --build-dir=<path>         building directory, default is build
+  --install-dir=<path>       installation directory, default is /usr/local
+  --pkgconfig-dir=<path>     pkgconfig directory, default is
+                             /usr/local/lib/pkgconfig
+  --cuda-enable=<value>      set to 1 if build with CUDA, default is 0
+  --cuda-install-dir=<path>  cuda installation directory, default is
+                             /usr/local/cuda
+  --debug=<value>            set to 1 when debugging, default is 0
 EOF
 
 # default options

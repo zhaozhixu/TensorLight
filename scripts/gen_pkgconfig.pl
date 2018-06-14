@@ -29,7 +29,7 @@ my $config_template = <<EOF;
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: $(target)
+Name: ${target}
 Description: Light-weight Tensor Operation Library
 Version: ${version}
 Libs: -L\$\{libdir\} -ltensorlight -lm

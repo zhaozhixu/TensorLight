@@ -25,14 +25,14 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
 
 2.  Build and install
 
-    First configure your installation using:
+    First, configure your installation using:
     
     ```
     chmod +x configure
     ./configure
     ```
-    There are some options to custom your building and installation process.
-    You can just append those options after `./configure`, such as
+    There are options to custom your building and installation process.
+    You can just append options after `./configure`, such as:
     
     ```
     ./configure CUDA_ENABLE=1
@@ -41,25 +41,13 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
     After that, use `make` to compile the library and run the tests. Then `make install`
     to copy the library files and headers into the installation directory,
     or `sudo make install` if you don't have the permissions with that directory.
-
-    Detailed `./configure` options can be printed using `./configure -h`:
     
     ```
-    Usage: ./configure [<option>[=<value>]...
-    Generate configuration makefile for building TensorLight.
-
-    options:
-      -h, --help                 print this information
-      --target=<name>            target name, default is tensorlight
-      --build-dir=<path>         building directory, default is build
-      --install-dir=<path>       installation directory, default is /usr/local
-      --pkgconfig-dir=<path>     pkgconfig directory, default is
-                                 /usr/local/lib/pkgconfig
-      --cuda-enable=<value>      set to 1 if build with CUDA, default is 0
-      --cuda-install-dir=<path>  cuda installation directory, default is
-                                 /usr/local/cuda
-      --debug=<value>            set to 1 when debugging, default is 0
+    make
+    sudo make install
     ```
+
+    Detailed `./configure` options can be printed using `./configure -h`:
 
 3.  Other `make` options
 

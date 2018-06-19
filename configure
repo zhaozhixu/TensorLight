@@ -14,10 +14,10 @@ options:
   --install-dir=<path>       installation directory, default is /usr/local
   --pkgconfig-dir=<path>     pkgconfig directory, default is
                              /usr/local/lib/pkgconfig
-  --cuda-enable=<value>      set to 1 if build with CUDA, default is 0
+  --cuda-enable=<value>      set to yes if build with CUDA, default is no
   --cuda-install-dir=<path>  cuda installation directory, default is
                              /usr/local/cuda
-  --debug=<value>            set to 1 when debugging, default is 0
+  --debug=<value>            set to yes when debugging, default is no
 EOF
 
 # default options
@@ -26,9 +26,9 @@ my %opts = (
             "BUILD_DIR" => "build",
             "INSTALL_DIR" => "/usr/local",
             "PKGCONFIG_DIR" => "/usr/local/lib/pkgconfig",
-            "CUDA_ENABLE" => "0",
+            "CUDA_ENABLE" => "no",
             "CUDA_INSTALL_DIR" => "/usr/local/cuda",
-            "DEBUG" => "0",
+            "DEBUG" => "no",
            );
 
 # parse arguments

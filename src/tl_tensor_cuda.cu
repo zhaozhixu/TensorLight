@@ -61,21 +61,12 @@ static inline __device__ int compute_length(int ndim, const int *dims)
      return len;
 }
 
-static inline __device__ void check_dim(int ndim, const int *dims)
-{
-     int i;
+/* static inline __device__ void check_dim(int ndim, const int *dims) */
+/* { */
+/*      int i; */
 
-     assert(ndim > 0);
-     assert(dims);
-     for (i = 0; i < ndim; i++)
-          assert(dims[i] > 0);
-}
-
-static inline void check_tensor(const tl_tensor *t)
-{
-     assert(t);
-     assert(t->data);
-     assert(is_device_mem(t->data));
-     assert(t->dtype >= 0 && t->dtype < TL_DTYPE_SIZE);
-     assert(t->len == compute_length(t->ndim, t->dims));
-}
+/*      assert(ndim > 0); */
+/*      assert(dims); */
+/*      for (i = 0; i < ndim; i++) */
+/*           assert(dims[i] > 0); */
+/* } */

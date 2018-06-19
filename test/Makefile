@@ -21,7 +21,7 @@ CXXFLAGS = -std=c++11 -Wall
 CUFLAGS = -m64 -arch=sm_30 -ccbin $(CXX)
 LDFLAGS = $(CFLAGS)
 
-ifeq ($(DEBUG), 1)
+ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 -DTL_DEBUG
 CXXFLAGS += -g -O0 -DTL_DEBUG
 CUFLAGS += -lineinfo
@@ -36,7 +36,7 @@ endif
 INCPATHS = -I/usr/local/include `pkg-config --cflags check`
 LDFLAGS += -L/usr/local/lib -lm `pkg-config --libs check` -lpthread
 
-ifeq ($(CUDA_ENABLE), 1)
+ifeq ($(CUDA_ENABLE), yes)
 CUDA_INSTALL_DIR ?= /usr/local/cuda
 CFLAGS += -DTL_CUDA
 CXXFLAGS += -DTL_CUDA
@@ -54,7 +54,7 @@ OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(wildcard *.c))
 OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(wildcard *.cpp))
 OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(wildcard *.cc))
 CUOBJS =
-ifeq ($(CUDA_ENABLE), 1)
+ifeq ($(CUDA_ENABLE), yes)
 CUOBJS += $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
 endif
 

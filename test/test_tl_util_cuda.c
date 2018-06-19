@@ -20,8 +20,9 @@
  * SOFTWARE.
  */
 
+#ifdef TL_CUDA
+
 #include "test_tensorlight.h"
-#include "../src/tl_util.h"
 
 static void setup(void)
 {
@@ -95,3 +96,6 @@ Suite *make_util_cuda_suite(void)
 
      return s;
 }
+
+#endif /* TL_CUDA */
+

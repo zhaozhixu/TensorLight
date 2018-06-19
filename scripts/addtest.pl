@@ -6,26 +6,39 @@ use File::Copy;
 use Cwd 'abs_path';
 
 my $usage = <<EOF;
-Usage: $0 ROOT MOD_NAME TEST_NAME(s)
+Usage: $0 [-c <CONDITION>] ROOT MOD_NAME TEST_NAME(s)
 Generate test templates for a module.
+CONDITION is an optional condition macro.
 ROOT is the path of the project root.
 MOD_NAME is the module name.
 TEST_NAME is the test name, usually the name of function to be tested.
 
 Example:
-	scripts/addtest.pl . mod mod_func1 mod_func2
+	scripts/addtest.pl -c TL_CUDA . mod mod_func1 mod_func2
 
 	Executing this example from project root will generate test templates
 	test_tl_mod_func1 and test_tl_mod_func2 for module tl_mod in file
- 	ROOT/test/test_tl_mod.c
+ 	ROOT/test/test_tl_mod.c, and will be compiled only if TL_CUDA has been
+    defined.
 EOF
-if (@ARGV < 2) {
+if (@ARGV < 1 or $ARGV[0] eq "-h" or $ARGV[0] eq "--help") {
   print $usage;
   exit;
 }
-my $root = abs_path($ARGV[0]);
-my $suite_name = $ARGV[1];
-my @test_names = @ARGV[2..$#ARGV];
+
+my $condition;
+my $condition_start = "";
+my $condition_end = "";
+if ($ARGV[0] eq "-c") {
+  shift @ARGV;
+  $condition = shift @ARGV;
+  $condition_start = "\n#ifdef $condition\n";
+  $condition_end = "\n#endif /* $condition */\n"
+}
+
+my $root = abs_path(shift @ARGV);
+my $suite_name = shift @ARGV;
+my @test_names = @ARGV;
 
 my $tests_str = "";
 my $test_add_str = "";
@@ -67,9 +80,8 @@ my $suite_tpl = <<EOF;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
+$condition_start
 #include "test_tensorlight.h"
-#include "../src/tl_${suite_name}.h"
 
 static void setup(void)
 {
@@ -97,6 +109,7 @@ $test_add_str
 
      return s;
 }
+$condition_end
 EOF
 
 my $test_file = "$root/test/test_tl_${suite_name}.c";
@@ -130,7 +143,11 @@ open HEADER_BAK, '<', "$header_file.bak"
 open HEADER, '>', $header_file
   or die "Cannot open $header_file: $!";
 while (<HEADER_BAK>) {
-  s|/\* end of declarations \*/|$declare\n/* end of declarations */|;
+  if (defined $condition) {
+    s|#endif /\* TL_CUDA \*/|$declare\n#endif /* TL_CUDA */|;
+  } else {
+    s|/\* end of normal declarations \*/|$declare\n/* end of normal declarations */|;
+  }
   print HEADER;
 }
 close HEADER;
@@ -145,7 +162,11 @@ open MAIN_BAK, '<', "$main_file.bak"
 open MAIN, '>', $main_file
   or die "Cannot open $main_file: $!";
 while (<MAIN_BAK>) {
-  s|/\* end of adding suites \*/|$adding_suite\n     /* end of adding suites */|;
+    if (defined $condition) {
+      s|#endif /\* TL_CUDA \*/|     $adding_suite\n#endif /* TL_CUDA */|;
+    } else {
+      s|/\* end of adding normal suites \*/|$adding_suite\n     /* end of adding normal suites */|;
+    }
   print MAIN;
 }
 close MAIN;

@@ -23,6 +23,7 @@
 #ifdef TL_CUDA
 
 #include "test_tensorlight.h"
+#include "../src/tl_util.h"
 
 static void setup(void)
 {
@@ -34,6 +35,13 @@ static void teardown(void)
 
 START_TEST(test_tl_is_device_mem)
 {
+     void *p_d, *p_h;
+
+     p_d = tl_alloc_cuda(sizeof(float));
+     p_h = tl_alloc(sizeof(float));
+
+     ck_assert_int_eq(tl_is_device_mem(p_d), 1);
+     ck_assert_int_eq(tl_is_device_mem(p_h), 0);
 }
 END_TEST
 

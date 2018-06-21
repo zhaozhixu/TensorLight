@@ -144,7 +144,7 @@ open HEADER, '>', $header_file
   or die "Cannot open $header_file: $!";
 while (<HEADER_BAK>) {
   if (defined $condition) {
-    s|#endif /\* TL_CUDA \*/|$declare\n#endif /* TL_CUDA */|;
+    s|#endif /\* $condition \*/|$declare\n#endif /* $condition */|;
   } else {
     s|/\* end of normal declarations \*/|$declare\n/* end of normal declarations */|;
   }
@@ -163,7 +163,7 @@ open MAIN, '>', $main_file
   or die "Cannot open $main_file: $!";
 while (<MAIN_BAK>) {
     if (defined $condition) {
-      s|#endif /\* TL_CUDA \*/|     $adding_suite\n#endif /* TL_CUDA */|;
+      s|#endif /\* $condition \*/|     $adding_suite\n#endif /* $condition */|;
     } else {
       s|/\* end of adding normal suites \*/|$adding_suite\n     /* end of adding normal suites */|;
     }

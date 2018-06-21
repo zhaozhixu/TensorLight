@@ -56,7 +56,6 @@ void tl_err_dump(const char *fmt, ...);
                tl_err_bt("CUDA_ERROR(%d) %s: %s\n", status,             \
                          cudaGetErrorName(status), cudaGetErrorString(status)); \
      } while(0)
-#endif  /* TL_CUDA */
 
 int tl_is_device_mem(const void *ptr);
 void *tl_alloc_cuda(size_t size);
@@ -66,6 +65,7 @@ void *tl_clone_d2d(const void *src, size_t size);
 void *tl_repeat_h2d(void *data, size_t size, int times);
 void *tl_repeat_d2h(void *data, size_t size, int times);
 void *tl_repeat_d2d(void *data, size_t size, int times);
+#endif  /* TL_CUDA */
 
 #ifdef __cplusplus
 TL_CPPEND

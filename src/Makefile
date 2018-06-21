@@ -19,7 +19,7 @@ endif
 
 CFLAGS = -Wall
 CXXFLAGS = -std=c++11 -Wall
-CUFLAGS = -m64 -arch=sm_30 -ccbin $(CXX)
+CUFLAGS = -m64 -arch=sm_30 -ccbin $(CC)
 LDFLAGS = $(CFLAGS)
 
 ifeq ($(DEBUG), yes)
@@ -37,7 +37,7 @@ endif
 INCPATHS = -I/usr/local/include
 LDFLAGS += -L/usr/local/lib -lm
 
-ifeq ($(CUDA_ENABLE), yes)
+ifeq ($(WITH_CUDA), yes)
 CUDA_INSTALL_DIR ?= /usr/local/cuda
 CFLAGS += -DTL_CUDA
 CXXFLAGS += -DTL_CUDA
@@ -59,7 +59,7 @@ OBJDIR = obj
 OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(wildcard *.c))
 OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(wildcard *.cpp))
 OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(wildcard *.cc))
-ifeq ($(CUDA_ENABLE), yes)
+ifeq ($(WITH_CUDA), yes)
 CUOBJS = $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
 else
 CUOBJS =

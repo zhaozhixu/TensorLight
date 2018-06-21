@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+#ifdef TL_CUDA
+
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
@@ -32,14 +34,19 @@ int tl_is_device_mem(const void *ptr)
 {
      assert(ptr);
      cudaPointerAttributes attributes;
-     TL_CUDA_CK(cudaPointerGetAttributes(&attributes, ptr));
+     cudaError_t status;
+
+     status = cudaPointerGetAttributes(&attributes, ptr);
+     if (status == cudaErrorInvalidValue)
+          return 0;
+     TL_CUDA_CK(status);
      return attributes.memoryType == cudaMemoryTypeDevice;
 }
 
 
 void *tl_alloc_cuda(size_t size)
 {
-     void *p = NULL;
+     void *p;
 
      assert(size > 0);
      TL_CUDA_CK(cudaMalloc(&p, size));
@@ -113,3 +120,5 @@ void *tl_repeat_d2d(void *data, size_t size, int times)
           TL_CUDA_CK(cudaMemcpy(p, data, size, cudaMemcpyDeviceToDevice));
      return dst;
 }
+
+#endif  /* TL_CUDA */

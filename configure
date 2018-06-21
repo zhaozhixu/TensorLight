@@ -14,7 +14,7 @@ options:
   --install-dir=<path>       installation directory, default is /usr/local
   --pkgconfig-dir=<path>     pkgconfig directory, default is
                              /usr/local/lib/pkgconfig
-  --cuda-enable=<value>      set to yes if build with CUDA, default is no
+  --with-cuda=<value>        set to yes if build with CUDA, default is no
   --cuda-install-dir=<path>  cuda installation directory, default is
                              /usr/local/cuda
   --debug=<value>            set to yes when debugging, default is no
@@ -26,7 +26,7 @@ my %opts = (
             "BUILD_DIR" => "build",
             "INSTALL_DIR" => "/usr/local",
             "PKGCONFIG_DIR" => "/usr/local/lib/pkgconfig",
-            "CUDA_ENABLE" => "no",
+            "WITH_CUDA" => "no",
             "CUDA_INSTALL_DIR" => "/usr/local/cuda",
             "DEBUG" => "no",
            );
@@ -76,7 +76,7 @@ if ($output eq "") {
   &err_exit("check not installed");
 }
 
-if ($opts{CUDA_ENABLE} eq "1") {
+if ($opts{WITH_CUDA} eq "yes") {
   $output = `nvcc --version`;;
   if ($output eq "") {
     &err_exit("nvcc not installed");

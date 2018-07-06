@@ -22,6 +22,9 @@
 
 #include <math.h>
 #include <limits.h>
+#include <float.h>
+#include <stdint.h>
+#include <assert.h>
 #include "tl_util.h"
 #include "tl_type.h"
 
@@ -224,47 +227,42 @@ tl_cmp_func tl_cmp_getfunc(tl_dtype dtype)
 }
 
 /* tl_elew_func */
-static inline void check_elew_op(tl_elew_op op)
+typedef void (*elew_op_func) (void *p1, void *p2, void *res);
+
+static void mul_double(void *p1, void *p2, void *res)
 {
-     assert(op >= 0 && op < TL_ELEW_OP_SIZE);
+     *(double *)res = *(double *)p1 * *(double *)p2;
 }
 
-typedef void (*elew_op_func) (void *p1, void *p2, void *r);
-
-static void mul_double(void *p1, void *p2, void *r)
-{
-     *(double *)r = *(double *)p1 * *(double *)p2;
-}
-
-static void div_double(void *p1, void *p2, void *r)
+static void div_double(void *p1, void *p2, void *res)
 {
      assert(*(double *)p2);
-     *(double *)r = *(double *)p1 / *(double *)p2;
+     *(double *)res = *(double *)p1 / *(double *)p2;
 }
 
-static void sum_double(void *p1, void *p2, void *r)
+static void sum_double(void *p1, void *p2, void *res)
 {
-     *(double *)r = *(double *)p1 + *(double *)p2;
+     *(double *)res = *(double *)p1 + *(double *)p2;
 }
 
-static void sub_double(void *p1, void *p2, void *r)
+static void sub_double(void *p1, void *p2, void *res)
 {
-     *(double *)r = *(double *)p1 - *(double *)p2;
+     *(double *)res = *(double *)p1 - *(double *)p2;
 }
 
-static void max_double(void *p1, void *p2, void *r)
+static void max_double(void *p1, void *p2, void *res)
 {
-     *(double *)r = max(*(double *)p1, *(double *)p2);
+     *(double *)res = max(*(double *)p1, *(double *)p2);
 }
 
-static void min_double(void *p1, void *p2, void *r)
+static void min_double(void *p1, void *p2, void *res)
 {
-     *(double *)r = min(*(double *)p1, *(double *)p2);
+     *(double *)res = min(*(double *)p1, *(double *)p2);
 }
 
-static void pow_double(void *p1, void *p2, void *r)
+static void pow_double(void *p1, void *p2, void *res)
 {
-     *(double *)r = pow(*(double *)p1, *(double *)p2);
+     *(double *)res = pow(*(double *)p1, *(double *)p2);
 }
 
 static elew_op_func elew_op_double[TL_ELEW_OP_SIZE] = {
@@ -277,46 +275,46 @@ static elew_op_func elew_op_double[TL_ELEW_OP_SIZE] = {
      pow_double
 };
 
-static void elew_double(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_double(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_double[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_double[elew_op](p1, p2, res);
 }
 
-static void mul_float(void *p1, void *p2, void *r)
+static void mul_float(void *p1, void *p2, void *res)
 {
-     *(float *)r = *(float *)p1 * *(float *)p2;
+     *(float *)res = *(float *)p1 * *(float *)p2;
 }
 
-static void div_float(void *p1, void *p2, void *r)
+static void div_float(void *p1, void *p2, void *res)
 {
      assert(*(float *)p2);
-     *(float *)r = *(float *)p1 / *(float *)p2;
+     *(float *)res = *(float *)p1 / *(float *)p2;
 }
 
-static void sum_float(void *p1, void *p2, void *r)
+static void sum_float(void *p1, void *p2, void *res)
 {
-     *(float *)r = *(float *)p1 + *(float *)p2;
+     *(float *)res = *(float *)p1 + *(float *)p2;
 }
 
-static void sub_float(void *p1, void *p2, void *r)
+static void sub_float(void *p1, void *p2, void *res)
 {
-     *(float *)r = *(float *)p1 - *(float *)p2;
+     *(float *)res = *(float *)p1 - *(float *)p2;
 }
 
-static void max_float(void *p1, void *p2, void *r)
+static void max_float(void *p1, void *p2, void *res)
 {
-     *(float *)r = max(*(float *)p1, *(float *)p2);
+     *(float *)res = max(*(float *)p1, *(float *)p2);
 }
 
-static void min_float(void *p1, void *p2, void *r)
+static void min_float(void *p1, void *p2, void *res)
 {
-     *(float *)r = min(*(float *)p1, *(float *)p2);
+     *(float *)res = min(*(float *)p1, *(float *)p2);
 }
 
-static void pow_float(void *p1, void *p2, void *r)
+static void pow_float(void *p1, void *p2, void *res)
 {
-     *(float *)r = powf(*(float *)p1, *(float *)p2);
+     *(float *)res = powf(*(float *)p1, *(float *)p2);
 }
 
 static elew_op_func elew_op_float[TL_ELEW_OP_SIZE] = {
@@ -329,44 +327,44 @@ static elew_op_func elew_op_float[TL_ELEW_OP_SIZE] = {
      pow_float
 };
 
-static void elew_float(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_float(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_float[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_float[elew_op](p1, p2, res);
 }
 
-static void mul_int32(void *p1, void *p2, void *r)
+static void mul_int32(void *p1, void *p2, void *res)
 {
-     *(int32_t *)r = *(int32_t *)p1 * *(int32_t *)p2;
+     *(int32_t *)res = *(int32_t *)p1 * *(int32_t *)p2;
 }
 
-static void div_int32(void *p1, void *p2, void *r)
+static void div_int32(void *p1, void *p2, void *res)
 {
      assert(*(int32_t *)p2);
-     *(int32_t *)r = *(int32_t *)p1 / *(int32_t *)p2;
+     *(int32_t *)res = *(int32_t *)p1 / *(int32_t *)p2;
 }
 
-static void sum_int32(void *p1, void *p2, void *r)
+static void sum_int32(void *p1, void *p2, void *res)
 {
-     *(int32_t *)r = *(int32_t *)p1 + *(int32_t *)p2;
+     *(int32_t *)res = *(int32_t *)p1 + *(int32_t *)p2;
 }
 
-static void sub_int32(void *p1, void *p2, void *r)
+static void sub_int32(void *p1, void *p2, void *res)
 {
-     *(int32_t *)r = *(int32_t *)p1 - *(int32_t *)p2;
+     *(int32_t *)res = *(int32_t *)p1 - *(int32_t *)p2;
 }
 
-static void max_int32(void *p1, void *p2, void *r)
+static void max_int32(void *p1, void *p2, void *res)
 {
-     *(int32_t *)r = max(*(int32_t *)p1, *(int32_t *)p2);
+     *(int32_t *)res = max(*(int32_t *)p1, *(int32_t *)p2);
 }
 
-static void min_int32(void *p1, void *p2, void *r)
+static void min_int32(void *p1, void *p2, void *res)
 {
-     *(int32_t *)r = min(*(int32_t *)p1, *(int32_t *)p2);
+     *(int32_t *)res = min(*(int32_t *)p1, *(int32_t *)p2);
 }
 
-static void pow_int32(void *p1, void *p2, void *r)
+static void pow_int32(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
@@ -374,11 +372,11 @@ static void pow_int32(void *p1, void *p2, void *r)
      d2 = (double)*(int32_t *)p2;
      dr = pow(d1, d2);
      if (dr >= INT32_MAX)
-          *(int32_t *)r = INT32_MAX;
+          *(int32_t *)res = INT32_MAX;
      else if (dr <= INT32_MIN)
-          *(int32_t *)r = INT32_MIN;
+          *(int32_t *)res = INT32_MIN;
      else
-          *(int32_t *)r = (int32_t)dr;
+          *(int32_t *)res = (int32_t)dr;
 }
 
 static elew_op_func elew_op_int32[TL_ELEW_OP_SIZE] = {
@@ -391,44 +389,44 @@ static elew_op_func elew_op_int32[TL_ELEW_OP_SIZE] = {
      pow_int32
 };
 
-static void elew_int32(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_int32(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_int32[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_int32[elew_op](p1, p2, res);
 }
 
-static void mul_int16(void *p1, void *p2, void *r)
+static void mul_int16(void *p1, void *p2, void *res)
 {
-     *(int16_t *)r = *(int16_t *)p1 * *(int16_t *)p2;
+     *(int16_t *)res = *(int16_t *)p1 * *(int16_t *)p2;
 }
 
-static void div_int16(void *p1, void *p2, void *r)
+static void div_int16(void *p1, void *p2, void *res)
 {
      assert(*(int16_t *)p2);
-     *(int16_t *)r = *(int16_t *)p1 / *(int16_t *)p2;
+     *(int16_t *)res = *(int16_t *)p1 / *(int16_t *)p2;
 }
 
-static void sum_int16(void *p1, void *p2, void *r)
+static void sum_int16(void *p1, void *p2, void *res)
 {
-     *(int16_t *)r = *(int16_t *)p1 + *(int16_t *)p2;
+     *(int16_t *)res = *(int16_t *)p1 + *(int16_t *)p2;
 }
 
-static void sub_int16(void *p1, void *p2, void *r)
+static void sub_int16(void *p1, void *p2, void *res)
 {
-     *(int16_t *)r = *(int16_t *)p1 - *(int16_t *)p2;
+     *(int16_t *)res = *(int16_t *)p1 - *(int16_t *)p2;
 }
 
-static void max_int16(void *p1, void *p2, void *r)
+static void max_int16(void *p1, void *p2, void *res)
 {
-     *(int16_t *)r = max(*(int16_t *)p1, *(int16_t *)p2);
+     *(int16_t *)res = max(*(int16_t *)p1, *(int16_t *)p2);
 }
 
-static void min_int16(void *p1, void *p2, void *r)
+static void min_int16(void *p1, void *p2, void *res)
 {
-     *(int16_t *)r = min(*(int16_t *)p1, *(int16_t *)p2);
+     *(int16_t *)res = min(*(int16_t *)p1, *(int16_t *)p2);
 }
 
-static void pow_int16(void *p1, void *p2, void *r)
+static void pow_int16(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
@@ -436,11 +434,11 @@ static void pow_int16(void *p1, void *p2, void *r)
      d2 = (double)*(int16_t *)p2;
      dr = pow(d1, d2);
      if (dr >= INT16_MAX)
-          *(int16_t *)r = INT16_MAX;
+          *(int16_t *)res = INT16_MAX;
      else if (dr <= INT16_MIN)
-          *(int16_t *)r = INT16_MIN;
+          *(int16_t *)res = INT16_MIN;
      else
-          *(int16_t *)r = (int16_t)dr;
+          *(int16_t *)res = (int16_t)dr;
 }
 
 static elew_op_func elew_op_int16[TL_ELEW_OP_SIZE] = {
@@ -453,44 +451,44 @@ static elew_op_func elew_op_int16[TL_ELEW_OP_SIZE] = {
      pow_int16
 };
 
-static void elew_int16(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_int16(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_int16[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_int16[elew_op](p1, p2, res);
 }
 
-static void mul_int8(void *p1, void *p2, void *r)
+static void mul_int8(void *p1, void *p2, void *res)
 {
-     *(int8_t *)r = *(int8_t *)p1 * *(int8_t *)p2;
+     *(int8_t *)res = *(int8_t *)p1 * *(int8_t *)p2;
 }
 
-static void div_int8(void *p1, void *p2, void *r)
+static void div_int8(void *p1, void *p2, void *res)
 {
      assert(*(int8_t *)p2);
-     *(int8_t *)r = *(int8_t *)p1 / *(int8_t *)p2;
+     *(int8_t *)res = *(int8_t *)p1 / *(int8_t *)p2;
 }
 
-static void sum_int8(void *p1, void *p2, void *r)
+static void sum_int8(void *p1, void *p2, void *res)
 {
-     *(int8_t *)r = *(int8_t *)p1 + *(int8_t *)p2;
+     *(int8_t *)res = *(int8_t *)p1 + *(int8_t *)p2;
 }
 
-static void sub_int8(void *p1, void *p2, void *r)
+static void sub_int8(void *p1, void *p2, void *res)
 {
-     *(int8_t *)r = *(int8_t *)p1 - *(int8_t *)p2;
+     *(int8_t *)res = *(int8_t *)p1 - *(int8_t *)p2;
 }
 
-static void max_int8(void *p1, void *p2, void *r)
+static void max_int8(void *p1, void *p2, void *res)
 {
-     *(int8_t *)r = max(*(int8_t *)p1, *(int8_t *)p2);
+     *(int8_t *)res = max(*(int8_t *)p1, *(int8_t *)p2);
 }
 
-static void min_int8(void *p1, void *p2, void *r)
+static void min_int8(void *p1, void *p2, void *res)
 {
-     *(int8_t *)r = min(*(int8_t *)p1, *(int8_t *)p2);
+     *(int8_t *)res = min(*(int8_t *)p1, *(int8_t *)p2);
 }
 
-static void pow_int8(void *p1, void *p2, void *r)
+static void pow_int8(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
@@ -498,11 +496,11 @@ static void pow_int8(void *p1, void *p2, void *r)
      d2 = (double)*(int8_t *)p2;
      dr = pow(d1, d2);
      if (dr >= INT8_MAX)
-          *(int8_t *)r = INT8_MAX;
+          *(int8_t *)res = INT8_MAX;
      else if (dr <= INT8_MIN)
-          *(int8_t *)r = INT8_MIN;
+          *(int8_t *)res = INT8_MIN;
      else
-          *(int8_t *)r = (int8_t)dr;
+          *(int8_t *)res = (int8_t)dr;
 }
 
 static elew_op_func elew_op_int8[TL_ELEW_OP_SIZE] = {
@@ -515,44 +513,44 @@ static elew_op_func elew_op_int8[TL_ELEW_OP_SIZE] = {
      pow_int8
 };
 
-static void elew_int8(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_int8(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_int8[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_int8[elew_op](p1, p2, res);
 }
 
-static void mul_uint32(void *p1, void *p2, void *r)
+static void mul_uint32(void *p1, void *p2, void *res)
 {
-     *(uint32_t *)r = *(uint32_t *)p1 * *(uint32_t *)p2;
+     *(uint32_t *)res = *(uint32_t *)p1 * *(uint32_t *)p2;
 }
 
-static void div_uint32(void *p1, void *p2, void *r)
+static void div_uint32(void *p1, void *p2, void *res)
 {
      assert(*(uint32_t *)p2);
-     *(uint32_t *)r = *(uint32_t *)p1 / *(uint32_t *)p2;
+     *(uint32_t *)res = *(uint32_t *)p1 / *(uint32_t *)p2;
 }
 
-static void sum_uint32(void *p1, void *p2, void *r)
+static void sum_uint32(void *p1, void *p2, void *res)
 {
-     *(uint32_t *)r = *(uint32_t *)p1 + *(uint32_t *)p2;
+     *(uint32_t *)res = *(uint32_t *)p1 + *(uint32_t *)p2;
 }
 
-static void sub_uint32(void *p1, void *p2, void *r)
+static void sub_uint32(void *p1, void *p2, void *res)
 {
-     *(uint32_t *)r = *(uint32_t *)p1 - *(uint32_t *)p2;
+     *(uint32_t *)res = *(uint32_t *)p1 - *(uint32_t *)p2;
 }
 
-static void max_uint32(void *p1, void *p2, void *r)
+static void max_uint32(void *p1, void *p2, void *res)
 {
-     *(uint32_t *)r = max(*(uint32_t *)p1, *(uint32_t *)p2);
+     *(uint32_t *)res = max(*(uint32_t *)p1, *(uint32_t *)p2);
 }
 
-static void min_uint32(void *p1, void *p2, void *r)
+static void min_uint32(void *p1, void *p2, void *res)
 {
-     *(uint32_t *)r = min(*(uint32_t *)p1, *(uint32_t *)p2);
+     *(uint32_t *)res = min(*(uint32_t *)p1, *(uint32_t *)p2);
 }
 
-static void pow_uint32(void *p1, void *p2, void *r)
+static void pow_uint32(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
@@ -560,9 +558,9 @@ static void pow_uint32(void *p1, void *p2, void *r)
      d2 = (double)*(uint32_t *)p2;
      dr = pow(d1, d2);
      if (dr >= UINT32_MAX)
-          *(uint32_t *)r = UINT32_MAX;
+          *(uint32_t *)res = UINT32_MAX;
      else
-          *(uint32_t *)r = (uint32_t)dr;
+          *(uint32_t *)res = (uint32_t)dr;
 }
 
 static elew_op_func elew_op_uint32[TL_ELEW_OP_SIZE] = {
@@ -575,44 +573,44 @@ static elew_op_func elew_op_uint32[TL_ELEW_OP_SIZE] = {
      pow_uint32
 };
 
-static void elew_uint32(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_uint32(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_uint32[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_uint32[elew_op](p1, p2, res);
 }
 
-static void mul_uint16(void *p1, void *p2, void *r)
+static void mul_uint16(void *p1, void *p2, void *res)
 {
-     *(uint16_t *)r = *(uint16_t *)p1 * *(uint16_t *)p2;
+     *(uint16_t *)res = *(uint16_t *)p1 * *(uint16_t *)p2;
 }
 
-static void div_uint16(void *p1, void *p2, void *r)
+static void div_uint16(void *p1, void *p2, void *res)
 {
      assert(*(uint16_t *)p2);
-     *(uint16_t *)r = *(uint16_t *)p1 / *(uint16_t *)p2;
+     *(uint16_t *)res = *(uint16_t *)p1 / *(uint16_t *)p2;
 }
 
-static void sum_uint16(void *p1, void *p2, void *r)
+static void sum_uint16(void *p1, void *p2, void *res)
 {
-     *(uint16_t *)r = *(uint16_t *)p1 + *(uint16_t *)p2;
+     *(uint16_t *)res = *(uint16_t *)p1 + *(uint16_t *)p2;
 }
 
-static void sub_uint16(void *p1, void *p2, void *r)
+static void sub_uint16(void *p1, void *p2, void *res)
 {
-     *(uint16_t *)r = *(uint16_t *)p1 - *(uint16_t *)p2;
+     *(uint16_t *)res = *(uint16_t *)p1 - *(uint16_t *)p2;
 }
 
-static void max_uint16(void *p1, void *p2, void *r)
+static void max_uint16(void *p1, void *p2, void *res)
 {
-     *(uint16_t *)r = max(*(uint16_t *)p1, *(uint16_t *)p2);
+     *(uint16_t *)res = max(*(uint16_t *)p1, *(uint16_t *)p2);
 }
 
-static void min_uint16(void *p1, void *p2, void *r)
+static void min_uint16(void *p1, void *p2, void *res)
 {
-     *(uint16_t *)r = min(*(uint16_t *)p1, *(uint16_t *)p2);
+     *(uint16_t *)res = min(*(uint16_t *)p1, *(uint16_t *)p2);
 }
 
-static void pow_uint16(void *p1, void *p2, void *r)
+static void pow_uint16(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
@@ -620,9 +618,9 @@ static void pow_uint16(void *p1, void *p2, void *r)
      d2 = (double)*(uint16_t *)p2;
      dr = pow(d1, d2);
      if (dr >= UINT16_MAX)
-          *(uint16_t *)r = UINT16_MAX;
+          *(uint16_t *)res = UINT16_MAX;
      else
-          *(uint16_t *)r = (uint16_t)dr;
+          *(uint16_t *)res = (uint16_t)dr;
 }
 
 static elew_op_func elew_op_uint16[TL_ELEW_OP_SIZE] = {
@@ -635,44 +633,44 @@ static elew_op_func elew_op_uint16[TL_ELEW_OP_SIZE] = {
      pow_uint16
 };
 
-static void elew_uint16(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_uint16(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_uint16[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_uint16[elew_op](p1, p2, res);
 }
 
-static void mul_uint8(void *p1, void *p2, void *r)
+static void mul_uint8(void *p1, void *p2, void *res)
 {
-     *(uint8_t *)r = *(uint8_t *)p1 * *(uint8_t *)p2;
+     *(uint8_t *)res = *(uint8_t *)p1 * *(uint8_t *)p2;
 }
 
-static void div_uint8(void *p1, void *p2, void *r)
+static void div_uint8(void *p1, void *p2, void *res)
 {
      assert(*(uint8_t *)p2);
-     *(uint8_t *)r = *(uint8_t *)p1 / *(uint8_t *)p2;
+     *(uint8_t *)res = *(uint8_t *)p1 / *(uint8_t *)p2;
 }
 
-static void sum_uint8(void *p1, void *p2, void *r)
+static void sum_uint8(void *p1, void *p2, void *res)
 {
-     *(uint8_t *)r = *(uint8_t *)p1 + *(uint8_t *)p2;
+     *(uint8_t *)res = *(uint8_t *)p1 + *(uint8_t *)p2;
 }
 
-static void sub_uint8(void *p1, void *p2, void *r)
+static void sub_uint8(void *p1, void *p2, void *res)
 {
-     *(uint8_t *)r = *(uint8_t *)p1 - *(uint8_t *)p2;
+     *(uint8_t *)res = *(uint8_t *)p1 - *(uint8_t *)p2;
 }
 
-static void max_uint8(void *p1, void *p2, void *r)
+static void max_uint8(void *p1, void *p2, void *res)
 {
-     *(uint8_t *)r = max(*(uint8_t *)p1, *(uint8_t *)p2);
+     *(uint8_t *)res = max(*(uint8_t *)p1, *(uint8_t *)p2);
 }
 
-static void min_uint8(void *p1, void *p2, void *r)
+static void min_uint8(void *p1, void *p2, void *res)
 {
-     *(uint8_t *)r = min(*(uint8_t *)p1, *(uint8_t *)p2);
+     *(uint8_t *)res = min(*(uint8_t *)p1, *(uint8_t *)p2);
 }
 
-static void pow_uint8(void *p1, void *p2, void *r)
+static void pow_uint8(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
@@ -680,9 +678,9 @@ static void pow_uint8(void *p1, void *p2, void *r)
      d2 = (double)*(uint8_t *)p2;
      dr = pow(d1, d2);
      if (dr >= UINT8_MAX)
-          *(uint8_t *)r = UINT8_MAX;
+          *(uint8_t *)res = UINT8_MAX;
      else
-          *(uint8_t *)r = (uint8_t)dr;
+          *(uint8_t *)res = (uint8_t)dr;
 }
 
 static elew_op_func elew_op_uint8[TL_ELEW_OP_SIZE] = {
@@ -695,55 +693,55 @@ static elew_op_func elew_op_uint8[TL_ELEW_OP_SIZE] = {
      pow_uint8
 };
 
-static void elew_uint8(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_uint8(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_uint8[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_uint8[elew_op](p1, p2, res);
 }
 
 
-static void mul_bool(void *p1, void *p2, void *r)
+static void mul_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)r = *(tl_bool_t *)p1 * *(tl_bool_t *)p2;
+     *(tl_bool_t *)res = *(tl_bool_t *)p1 * *(tl_bool_t *)p2;
 }
 
-static void div_bool(void *p1, void *p2, void *r)
+static void div_bool(void *p1, void *p2, void *res)
 {
      assert(*(tl_bool_t *)p2);
-     *(tl_bool_t *)r = *(tl_bool_t *)p1 / *(tl_bool_t *)p2;
+     *(tl_bool_t *)res = *(tl_bool_t *)p1 / *(tl_bool_t *)p2;
 }
 
-static void sum_bool(void *p1, void *p2, void *r)
+static void sum_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)r = *(tl_bool_t *)p1 + *(tl_bool_t *)p2;
+     *(tl_bool_t *)res = *(tl_bool_t *)p1 + *(tl_bool_t *)p2;
 }
 
-static void sub_bool(void *p1, void *p2, void *r)
+static void sub_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)r = *(tl_bool_t *)p1 - *(tl_bool_t *)p2;
+     *(tl_bool_t *)res = *(tl_bool_t *)p1 - *(tl_bool_t *)p2;
 }
 
-static void max_bool(void *p1, void *p2, void *r)
+static void max_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)r = max(*(tl_bool_t *)p1, *(tl_bool_t *)p2);
+     *(tl_bool_t *)res = max(*(tl_bool_t *)p1, *(tl_bool_t *)p2);
 }
 
-static void min_bool(void *p1, void *p2, void *r)
+static void min_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)r = min(*(tl_bool_t *)p1, *(tl_bool_t *)p2);
+     *(tl_bool_t *)res = min(*(tl_bool_t *)p1, *(tl_bool_t *)p2);
 }
 
-static void pow_bool(void *p1, void *p2, void *r)
+static void pow_bool(void *p1, void *p2, void *res)
 {
      double d1, d2, dr;
 
      d1 = (double)*(tl_bool_t *)p1;
      d2 = (double)*(tl_bool_t *)p2;
      dr = pow(d1, d2);
-     if (dr >= INT_MAX)
-          *(tl_bool_t *)r = INT_MAX;
+     if (dr > 0 || dr < 0)
+          *(tl_bool_t *)res = TL_TRUE;
      else
-          *(tl_bool_t *)r = (tl_bool_t)dr;
+          *(tl_bool_t *)res = TL_FALSE;
 }
 
 static elew_op_func elew_op_bool[TL_ELEW_OP_SIZE] = {
@@ -756,10 +754,10 @@ static elew_op_func elew_op_bool[TL_ELEW_OP_SIZE] = {
      pow_bool
 };
 
-static void elew_bool(void *p1, void *p2, void *r, tl_elew_op elew_op)
+static void elew_bool(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
-     check_elew_op(elew_op);
-     elew_op_bool[elew_op](p1, p2, r);
+     tl_check_elew_op(elew_op);
+     elew_op_bool[elew_op](p1, p2, res);
 }
 
 static tl_elew_func elew_func[TL_DTYPE_SIZE] = {
@@ -774,14 +772,550 @@ static tl_elew_func elew_func[TL_DTYPE_SIZE] = {
      elew_bool
 };
 
-void tl_elew(void *p1, void *p2, void *r, tl_elew_op elew_op, tl_dtype dtype)
+void tl_elew(void *p1, void *p2, void *res, tl_elew_op elew_op, tl_dtype dtype)
 {
      tl_check_dtype(dtype);
-     elew_func[dtype](p1, p2, r, elew_op);
+     elew_func[dtype](p1, p2, res, elew_op);
 }
 
 tl_elew_func tl_elew_getfunc(tl_dtype dtype)
 {
      tl_check_dtype(dtype);
      return elew_func[dtype];
+}
+
+/* tl_convert */
+void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
+{
+     tl_check_dtype(dtype_d);
+     tl_check_dtype(dtype_s);
+
+     double val_d;
+     float val_f;
+     int32_t val_i32;
+     uint32_t val_u32;
+     int16_t val_i16;
+     uint16_t val_u16;
+     int8_t val_i8;
+     uint8_t val_u8;
+
+     switch (dtype_d) {
+     case TL_DOUBLE:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               *(double *)pd = *(double *)ps;
+               break;
+          case TL_FLOAT:
+               *(double *)pd = (double)*(float *)ps;
+               break;
+          case TL_INT32:
+               *(double *)pd = (double)*(int32_t *)ps;
+               break;
+          case TL_INT16:
+               *(double *)pd = (double)*(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(double *)pd = (double)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               *(double *)pd = (double)*(uint32_t *)ps;
+               break;
+          case TL_UINT16:
+               *(double *)pd = (double)*(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(double *)pd = (double)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(double *)pd = (double)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_FLOAT:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+              val_d = *(double *)ps;
+               if (val_d >= FLT_MAX)
+                    *(float *)pd = FLT_MAX;
+               else if (val_d <= -FLT_MAX)
+                    *(float *)pd = -FLT_MAX;
+               else
+                    *(float *)pd = (float)val_d;
+               break;
+          case TL_FLOAT:
+               *(float *)pd = *(float *)ps;
+               break;
+          case TL_INT32:
+               *(float *)pd = (float)*(int32_t *)ps;
+               break;
+          case TL_INT16:
+               *(float *)pd = (float)*(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(float *)pd = (float)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               *(float *)pd = (float)*(uint32_t *)ps;
+               break;
+          case TL_UINT16:
+               *(float *)pd = (float)*(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(float *)pd = (float)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(float *)pd = (float)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_INT32:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= INT32_MAX)
+                    *(int32_t *)pd = INT32_MAX;
+               else if (val_d <= INT32_MIN)
+                    *(int32_t *)pd = INT32_MIN;
+               else
+                    *(int32_t *)pd = (int32_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= INT32_MAX)
+                    *(int32_t *)pd = INT32_MAX;
+               else if (val_f <= INT32_MIN)
+                    *(int32_t *)pd = INT32_MIN;
+               else
+                    *(int32_t *)pd = (int32_t)val_f;
+               break;
+          case TL_INT32:
+               *(int32_t *)pd = *(int32_t *)ps;
+               break;
+          case TL_INT16:
+               *(int32_t *)pd = (int32_t)*(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(int32_t *)pd = (int32_t)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= INT32_MAX)
+                    *(int32_t *)pd = INT32_MAX;
+               else
+                    *(int32_t *)pd = (int32_t)val_u32;
+               break;
+          case TL_UINT16:
+               /* printf("*ps = %d\n", *(uint16_t *)ps); */
+               *(int32_t *)pd = (int32_t)*(uint16_t *)ps;
+               /* printf("*pd = %d\n", *(int32_t *)pd); */
+               break;
+          case TL_UINT8:
+               *(int32_t *)pd = (int32_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(int32_t *)pd = (int32_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_INT16:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else if (val_d <= INT16_MIN)
+                    *(int16_t *)pd = INT16_MIN;
+               else
+                    *(int16_t *)pd = (int16_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else if (val_f <= INT16_MIN)
+                    *(int16_t *)pd = INT16_MIN;
+               else
+                    *(int16_t *)pd = (int16_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else if (val_i32 <= INT16_MIN)
+                    *(int16_t *)pd = INT16_MIN;
+               else
+                    *(int16_t *)pd = (int16_t)val_i32;
+               break;
+          case TL_INT16:
+               *(int16_t *)pd = *(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(int16_t *)pd = (int16_t)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else
+                    *(int16_t *)pd = (int16_t)val_u32;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16 >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else
+                    *(int16_t *)pd = (int16_t)val_u16;
+               break;
+          case TL_UINT8:
+               *(int16_t *)pd = (int16_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(int16_t *)pd = (int16_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_INT8:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_d <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_f <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_i32 <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_i32;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_i16 <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_i16;
+               break;
+          case TL_INT8:
+               *(int8_t *)pd = *(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else
+                    *(int8_t *)pd = (int8_t)val_u32;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else
+                    *(int8_t *)pd = (int8_t)val_u16;
+               break;
+          case TL_UINT8:
+               val_u8 = *(uint8_t *)ps;
+               if (val_u8 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else
+                    *(int8_t *)pd = (int8_t)val_u8;
+               break;
+          case TL_BOOL:
+               *(int8_t *)pd = (int8_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_UINT32:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= UINT32_MAX)
+                    *(uint32_t *)pd = UINT32_MAX;
+               else if (val_d < 0)
+                    *(uint32_t *)pd = 0;
+               else
+                    *(uint32_t *)pd = (uint32_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= UINT32_MAX)
+                    *(uint32_t *)pd = UINT32_MAX;
+               else if (val_f < 0)
+                    *(uint32_t *)pd = 0;
+               else
+                    *(uint32_t *)pd = (uint32_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= 0)
+                    *(uint32_t *)pd = (uint32_t)val_i32;
+               else
+                    *(uint32_t *)pd = 0;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= 0)
+                    *(uint32_t *)pd = (uint32_t)val_i16;
+               else
+                    *(uint32_t *)pd = 0;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8 >= 0)
+                    *(uint32_t *)pd = (uint32_t)val_i8;
+               else
+                    *(uint32_t *)pd = 0;
+               break;
+          case TL_UINT32:
+               *(uint32_t *)pd = *(uint32_t *)ps;
+               break;
+          case TL_UINT16:
+               *(uint32_t *)pd = (uint32_t)*(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(uint32_t *)pd = (uint32_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(uint32_t *)pd = (uint32_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_UINT16:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else if (val_d < 0)
+                    *(uint16_t *)pd = 0;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else if (val_f < 0)
+                    *(uint16_t *)pd = 0;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else if (val_i32 < 0)
+                    *(uint16_t *)pd = 0;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_i32;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= 0)
+                    *(uint16_t *)pd = (uint16_t)val_i16;
+               else
+                    *(uint16_t *)pd = 0;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8 >= 0)
+                    *(uint16_t *)pd = (uint16_t)val_i8;
+               else
+                    *(uint16_t *)pd = 0;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_u32;
+               break;
+          case TL_UINT16:
+               *(uint16_t *)pd = *(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(uint16_t *)pd = (uint16_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(uint16_t *)pd = (uint16_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_UINT8:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_d < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_f < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_i32 < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_i32;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_i16 < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_i16;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8 >= 0)
+                    *(uint8_t *)pd = (uint8_t)val_i8;
+               else
+                    *(uint8_t *)pd = 0;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_u32;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_u16;
+               break;
+          case TL_UINT8:
+               *(uint8_t *)pd = *(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(uint8_t *)pd = (uint8_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_BOOL:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d > 0 || val_d < 0)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f > 0 || val_f < 0)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_UINT8:
+               val_u8 = *(uint8_t *)ps;
+               if (val_u8)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_BOOL:
+               *(tl_bool_t *)pd = *(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     default:
+          assert(0 && "unsupported tl_dtype");
+          break;
+     }
 }

@@ -40,7 +40,7 @@ static inline int get_index(int *ids, int ndim, int *dims)
      return id;
 }
 
-static inline void get_indexes(int id, int *ids, int ndim, int *dims)
+static inline void get_coords(int id, int *ids, int ndim, int *dims)
 {
      for (int i = ndim-1; i >=0; i--) {
           ids[i] = id % dims[i];
@@ -306,13 +306,14 @@ tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
      int si, di;
      size_t dsize;
 
-     assert(src);
+     assert(src && src->data);
      assert(axis < src->ndim && axis >= 0);
      assert(len <= src->dims[axis] && len > 0);
      assert(start < src->dims[axis] && start >= 0);
      assert(len + start <= src->dims[axis]);
      if (dst) {
 #ifndef NDEBUG
+          assert(dst->data);
           assert(src->dtype == dst->dtype);
           assert(dst->ndim == src->ndim);
           for (i = 0; i < src->ndim; i++)
@@ -343,7 +344,7 @@ tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims)
 {
      tl_tensor *dst;
 
-     assert(src);
+     assert(src && src->data);
      assert(src->len == compute_length(ndim, dims));
      dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
      return dst;
@@ -356,7 +357,7 @@ tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...)
      va_list ap;
      int i;
 
-     assert(src);
+     assert(src && src->data);
      assert(ndim > 0);
      dims = (int *)tl_alloc(sizeof(int) * ndim);
      va_start(ap, ndim);
@@ -384,10 +385,11 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      tl_dtype dtype;
      tl_cmp_func cmp;
 
-     assert(src);
+     assert(src && src->data);
      assert(axis < src->ndim && axis >= 0);
      if (dst) {
 #ifndef NDEBUG
+          assert(dst->data);
           assert(src->dtype == dst->dtype);
           for (i = 0; i < dst->ndim; i++)
                assert(i == axis ? dst->dims[i] == 1 :
@@ -398,6 +400,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      }
      if (arg) {
 #ifndef NDEBUG
+          assert(arg->data);
           assert(arg->dtype == TL_INT32);
           for (i = 0; i < arg->ndim; i++)
                assert(i == axis ? arg->dims[i] == 1 :
@@ -459,8 +462,10 @@ tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
      tl_elew_func elew;
 
      assert(tl_tensor_issameshape(src1, src2));
+     assert(src1->data && src2->data);
      assert(src1->dtype == src2->dtype);
      if (dst) {
+          assert(dst->data);
           assert(tl_tensor_issameshape(src1, dst));
           assert(src1->dtype == dst->dtype);
      } else {
@@ -507,10 +512,11 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      for (i = 0; i < src->ndim; i++)
           assert(tmp[i] && "axes don't match src tensor's shape");
      tl_free(tmp);
-     assert(src);
+     assert(src && src->data);
 #endif
      if (dst) {
 #ifndef NDEBUG
+          assert(dst->data);
           assert(src->dtype == dst->dtype);
           assert(src->len == dst->len);
           assert(src->ndim == dst->ndim);
@@ -543,7 +549,7 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      for (di = 0; di < thread_num; di++) {
           t_s_ids = s_ids + di * ndim;
           t_d_ids = d_ids + di * ndim;
-          get_indexes(di, t_d_ids, ndim, d_dims);
+          get_coords(di, t_d_ids, ndim, d_dims);
           for (i = 0; i < ndim; i++)
                t_s_ids[axes[i]] = t_d_ids[i];
           si = get_index(t_s_ids, ndim, s_dims);
@@ -557,6 +563,37 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      }
      tl_free(s_dims);
      tl_free(d_dims);
+
+     return dst;
+}
+
+tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
+                             tl_dtype dtype_d)
+{
+     size_t dsize_d, dsize_s;
+     void *s_data, *d_data;
+     tl_dtype dtype_s;
+     int thread_num;
+     int di;
+
+     assert(src && src->data);
+     if (dst) {
+          assert(dst->data);
+          assert(tl_tensor_issameshape(src, dst));
+          assert(dst->dtype == dtype_d);
+     } else {
+          dst = tl_tensor_create(NULL, src->ndim, src->dims, dtype_d);
+     }
+
+     dtype_s = src->dtype;
+     s_data = src->data;
+     d_data = dst->data;
+     dsize_d = tl_size_of(dtype_d);
+     dsize_s = tl_size_of(dtype_s);
+     thread_num = dst->len;
+     for (di = 0; di < thread_num; di++)
+          tl_convert(tl_padd(d_data, di, dsize_d), dtype_d,
+                     tl_padd(s_data, di, dsize_s), dtype_s);
 
      return dst;
 }

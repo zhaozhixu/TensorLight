@@ -38,7 +38,7 @@ typedef enum tl_bool_t tl_bool_t;
 /* keep the size and the enum order in sync with tl_type.c */
 #define TL_DTYPE_SIZE 9
 enum tl_dtype {
-     TL_DOUBLE,
+     TL_DOUBLE = 0,
      TL_FLOAT,
      TL_INT32,
      TL_INT16,
@@ -53,13 +53,13 @@ typedef enum tl_dtype tl_dtype;
 /* keep the size and the enum order in sync with tl_type.c */
 #define TL_ELEW_OP_SIZE 7
 enum tl_elew_op {
-     TL_MUL,
+     TL_MUL = 0,
      TL_DIV,
      TL_SUM,
      TL_SUB,
      TL_MAX,
      TL_MIN,
-     TL_POW
+     TL_POW,
 };
 typedef enum tl_elew_op tl_elew_op;
 
@@ -78,10 +78,11 @@ typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
 typedef int (*tl_cmp_func) (void *p1, void *p2);
 typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
 
-static inline void tl_check_dtype(tl_dtype dtype)
-{
-     assert(dtype >= 0 && dtype < TL_DTYPE_SIZE);
-}
+#define tl_check_dtype(dtype)                           \
+     assert(dtype >= 0 && dtype < TL_DTYPE_SIZE)
+
+#define tl_check_elew_op(op)                    \
+     assert(op >= 0 && op < TL_ELEW_OP_SIZE)
 
 #define tl_pointer_sub(p1, p2, dtype)           \
      tl_psub((p1), (p2), tl_size_of(dtype))
@@ -96,17 +97,52 @@ TL_CPPSTART
 
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_fmt(tl_dtype dtype);
-void tl_cast(void *p1, tl_dtype dtype1, const void *p2, tl_dtype dtype2);
+void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s);
 
 int tl_fprintf(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
 tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);
 int tl_cmp(void *p1, void *p2, tl_dtype dtype);
 tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);
-void tl_elew(void *p1, void *p2, void *r, tl_elew_op elew_op, tl_dtype dtype);
+void tl_elew(void *p1, void *p2, void *res, tl_elew_op elew_op, tl_dtype dtype);
 tl_elew_func tl_elew_getfunc(tl_dtype dtype);
 
 #ifdef __cplusplus
 TL_CPPEND
 #endif
+
+#ifdef TL_CUDA
+#include <cuda_runtime.h>
+
+#define tl_passign_h2d(pd, offd, ps, offs, dsize)                    \
+     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),           \
+                           tl_padd((ps), (offs), (dsize)),           \
+                           (dsize), cudaMemcpyHostToDevice))
+#define tl_passign_d2h(pd, offd, ps, offs, dsize)                    \
+     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),           \
+                           tl_padd((ps), (offs), (dsize)),           \
+                           (dsize), cudaMemcpyDeviceToHost))
+#define tl_passign_d2d(pd, offd, ps, offs, dsize)               \
+     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),      \
+                           tl_padd((ps), (offs), (dsize)),      \
+                           (dsize), cudaMemcpyDeviceToDevice))
+
+#define tl_pointer_assign_h2d(pd, offd, ps, offs, dtype)                \
+     tl_passign_h2d((pd), (offd), (ps), (offs), tl_size_of(dtype))
+#define tl_pointer_assign_d2h(pd, offd, ps, offs, dtype)                \
+     tl_passign_d2h((pd), (offd), (ps), (offs), tl_size_of(dtype))
+#define tl_pointer_assign_d2d(pd, offd, ps, offs, dtype)                \
+     tl_passign_d2d((pd), (offd), (ps), (offs), tl_size_of(dtype))
+
+#ifdef __cplusplus
+TL_CPPSTART
+#endif
+
+int tl_fprintf_cuda(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
+
+#ifdef __cplusplus
+TL_CPPEND
+#endif
+
+#endif  /* TL_CUDA */
 
 #endif  /* _TL_TYPE_H_ */

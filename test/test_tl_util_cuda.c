@@ -42,6 +42,9 @@ START_TEST(test_tl_is_device_mem)
 
      ck_assert_int_eq(tl_is_device_mem(p_d), 1);
      ck_assert_int_eq(tl_is_device_mem(p_h), 0);
+
+     tl_free(p_h);
+     tl_free_cuda(p_d);
 }
 END_TEST
 
@@ -52,6 +55,17 @@ END_TEST
 
 START_TEST(test_tl_clone_h2d)
 {
+     int array[] = {0, 1, 2};
+     int *array_d, *array_h;
+     int i;
+
+     array_d = tl_clone_h2d(array, sizeof(int)*3);
+     array_h = tl_clone_d2h(array_d, sizeof(int)*3);
+     for (i = 0; i < 3; i++)
+          ck_assert_int_eq(array_h[i], i);
+
+     tl_free(array_h);
+     tl_free_cuda(array_d);
 }
 END_TEST
 
@@ -62,21 +76,69 @@ END_TEST
 
 START_TEST(test_tl_clone_d2d)
 {
+     int array[] = {0, 1, 2};
+     int *array_d1, *array_d2, *array_h;
+     int i;
+
+     array_d1 = tl_clone_h2d(array, sizeof(int)*3);
+     array_d2 = tl_clone_d2d(array_d1, sizeof(int)*3);
+     array_h = tl_clone_d2h(array_d2, sizeof(int)*3);
+     for (i = 0; i < 3; i++)
+          ck_assert_int_eq(array_h[i], i);
+
+     tl_free(array_h);
+     tl_free_cuda(array_d1);
+     tl_free_cuda(array_d2);
 }
 END_TEST
 
 START_TEST(test_tl_repeat_h2d)
 {
+     int array[] = {0, 1, 2};
+     int *array_d, *array_h;
+     int i;
+
+     array_d = tl_repeat_h2d(array, sizeof(int)*3, 3);
+     array_h = tl_clone_d2h(array_d, sizeof(int)*3*3);
+     for (i = 0; i < 3*3; i++)
+          ck_assert_int_eq(array_h[i], i%3);
+
+     tl_free(array_h);
+     tl_free_cuda(array_d);
 }
 END_TEST
 
 START_TEST(test_tl_repeat_d2h)
 {
+     int array[] = {0, 1, 2};
+     int *array_d, *array_h;
+     int i;
+
+     array_d = tl_clone_h2d(array, sizeof(int)*3);
+     array_h = tl_repeat_d2h(array_d, sizeof(int)*3, 3);
+     for (i = 0; i < 3*3; i++)
+          ck_assert_int_eq(array_h[i], i%3);
+
+     tl_free(array_h);
+     tl_free_cuda(array_d);
 }
 END_TEST
 
 START_TEST(test_tl_repeat_d2d)
 {
+     int array[] = {0, 1, 2};
+     int *array_d1, *array_d2, *array_h;
+     int i;
+
+     array_d1 = tl_clone_h2d(array, sizeof(int)*3);
+     array_d2 = tl_repeat_d2d(array_d1, sizeof(int)*3, 3);
+     array_h = tl_clone_d2h(array_d2, sizeof(int)*3*3);
+     for (i = 0; i < 3*3; i++)
+          ck_assert_int_eq(array_h[i], i%3);
+
+     tl_free(array_h);
+     tl_free_cuda(array_d1);
+     tl_free_cuda(array_d2);
 }
 END_TEST
 /* end of tests */

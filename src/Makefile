@@ -125,3 +125,7 @@ $(OBJDIR)/%.o: %.cu
 
 clean:
 	rm -rf $(OBJDIR)
+
+ifneq "$(MAKECMDGOALS)" "clean"
+-include $(OBJDIR)/*.d
+endif

@@ -55,11 +55,17 @@ void *tl_alloc_cuda(size_t size)
      return p;
 }
 
+void tl_free_cuda(void *p)
+{
+     assert(tl_is_device_mem(p));
+     TL_CUDA_CK(cudaFree(p));
+}
+
 void *tl_clone_h2d(const void *src, size_t size)
 {
      void *p;
 
-     assert(src);
+     assert(!tl_is_device_mem(src));
      p = tl_alloc_cuda(size);
      TL_CUDA_CK(cudaMemcpy(p, src, size, cudaMemcpyHostToDevice));
      return p;
@@ -90,7 +96,7 @@ void *tl_repeat_h2d(void *data, size_t size, int times)
      void *p, *dst;
      int i;
 
-     assert(data && times > 0);
+     assert(!tl_is_device_mem(data) && times > 0);
      dst = p = tl_alloc_cuda(size * times);
      for (i = 0; i < times; i++, p = (char *)p + size)
           TL_CUDA_CK(cudaMemcpy(p, data, size, cudaMemcpyHostToDevice));

@@ -20,35 +20,24 @@
  * SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <check.h>
-
-#include "test_tensorlight.h"
-
-int main(int argc, char **argv)
-{
-     int number_failed;
-     int status;
-     SRunner *sr;
-
-     sr = srunner_create(make_master_suite());
-     srunner_add_suite(sr, make_util_suite());
-     srunner_add_suite(sr, make_type_suite());
-     srunner_add_suite(sr, make_tensor_suite());
-     /* end of adding normal suites */
-
 #ifdef TL_CUDA
-     srunner_add_suite(sr, make_util_cuda_suite());
-#endif /* TL_CUDA */
 
-     srunner_set_xml (sr, "result/check_output.xml");
-     srunner_run_all(sr, CK_NORMAL);
-     number_failed = srunner_ntests_failed(sr);
-     srunner_free(sr);
-     status = system("sed -i 's,http://check.sourceforge.net/xml/check_unittest.xslt,check_unittest.xslt,g' result/check_output.xml");
-     if (status < 0)
-          fprintf(stderr, "system() error\n");
+#include "tl_type.h"
 
-     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
+int tl_fprintf_cuda(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
+{
+     void *p_h;
+     int ret;
+
+     p_h = tl_alloc(tl_size_of(dtype));
+     tl_pointer_assign_d2h(p_h, 0, p, 0, dtype);
+     ret = tl_fprintf(fp, fmt, p_h, dtype);
+     tl_free(p_h);
+
+     return ret;
 }
+
+#endif  /* TL_CUDA */

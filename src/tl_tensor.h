@@ -65,6 +65,8 @@ tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
                           tl_tensor *dst, tl_elew_op elew_op);
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes, int **workspace);
+tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
+                             tl_dtype dtype_d);
 
 #ifdef __cplusplus
 TL_CPPEND

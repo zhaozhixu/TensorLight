@@ -460,7 +460,7 @@ START_TEST(test_tl_tensor_transpose)
      uint8_t dst_data1[12] = {1, 3, 5, 2, 4, 6, 7, 9, 11, 8, 10, 12};
      int axes2[3] = {1, 2, 0};
      uint8_t dst_data2[12] = {1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12};
-     int *ws[2];
+     tl_tensor *ws;
      int i;
 
      src = tl_tensor_create(data, 3, dims1, TL_UINT8);
@@ -489,8 +489,7 @@ START_TEST(test_tl_tensor_transpose)
      tl_tensor_free_data_too(dst);
 
      dst = tl_tensor_create(NULL, 3, dims2, TL_UINT8);
-     ws[0] = (int *)tl_alloc(sizeof(int) * dst->ndim * dst->len);
-     ws[1] = (int *)tl_alloc(sizeof(int) * dst->ndim * dst->len);
+     ws = tl_tensor_zeros(TL_INT32, 1, dst->ndim*dst->len*2);
      dst = tl_tensor_transpose(src, dst, axes2, ws);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_UINT8);
@@ -501,8 +500,7 @@ START_TEST(test_tl_tensor_transpose)
      for (i = 0; i < dst->len; i++)
           ck_assert(((int8_t *)dst->data)[i] == dst_data2[i]);
      tl_tensor_free_data_too(dst);
-     tl_free(ws[0]);
-     tl_free(ws[1]);
+     tl_tensor_free_data_too(ws);
 
      tl_tensor_free(src);
 }

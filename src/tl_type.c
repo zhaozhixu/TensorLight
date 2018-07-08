@@ -702,23 +702,39 @@ static void elew_uint8(void *p1, void *p2, void *res, tl_elew_op elew_op)
 
 static void mul_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)res = *(tl_bool_t *)p1 * *(tl_bool_t *)p2;
+     int r = *(tl_bool_t *)p1 * *(tl_bool_t *)p2;
+     if (r)
+          *(tl_bool_t *)res = TL_TRUE;
+     else
+          *(tl_bool_t *)res = TL_FALSE;
 }
 
 static void div_bool(void *p1, void *p2, void *res)
 {
      assert(*(tl_bool_t *)p2);
-     *(tl_bool_t *)res = *(tl_bool_t *)p1 / *(tl_bool_t *)p2;
+     int r = *(tl_bool_t *)p1 / *(tl_bool_t *)p2;
+     if (r)
+          *(tl_bool_t *)res = TL_TRUE;
+     else
+          *(tl_bool_t *)res = TL_FALSE;
 }
 
 static void sum_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)res = *(tl_bool_t *)p1 + *(tl_bool_t *)p2;
+     int r = *(tl_bool_t *)p1 + *(tl_bool_t *)p2;
+     if (r)
+          *(tl_bool_t *)res = TL_TRUE;
+     else
+          *(tl_bool_t *)res = TL_FALSE;
 }
 
 static void sub_bool(void *p1, void *p2, void *res)
 {
-     *(tl_bool_t *)res = *(tl_bool_t *)p1 - *(tl_bool_t *)p2;
+     int r = *(tl_bool_t *)p1 - *(tl_bool_t *)p2;
+     if (r)
+          *(tl_bool_t *)res = TL_TRUE;
+     else
+          *(tl_bool_t *)res = TL_FALSE;
 }
 
 static void max_bool(void *p1, void *p2, void *res)

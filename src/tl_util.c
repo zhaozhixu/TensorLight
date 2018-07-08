@@ -62,6 +62,19 @@ void *tl_repeat(void *data, size_t size, int times)
      return dst;
 }
 
+int tl_compute_length(int ndim, const int *dims)
+{
+     int i, len;
+
+     assert(ndim > 0);
+     assert(dims);
+     for (i = 0, len = 1; i < ndim; i++) {
+          assert(dims[i] > 0);
+          len *= dims[i];
+     }
+     return len;
+}
+
 /* The following functions are taken from APUE, the 3rd version. */
 static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)
 {

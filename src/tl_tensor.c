@@ -48,19 +48,6 @@ static inline void get_coords(int id, int *ids, int ndim, int *dims)
      }
 }
 
-static inline int compute_length(int ndim, const int *dims)
-{
-     int i, len;
-
-     assert(ndim > 0);
-     assert(dims);
-     for (i = 0, len = 1; i < ndim; i++) {
-          assert(dims[i] > 0);
-          len *= dims[i];
-     }
-     return len;
-}
-
 static inline void check_dim(int ndim, const int *dims)
 {
      int i;
@@ -75,7 +62,7 @@ static inline void check_tensor(const tl_tensor *t)
 {
      assert(t && t->data);
      assert(t->dtype >= 0 && t->dtype < TL_DTYPE_SIZE);
-     assert(t->len == compute_length(t->ndim, t->dims));
+     assert(t->len == tl_compute_length(t->ndim, t->dims));
 }
 
 int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
@@ -100,7 +87,7 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
      size_t size;
 
      t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
-     t->len = compute_length(ndim, dims);
+     t->len = tl_compute_length(ndim, dims);
      t->ndim = ndim;
      t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
@@ -345,7 +332,7 @@ tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims)
      tl_tensor *dst;
 
      assert(src && src->data);
-     assert(src->len == compute_length(ndim, dims));
+     assert(src->len == tl_compute_length(ndim, dims));
      dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
      return dst;
 }
@@ -366,7 +353,7 @@ tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...)
           assert(dims[i] > 0);
      }
      va_end(ap);
-     assert(src->len == compute_length(ndim, dims));
+     assert(src->len == tl_compute_length(ndim, dims));
      dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
      tl_free(dims);
      return dst;
@@ -490,9 +477,9 @@ tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
      return dst;
 }
 
-/* (optional) workspace size equals (sizeof(int) * dst->ndim * dst->len), two of them */
+/* (optional) workspace is a int32 tensor of shape [dst->ndim * dst->len * 2] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
-                               const int *axes, int **workspace)
+                               const int *axes, tl_tensor *workspace)
 {
      int *s_ids, *d_ids, *s_dims, *d_dims;
      int thread_num;
@@ -538,8 +525,11 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
           s_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
           d_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
      } else {
-          s_ids = workspace[0];
-          d_ids = workspace[1];
+          assert(workspace->data);
+          assert(workspace->dtype == TL_INT32);
+          assert(workspace->len == dst->ndim * dst->len * 2);
+          s_ids = (int32_t *)workspace->data;
+          d_ids = &((int32_t *)workspace->data)[workspace->len / 2];
      }
 
      dsize = tl_size_of(src->dtype);
@@ -564,6 +554,26 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      tl_free(s_dims);
      tl_free(d_dims);
 
+     return dst;
+}
+
+tl_tensor *tl_tensor_vtranspose(const tl_tensor *src, tl_tensor *dst,
+                                tl_tensor *workspace, ...)
+{
+     int *axes;
+     va_list ap;
+     int i;
+
+     assert(src && src->ndim > 0);
+     axes = tl_alloc(sizeof(int) * src->ndim);
+     va_start(ap, workspace);
+     for (i = 0; i < src->ndim; i++) {
+          axes[i] = va_arg(ap, int);
+          assert(axes[i] > 0);
+     }
+     va_end(ap);
+     dst = tl_tensor_transpose(src, dst, axes, workspace);
+     tl_free(axes);
      return dst;
 }
 

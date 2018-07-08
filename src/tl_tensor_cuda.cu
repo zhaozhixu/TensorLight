@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <float.h>
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
@@ -54,16 +55,6 @@ static inline __device__ void get_coords(int id, int *ids, int ndim, int *dims)
      }
 }
 
-static inline  void check_dim(int ndim, const int *dims)
-{
-     int i;
-
-     assert(ndim > 0);
-     assert(dims);
-     for (i = 0; i < ndim; i++)
-          assert(dims[i] > 0);
-}
-
 tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
                                  tl_dtype dtype)
 {
@@ -71,7 +62,7 @@ tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
      size_t size;
 
      t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
-     t->len = compute_length(ndim, dims);
+     t->len = tl_compute_length(ndim, dims);
      t->ndim = ndim;
      t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
@@ -181,13 +172,16 @@ void tl_tensor_print_cuda(const tl_tensor *t, const char *fmt)
      tl_tensor_fprint_cuda(stdout, t, fmt);
 }
 
-int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t, const char *fmt)
+int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t,
+                        const char *fmt)
 {
      tl_tensor *t_host;
+     int ret;
 
      t_host = tl_tensor_clone_d2h(t);
-     tl_tensor_save(file_name, t_host, fmt);
+     ret = tl_tensor_save(file_name, t_host, fmt);
      tl_tensor_free_data_too(t_host);
+     return ret;
 }
 
 tl_tensor *tl_tensor_create_slice_cuda(const tl_tensor *src, int axis, int len,
@@ -225,8 +219,6 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
      int i;
      int d_vol, s_vol, vol;
      int thread_num, block_num;
-     int si, di;
-     size_t dsize;
 
      assert(src && tl_is_device_mem(src->data));
      assert(axis < src->ndim && axis >= 0);
@@ -257,72 +249,73 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
      case TL_DOUBLE:
           slice_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
                                                           (double *)dst->data,
-                                                          start, s_vol, d_vol,
+                                                          start, s_vol, d_vol, vol,
                                                           BLOCK_SIZE, thread_num);
           break;
      case TL_FLOAT:
           slice_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
                                                          (float *)dst->data,
-                                                         start, s_vol, d_vol,
+                                                         start, s_vol, d_vol, vol,
                                                          BLOCK_SIZE, thread_num);
           break;
      case TL_INT32:
           slice_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
                                                            (int32_t *)dst->data,
-                                                           start, s_vol, d_vol,
+                                                           start, s_vol, d_vol, vol,
                                                            BLOCK_SIZE, thread_num);
           break;
      case TL_INT16:
           slice_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
                                                            (int16_t *)dst->data,
-                                                           start, s_vol, d_vol,
+                                                           start, s_vol, d_vol, vol,
                                                            BLOCK_SIZE, thread_num);
           break;
      case TL_INT8:
           slice_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
                                                           (int8_t *)dst->data,
-                                                          start, s_vol, d_vol,
+                                                          start, s_vol, d_vol, vol,
                                                           BLOCK_SIZE, thread_num);
           break;
      case TL_UINT32:
           slice_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
                                                             (uint32_t *)dst->data,
-                                                            start, s_vol, d_vol,
+                                                            start, s_vol, d_vol, vol,
                                                             BLOCK_SIZE, thread_num);
           break;
      case TL_UINT16:
           slice_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
                                                             (uint16_t *)dst->data,
-                                                            start, s_vol, d_vol,
+                                                            start, s_vol, d_vol, vol,
                                                             BLOCK_SIZE, thread_num);
           break;
      case TL_UINT8:
           slice_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
                                                            (uint8_t *)dst->data,
-                                                           start, s_vol, d_vol,
+                                                           start, s_vol, d_vol, vol,
                                                            BLOCK_SIZE, thread_num);
           break;
      case TL_BOOL:
           slice_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
                                                              (tl_bool_t *)dst->data,
-                                                             start, s_vol, d_vol,
+                                                             start, s_vol, d_vol, vol,
                                                              BLOCK_SIZE, thread_num);
           break;
      default:
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     cudaDeviceSynchronize();
+     TL_CUDA_CK(cudaDeviceSynchronize());
      return dst;
 }
 
 /* in-place reshape tensor */
-tl_tensor *tl_tensor_reshape_cuda(const tl_tensor *src, int ndim, const int *dims)
+tl_tensor *tl_tensor_reshape_cuda(const tl_tensor *src, int ndim,
+                                  const int *dims)
 {
      tl_tensor *dst;
 
      assert(src && tl_is_device_mem(src->data));
-     assert(src->len == compute_length(ndim, dims));
+     assert(src->len == tl_compute_length(ndim, dims));
      dst = tl_tensor_create_cuda(src->data, ndim, dims, src->dtype);
      return dst;
 }
@@ -343,14 +336,14 @@ tl_tensor *tl_tensor_vreshape_cuda(const tl_tensor *src, int ndim, ...)
           assert(dims[i] > 0);
      }
      va_end(ap);
-     assert(src->len == compute_length(ndim, dims));
+     assert(src->len == tl_compute_length(ndim, dims));
      dst = tl_tensor_create_cuda(src->data, ndim, dims, src->dtype);
      tl_free(dims);
      return dst;
 }
 
 template <typename T>
-__global__ void maxreduce_kernel(T *src, T *dst, T *arg, int dim_size,
+__global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size,
                                  int reduce_vol, int batch_vol,
                                  int block_size, int total)
 {
@@ -363,7 +356,7 @@ __global__ void maxreduce_kernel(T *src, T *dst, T *arg, int dim_size,
         where batch = di / reduce_vol,
         which is the same as the following code: */
      int si = (batch_vol - reduce_vol) * (di / reduce_vol) + di;
-     float now = src[si], max = now;
+     T now = src[si], max = now;
      int maxi = 0;
      for (int i = 1; i < dim_size; i++) {
           now = src[si+i*reduce_vol];
@@ -377,23 +370,20 @@ __global__ void maxreduce_kernel(T *src, T *dst, T *arg, int dim_size,
 }
 
 
-tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
-                               tl_tensor *arg, int axis)
+tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
+                                    tl_tensor *arg, int axis)
 {
      /* suppose the shape of src is [N, C, H, W], dim = 1, then thread_num is N x H x W
         reduce_vol is H x W, index_vol is C x H x W */
      int thread_num, block_num, reduce_vol, index_vol;
-     int i, dim_size;
-     void *data_s, *data_d, *data_a, *nowp, *maxp;
-     size_t dsize;
-     tl_dtype dtype;
+     int i;
 
-     tl_check_dtype(dtype);
-     assert(src && src->data);
+     tl_check_dtype(src->dtype);
+     assert(src && tl_is_device_mem(src->data));
      assert(axis < src->ndim && axis >= 0);
      if (dst) {
 #ifndef NDEBUG
-          assert(dst->data);
+          assert(tl_is_device_mem(dst->data));
           assert(src->dtype == dst->dtype);
           for (i = 0; i < dst->ndim; i++)
                assert(i == axis ? dst->dims[i] == 1 :
@@ -404,7 +394,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      }
      if (arg) {
 #ifndef NDEBUG
-          assert(arg->data);
+          assert(tl_is_device_mem(arg->data));
           assert(arg->dtype == TL_INT32);
           for (i = 0; i < arg->ndim; i++)
                assert(i == axis ? arg->dims[i] == 1 :
@@ -424,7 +414,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_DOUBLE:
           maxreduce_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
                                                               (double *)dst->data,
-                                                              (double *)arg->data,
+                                                              (int32_t *)arg->data,
                                                               src->dims[axis],
                                                               reduce_vol,
                                                               index_vol,
@@ -434,7 +424,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_FLOAT:
           maxreduce_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
                                                              (float *)dst->data,
-                                                             (float *)arg->data,
+                                                             (int32_t *)arg->data,
                                                              src->dims[axis],
                                                              reduce_vol,
                                                              index_vol,
@@ -454,7 +444,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_INT16:
           maxreduce_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
                                                                (int16_t *)dst->data,
-                                                               (int16_t *)arg->data,
+                                                               (int32_t *)arg->data,
                                                                src->dims[axis],
                                                                reduce_vol,
                                                                index_vol,
@@ -464,7 +454,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_INT8:
           maxreduce_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
                                                               (int8_t *)dst->data,
-                                                              (int8_t *)arg->data,
+                                                              (int32_t *)arg->data,
                                                               src->dims[axis],
                                                               reduce_vol,
                                                               index_vol,
@@ -474,7 +464,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_UINT32:
           maxreduce_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
                                                                 (uint32_t *)dst->data,
-                                                                (uint32_t *)arg->data,
+                                                                (int32_t *)arg->data,
                                                                 src->dims[axis],
                                                                 reduce_vol,
                                                                 index_vol,
@@ -484,7 +474,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_UINT16:
           maxreduce_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
                                                                 (uint16_t *)dst->data,
-                                                                (uint16_t *)arg->data,
+                                                                (int32_t *)arg->data,
                                                                 src->dims[axis],
                                                                 reduce_vol,
                                                                 index_vol,
@@ -494,7 +484,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_UINT8:
           maxreduce_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
                                                                (uint8_t *)dst->data,
-                                                               (uint8_t *)arg->data,
+                                                               (int32_t *)arg->data,
                                                                src->dims[axis],
                                                                reduce_vol,
                                                                index_vol,
@@ -504,7 +494,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
      case TL_BOOL:
           maxreduce_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
                                                                  (tl_bool_t *)dst->data,
-                                                                 (tl_bool_t *)arg->data,
+                                                                 (int32_t *)arg->data,
                                                                  src->dims[axis],
                                                                  reduce_vol,
                                                                  index_vol,
@@ -515,7 +505,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     cudaDeviceSynchronize();
+     TL_CUDA_CK(cudaDeviceSynchronize());
      return dst;
 }
 
@@ -528,14 +518,40 @@ __global__ void mul_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      dst[di] = src1[di] * src2[di];
 }
 
+__global__ void mul_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                tl_bool_t *dst, int block_size, int total)
+{
+     int di = blockIdx.x * block_size + threadIdx.x;
+     if (di >= total)
+          return;
+     int res = src1[di] * src2[di];
+     if (res)
+          dst[di] = TL_TRUE;
+     else
+          dst[di] = TL_FALSE;
+}
+
 template <typename T>
 __global__ void div_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
           return;
-     assert(src2[di] && "divided by zero");
+     // assert(src2[di] && "divided by zero");
      dst[di] = src1[di] / src2[di];
+}
+
+__global__ void div_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                tl_bool_t *dst, int block_size, int total)
+{
+     int di = blockIdx.x * block_size + threadIdx.x;
+     if (di >= total)
+          return;
+     int res = src1[di] / src2[di];
+     if (res)
+          dst[di] = TL_TRUE;
+     else
+          dst[di] = TL_FALSE;
 }
 
 template <typename T>
@@ -547,6 +563,19 @@ __global__ void sum_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      dst[di] = src1[di] + src2[di];
 }
 
+__global__ void sum_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                tl_bool_t *dst, int block_size, int total)
+{
+     int di = blockIdx.x * block_size + threadIdx.x;
+     if (di >= total)
+          return;
+     int res = src1[di] + src2[di];
+     if (res)
+          dst[di] = TL_TRUE;
+     else
+          dst[di] = TL_FALSE;
+}
+
 template <typename T>
 __global__ void sub_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
@@ -554,6 +583,19 @@ __global__ void sub_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      if (di >= total)
           return;
      dst[di] = src1[di] - src2[di];
+}
+
+__global__ void sub_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                tl_bool_t *dst, int block_size, int total)
+{
+     int di = blockIdx.x * block_size + threadIdx.x;
+     if (di >= total)
+          return;
+     int res = src1[di] - src2[di];
+     if (res)
+          dst[di] = TL_TRUE;
+     else
+          dst[di] = TL_FALSE;
 }
 
 template <typename T>
@@ -595,7 +637,7 @@ __global__ void pow_int_kernel(T *src1, T *src2, T *dst, T type_max, T type_min,
           dst[di] = (T)fd;
 }
 
-__global__ void pow_double_kernel(double *src1, double *src2, double *dst
+__global__ void pow_double_kernel(double *src1, double *src2, double *dst,
                                   int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
@@ -605,7 +647,7 @@ __global__ void pow_double_kernel(double *src1, double *src2, double *dst
      dst[di] = pow(src1[di], src2[di]);
 }
 
-__global__ void pow_float_kernel(float *src1, float *src2, float *dst
+__global__ void pow_float_kernel(float *src1, float *src2, float *dst,
                                  int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
@@ -615,7 +657,7 @@ __global__ void pow_float_kernel(float *src1, float *src2, float *dst
      dst[di] = powf(src1[di], src2[di]);
 }
 
-__global__ void pow_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst
+__global__ void pow_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
                                 int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
@@ -640,7 +682,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
      assert(tl_is_device_mem(src1->data) && tl_is_device_mem(src2->data));
      assert(src1->dtype == src2->dtype);
      if (dst) {
-          assert(dst->data);
+          assert(tl_is_device_mem(dst->data));
           assert(tl_tensor_issameshape(src1, dst));
           assert(src1->dtype == dst->dtype);
      } else {
@@ -813,6 +855,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                   (int32_t *)dst->data,
                                                                   INT32_MAX,
                                                                   INT32_MIN,
+                                                                  BLOCK_SIZE,
                                                                   thread_num);
                break;
           default:
@@ -870,6 +913,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                   (int16_t *)dst->data,
                                                                   INT16_MAX,
                                                                   INT16_MIN,
+                                                                  BLOCK_SIZE,
                                                                   thread_num);
                break;
           default:
@@ -927,6 +971,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                  (int8_t *)dst->data,
                                                                  INT8_MAX,
                                                                  INT8_MIN,
+                                                                 BLOCK_SIZE,
                                                                  thread_num);
                break;
           default:
@@ -984,6 +1029,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                    (uint32_t *)dst->data,
                                                                    UINT32_MAX,
                                                                    0,
+                                                                   BLOCK_SIZE,
                                                                    thread_num);
                break;
           default:
@@ -1041,6 +1087,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                    (uint16_t *)dst->data,
                                                                    UINT16_MAX,
                                                                    0,
+                                                                   BLOCK_SIZE,
                                                                    thread_num);
                break;
           default:
@@ -1098,6 +1145,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                   (uint8_t *)dst->data,
                                                                   UINT8_MAX,
                                                                   0,
+                                                                  BLOCK_SIZE,
                                                                   thread_num);
                break;
           default:
@@ -1108,32 +1156,32 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
      case TL_BOOL:
           switch (elew_op) {
           case TL_MUL:
-               mul_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                                (tl_bool_t *)src2->data,
-                                                                (tl_bool_t *)dst->data,
-                                                                BLOCK_SIZE,
-                                                                thread_num);
+               mul_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
+                                                          (tl_bool_t *)src2->data,
+                                                          (tl_bool_t *)dst->data,
+                                                          BLOCK_SIZE,
+                                                          thread_num);
                break;
           case TL_DIV:
-               div_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                                (tl_bool_t *)src2->data,
-                                                                (tl_bool_t *)dst->data,
-                                                                BLOCK_SIZE,
-                                                                thread_num);
+               div_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
+                                                          (tl_bool_t *)src2->data,
+                                                          (tl_bool_t *)dst->data,
+                                                          BLOCK_SIZE,
+                                                          thread_num);
                break;
           case TL_SUM:
-               sum_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                                (tl_bool_t *)src2->data,
-                                                                (tl_bool_t *)dst->data,
-                                                                BLOCK_SIZE,
-                                                                thread_num);
+               sum_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
+                                                          (tl_bool_t *)src2->data,
+                                                          (tl_bool_t *)dst->data,
+                                                          BLOCK_SIZE,
+                                                          thread_num);
                break;
           case TL_SUB:
-               sub_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                                (tl_bool_t *)src2->data,
-                                                                (tl_bool_t *)dst->data,
-                                                                BLOCK_SIZE,
-                                                                thread_num);
+               sub_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
+                                                          (tl_bool_t *)src2->data,
+                                                          (tl_bool_t *)dst->data,
+                                                          BLOCK_SIZE,
+                                                          thread_num);
                break;
           case TL_MAX:
                max_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
@@ -1150,10 +1198,11 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                                                 thread_num);
                break;
           case TL_POW:
-               pow_bool_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                                     (tl_bool_t *)src2->data,
-                                                                     (tl_bool_t *)dst->data,
-                                                                     thread_num);
+               pow_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
+                                                          (tl_bool_t *)src2->data,
+                                                          (tl_bool_t *)dst->data,
+                                                          BLOCK_SIZE,
+                                                          thread_num);
                break;
           default:
                assert(0 && "unsopported tl_elew_op");
@@ -1164,14 +1213,14 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     cudaDeviceSynchronize();
+     TL_CUDA_CK(cudaDeviceSynchronize());
 
      return dst;
 }
 
 __global__ void convert_kernel(void *src, void *dst,
-                             tl_dtype dtype_s, tl_dtype dtype_d,
-                             int block_size, int total)
+                               tl_dtype dtype_s, tl_dtype dtype_d,
+                               int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -1224,7 +1273,7 @@ __global__ void convert_kernel(void *src, void *dst,
      case TL_FLOAT:
           switch (dtype_s) {
           case TL_DOUBLE:
-              val_d = ((double *)src)[di];
+               val_d = ((double *)src)[di];
                if (val_d >= FLT_MAX)
                     ((float *)dst)[di] = FLT_MAX;
                else if (val_d <= -FLT_MAX)
@@ -1710,7 +1759,6 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
 {
      tl_dtype dtype_s;
      int thread_num, block_num;
-     int di;
 
      assert(src && tl_is_device_mem(src->data));
      if (dst) {
@@ -1725,9 +1773,9 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
      thread_num = dst->len;
      block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
      convert_kernel<<<block_num, BLOCK_SIZE>>>(src->data, dst->data,
-                                             dtype_s, dtype_d,
-                                             BLOCK_SIZE, thread_num);
-     cudaDeviceSynchronize();
+                                               dtype_s, dtype_d,
+                                               BLOCK_SIZE, thread_num);
+     TL_CUDA_CK(cudaDeviceSynchronize());
 
      return dst;
 }
@@ -1752,5 +1800,182 @@ __global__ void transpose_kernel(T *src, T *dst, int ndim,
      dst[di] = src[si];
 }
 
+tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
+                                    const int *axes, tl_tensor *workspace)
+{
+     int *s_ids, *d_ids, *s_dims, *d_dims, *axes_device;
+     int thread_num, block_num;
+     int i;
+
+#ifndef NDEBUG
+     int *tmp = (int *)tl_alloc(src->ndim * sizeof(int));
+     memset(tmp, 0, src->ndim * sizeof(int));
+     for (i = 0; i < src->ndim; i++)
+          tmp[axes[i]] = 1;
+     for (i = 0; i < src->ndim; i++)
+          assert(tmp[i] && "axes don't match src tensor's shape");
+     tl_free(tmp);
+     assert(src && tl_is_device_mem(src->data));
+#endif
+     if (dst) {
+#ifndef NDEBUG
+          assert(tl_is_device_mem(dst->data));
+          assert(src->dtype == dst->dtype);
+          assert(src->len == dst->len);
+          assert(src->ndim == dst->ndim);
+          for (i = 0; i < dst->ndim; i++)
+               assert(src->dims[axes[i]] = dst->dims[i]);
+#endif
+     } else {
+          d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
+          for (i = 0; i < src->ndim; i++)
+               d_dims[i] = src->dims[axes[i]];
+          dst = tl_tensor_create(NULL, src->ndim, d_dims, src->dtype);
+          tl_free(d_dims);
+     }
+
+     thread_num = dst->len;
+     block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
+     s_dims = (int *)tl_clone_h2d(src->dims, sizeof(int) * src->ndim);
+     d_dims = (int *)tl_clone_h2d(dst->dims, sizeof(int) * dst->ndim);
+     axes_device = (int *)tl_clone_h2d(axes, sizeof(int) * src->ndim);
+     if (!workspace) {
+          s_ids = (int *)tl_alloc_cuda(sizeof(int) * dst->ndim * thread_num);
+          d_ids = (int *)tl_alloc_cuda(sizeof(int) * dst->ndim * thread_num);
+     } else {
+          assert(tl_is_device_mem(workspace->data));
+          assert(workspace->dtype == TL_INT32);
+          assert(workspace->len == dst->ndim * dst->len * 2);
+          s_ids = (int32_t *)workspace->data;
+          d_ids = &((int32_t *)workspace->data)[workspace->len / 2];
+     }
+
+     switch (src->dtype) {
+     case TL_DOUBLE:
+          transpose_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
+                                                              (double *)dst->data,
+                                                              dst->ndim,
+                                                              s_dims, d_dims,
+                                                              s_ids, d_ids,
+                                                              axes_device,
+                                                              BLOCK_SIZE,
+                                                              thread_num);
+          break;
+     case TL_FLOAT:
+          transpose_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
+                                                             (float *)dst->data,
+                                                             dst->ndim,
+                                                             s_dims, d_dims,
+                                                             s_ids, d_ids,
+                                                             axes_device,
+                                                             BLOCK_SIZE,
+                                                             thread_num);
+          break;
+     case TL_INT32:
+          transpose_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
+                                                               (int32_t *)dst->data,
+                                                               dst->ndim,
+                                                               s_dims, d_dims,
+                                                               s_ids, d_ids,
+                                                               axes_device,
+                                                               BLOCK_SIZE,
+                                                               thread_num);
+          break;
+     case TL_INT16:
+          transpose_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
+                                                               (int16_t *)dst->data,
+                                                               dst->ndim,
+                                                               s_dims, d_dims,
+                                                               s_ids, d_ids,
+                                                               axes_device,
+                                                               BLOCK_SIZE,
+                                                               thread_num);
+          break;
+     case TL_INT8:
+          transpose_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
+                                                              (int8_t *)dst->data,
+                                                              dst->ndim,
+                                                              s_dims, d_dims,
+                                                              s_ids, d_ids,
+                                                              axes_device,
+                                                              BLOCK_SIZE,
+                                                              thread_num);
+          break;
+     case TL_UINT32:
+          transpose_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
+                                                                (uint32_t *)dst->data,
+                                                                dst->ndim,
+                                                                s_dims, d_dims,
+                                                                s_ids, d_ids,
+                                                                axes_device,
+                                                                BLOCK_SIZE,
+                                                                thread_num);
+          break;
+     case TL_UINT16:
+          transpose_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
+                                                                (uint16_t *)dst->data,
+                                                                dst->ndim,
+                                                                s_dims, d_dims,
+                                                                s_ids, d_ids,
+                                                                axes_device,
+                                                                BLOCK_SIZE,
+                                                                thread_num);
+          break;
+     case TL_UINT8:
+          transpose_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
+                                                               (uint8_t *)dst->data,
+                                                               dst->ndim,
+                                                               s_dims, d_dims,
+                                                               s_ids, d_ids,
+                                                               axes_device,
+                                                               BLOCK_SIZE,
+                                                               thread_num);
+          break;
+     case TL_BOOL:
+          transpose_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
+                                                                 (tl_bool_t *)dst->data,
+                                                                 dst->ndim,
+                                                                 s_dims, d_dims,
+                                                                 s_ids, d_ids,
+                                                                 axes_device,
+                                                                 BLOCK_SIZE,
+                                                                 thread_num);
+          break;
+     default:
+          assert(0 && "unsupported tl_dtype");
+          break;
+     }
+     TL_CUDA_CK(cudaDeviceSynchronize());
+
+     if (!workspace) {
+          tl_free_cuda(s_ids);
+          tl_free_cuda(d_ids);
+     }
+     tl_free_cuda(s_dims);
+     tl_free_cuda(d_dims);
+     tl_free_cuda(axes_device);
+
+     return dst;
+}
+
+tl_tensor *tl_tensor_vtranspose_cuda(const tl_tensor *src, tl_tensor *dst,
+                                     tl_tensor *workspace, ...)
+{
+     int *axes;
+     va_list ap;
+     int i;
+
+     assert(src && src->ndim > 0);
+     axes = (int *)tl_alloc(sizeof(int) * src->ndim);
+     va_start(ap, workspace);
+     for (i = 0; i < src->ndim; i++) {
+          axes[i] = va_arg(ap, int);
+          assert(axes[i] > 0);
+     }
+     va_end(ap);
+     dst = tl_tensor_transpose_cuda(src, dst, axes, workspace);
+     tl_free(axes);
+     return dst;
+}
 
 #endif  /* TL_CUDA */

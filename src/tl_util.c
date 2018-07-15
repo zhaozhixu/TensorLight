@@ -40,6 +40,11 @@ void *tl_alloc(size_t size)
      return p;
 }
 
+void tl_memcpy(void *dst, void *src, size_t size)
+{
+     memmove(dst, src, size);
+}
+
 void *tl_clone(const void *src, size_t size)
 {
      void *p;

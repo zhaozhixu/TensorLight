@@ -40,6 +40,7 @@ int main(int argc, char **argv)
 
 #ifdef TL_CUDA
      srunner_add_suite(sr, make_util_cuda_suite());
+     srunner_add_suite(sr, make_tensor_cuda_suite());
 #endif /* TL_CUDA */
 
      srunner_set_xml (sr, "result/check_output.xml");

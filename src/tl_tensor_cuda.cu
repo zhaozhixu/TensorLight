@@ -83,48 +83,6 @@ void tl_tensor_free_data_too_cuda(tl_tensor *t)
      tl_tensor_free(t);
 }
 
-tl_tensor *tl_tensor_zeros_cuda(tl_dtype dtype, int ndim, ...)
-{
-     tl_tensor *t;
-     int *dims;
-     va_list ap;
-     int i;
-
-     assert(ndim > 0);
-     dims = (int *)tl_alloc(sizeof(int) * ndim);
-     va_start(ap, ndim);
-     for (i = 0; i < ndim; i++) {
-          dims[i] = va_arg(ap, int);
-          assert(dims[i] > 0);
-     }
-     va_end(ap);
-
-     t = tl_tensor_create_cuda(NULL, ndim, dims, dtype);
-     tl_free(dims);
-     return t;
-}
-
-tl_tensor *tl_tensor_vcreate_cuda(tl_dtype dtype, int ndim, ...)
-{
-     tl_tensor *t;
-     int *dims;
-     va_list ap;
-     int i;
-
-     assert(ndim > 0);
-     dims = (int *)tl_alloc(sizeof(int) * ndim);
-     va_start(ap, ndim);
-     for (i = 0; i < ndim; i++) {
-          dims[i] = va_arg(ap, int);
-          assert(dims[i] > 0);
-     }
-     va_end(ap);
-
-     t = tl_tensor_create_cuda(NULL, ndim, dims, dtype);
-     tl_free(dims);
-     return t;
-}
-
 tl_tensor *tl_tensor_clone_h2d(const tl_tensor *src)
 {
      void *data;
@@ -308,40 +266,6 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
      return dst;
 }
 
-/* in-place reshape tensor */
-tl_tensor *tl_tensor_reshape_cuda(const tl_tensor *src, int ndim,
-                                  const int *dims)
-{
-     tl_tensor *dst;
-
-     assert(src && tl_is_device_mem(src->data));
-     assert(src->len == tl_compute_length(ndim, dims));
-     dst = tl_tensor_create_cuda(src->data, ndim, dims, src->dtype);
-     return dst;
-}
-
-tl_tensor *tl_tensor_vreshape_cuda(const tl_tensor *src, int ndim, ...)
-{
-     tl_tensor *dst;
-     int *dims;
-     va_list ap;
-     int i;
-
-     assert(src && tl_is_device_mem(src->data));
-     assert(ndim > 0);
-     dims = (int *)tl_alloc(sizeof(int) * ndim);
-     va_start(ap, ndim);
-     for (i = 0; i < ndim; i++) {
-          dims[i] = va_arg(ap, int);
-          assert(dims[i] > 0);
-     }
-     va_end(ap);
-     assert(src->len == tl_compute_length(ndim, dims));
-     dst = tl_tensor_create_cuda(src->data, ndim, dims, src->dtype);
-     tl_free(dims);
-     return dst;
-}
-
 template <typename T>
 __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size,
                                  int reduce_vol, int batch_vol,
@@ -366,7 +290,8 @@ __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size,
           }
      }
      dst[di] = max;
-     arg[di] = maxi;
+     if (arg)
+          arg[di] = maxi;
 }
 
 
@@ -376,6 +301,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      /* suppose the shape of src is [N, C, H, W], dim = 1, then thread_num is N x H x W
         reduce_vol is H x W, index_vol is C x H x W */
      int thread_num, block_num, reduce_vol, index_vol;
+     void *arg_data;
      int i;
 
      tl_check_dtype(src->dtype);
@@ -400,6 +326,9 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
                assert(i == axis ? arg->dims[i] == 1 :
                       arg->dims[i] == src->dims[i]);
 #endif
+          arg_data = arg->data;
+     } else {
+          arg_data = NULL;
      }
 
      for (i = axis+1, thread_num = 1; i < dst->ndim; i++)
@@ -414,7 +343,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_DOUBLE:
           maxreduce_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
                                                               (double *)dst->data,
-                                                              (int32_t *)arg->data,
+                                                              (int32_t *)arg_data,
                                                               src->dims[axis],
                                                               reduce_vol,
                                                               index_vol,
@@ -424,7 +353,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_FLOAT:
           maxreduce_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
                                                              (float *)dst->data,
-                                                             (int32_t *)arg->data,
+                                                             (int32_t *)arg_data,
                                                              src->dims[axis],
                                                              reduce_vol,
                                                              index_vol,
@@ -434,7 +363,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_INT32:
           maxreduce_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
                                                                (int32_t *)dst->data,
-                                                               (int32_t *)arg->data,
+                                                               (int32_t *)arg_data,
                                                                src->dims[axis],
                                                                reduce_vol,
                                                                index_vol,
@@ -444,7 +373,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_INT16:
           maxreduce_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
                                                                (int16_t *)dst->data,
-                                                               (int32_t *)arg->data,
+                                                               (int32_t *)arg_data,
                                                                src->dims[axis],
                                                                reduce_vol,
                                                                index_vol,
@@ -454,7 +383,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_INT8:
           maxreduce_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
                                                               (int8_t *)dst->data,
-                                                              (int32_t *)arg->data,
+                                                              (int32_t *)arg_data,
                                                               src->dims[axis],
                                                               reduce_vol,
                                                               index_vol,
@@ -464,7 +393,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_UINT32:
           maxreduce_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
                                                                 (uint32_t *)dst->data,
-                                                                (int32_t *)arg->data,
+                                                                (int32_t *)arg_data,
                                                                 src->dims[axis],
                                                                 reduce_vol,
                                                                 index_vol,
@@ -474,7 +403,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_UINT16:
           maxreduce_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
                                                                 (uint16_t *)dst->data,
-                                                                (int32_t *)arg->data,
+                                                                (int32_t *)arg_data,
                                                                 src->dims[axis],
                                                                 reduce_vol,
                                                                 index_vol,
@@ -484,7 +413,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_UINT8:
           maxreduce_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
                                                                (uint8_t *)dst->data,
-                                                               (int32_t *)arg->data,
+                                                               (int32_t *)arg_data,
                                                                src->dims[axis],
                                                                reduce_vol,
                                                                index_vol,
@@ -494,7 +423,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_BOOL:
           maxreduce_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
                                                                  (tl_bool_t *)dst->data,
-                                                                 (int32_t *)arg->data,
+                                                                 (int32_t *)arg_data,
                                                                  src->dims[axis],
                                                                  reduce_vol,
                                                                  index_vol,
@@ -686,7 +615,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
           assert(tl_tensor_issameshape(src1, dst));
           assert(src1->dtype == dst->dtype);
      } else {
-          dst = tl_tensor_create(NULL, src1->ndim, src2->dims, src1->dtype);
+          dst = tl_tensor_create_cuda(NULL, src1->ndim, src2->dims, src1->dtype);
      }
 
      int thread_num = dst->len;
@@ -1830,7 +1759,7 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
           d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
           for (i = 0; i < src->ndim; i++)
                d_dims[i] = src->dims[axes[i]];
-          dst = tl_tensor_create(NULL, src->ndim, d_dims, src->dtype);
+          dst = tl_tensor_create_cuda(NULL, src->ndim, d_dims, src->dtype);
           tl_free(d_dims);
      }
 

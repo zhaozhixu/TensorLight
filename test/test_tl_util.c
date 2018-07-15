@@ -47,6 +47,17 @@ START_TEST(test_tl_alloc)
 }
 END_TEST
 
+START_TEST(test_tl_memcpy)
+{
+     int *data_cpy = tl_alloc(data_size);
+     tl_memcpy(data_cpy, data, data_size);
+     for (int i = 0; i < data_len; i++)
+          ck_assert_int_eq(data_cpy[i], data[i]);
+     tl_free(data_cpy);
+}
+END_TEST
+
+
 START_TEST(test_tl_clone)
 {
      int *data_clone;
@@ -82,6 +93,7 @@ Suite *make_util_suite(void)
      tcase_add_checked_fixture(tc_util, setup, teardown);
 
      tcase_add_test(tc_util, test_tl_alloc);
+     tcase_add_test(tc_util, test_tl_memcpy);
      tcase_add_test(tc_util, test_tl_clone);
      tcase_add_test(tc_util, test_tl_repeat);
      /* end of adding tests */

@@ -19,7 +19,7 @@ Example:
 	Executing this example from project root will generate test templates
 	test_tl_mod_func1 and test_tl_mod_func2 for module tl_mod in file
  	ROOT/test/test_tl_mod.c, and will be compiled only if TL_CUDA has been
-    defined.
+	defined.
 EOF
 if (@ARGV < 1 or $ARGV[0] eq "-h" or $ARGV[0] eq "--help") {
   print $usage;

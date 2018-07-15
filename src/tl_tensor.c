@@ -137,28 +137,6 @@ tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...)
      return t;
 }
 
-/* same as tl_tensor_zeros(), just for completeness */
-tl_tensor *tl_tensor_vcreate(tl_dtype dtype, int ndim, ...)
-{
-     tl_tensor *t;
-     int *dims;
-     va_list ap;
-     int i;
-
-     assert(ndim > 0);
-     dims = (int *)tl_alloc(sizeof(int) * ndim);
-     va_start(ap, ndim);
-     for (i = 0; i < ndim; i++) {
-          dims[i] = va_arg(ap, int);
-          assert(dims[i] > 0);
-     }
-     va_end(ap);
-
-     t = tl_tensor_create(NULL, ndim, dims, dtype);
-     tl_free(dims);
-     return t;
-}
-
 tl_tensor *tl_tensor_clone(const tl_tensor *src)
 {
      void *data;

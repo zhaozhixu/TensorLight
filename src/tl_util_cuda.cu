@@ -55,6 +55,27 @@ void *tl_alloc_cuda(size_t size)
      return p;
 }
 
+void tl_memcpy_cuda_h2d(void *dst, const void *src, size_t size)
+{
+     assert(!tl_is_device_mem(src));
+     assert(tl_is_device_mem(dst));
+     TL_CUDA_CK(cudaMemcpy(dst, src, size, cudaMemcpyHostToDevice));
+}
+
+void tl_memcpy_cuda_d2h(void *dst, const void *src, size_t size)
+{
+     assert(tl_is_device_mem(src));
+     assert(!tl_is_device_mem(dst));
+     TL_CUDA_CK(cudaMemcpy(dst, src, size, cudaMemcpyDeviceToHost));
+}
+
+void tl_memcpy_cuda_d2d(void *dst, const void *src, size_t size)
+{
+     assert(tl_is_device_mem(src));
+     assert(tl_is_device_mem(dst));
+     TL_CUDA_CK(cudaMemcpy(dst, src, size, cudaMemcpyDeviceToDevice));
+}
+
 void tl_free_cuda(void *p)
 {
      assert(tl_is_device_mem(p));

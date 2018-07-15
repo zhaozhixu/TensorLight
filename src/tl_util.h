@@ -36,6 +36,7 @@ TL_CPPSTART
 #endif
 
 void *tl_alloc(size_t size);
+void tl_memcpy(void *dst, void *src, size_t size);
 void *tl_clone(const void *src, size_t size);
 void *tl_repeat(void *data, size_t size, int times);
 int tl_compute_length(int ndim, const int *dims);
@@ -60,6 +61,9 @@ void tl_err_dump(const char *fmt, ...);
 
 int tl_is_device_mem(const void *ptr);
 void *tl_alloc_cuda(size_t size);
+void tl_memcpy_cuda_h2d(void *dst, const void *src, size_t size);
+void tl_memcpy_cuda_d2h(void *dst, const void *src, size_t size);
+void tl_memcpy_cuda_d2d(void *dst, const void *src, size_t size);
 void tl_free_cuda(void *p);
 void *tl_clone_h2d(const void *src, size_t size);
 void *tl_clone_d2h(const void *src, size_t size);

@@ -38,6 +38,7 @@ Suite *make_tensor_suite(void);
 
 #ifdef TL_CUDA
 Suite *make_util_cuda_suite(void);
+Suite *make_tensor_cuda_suite(void);
 #endif /* TL_CUDA */
 
 #ifdef __cplusplus

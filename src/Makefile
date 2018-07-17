@@ -25,12 +25,12 @@ LDFLAGS = $(CFLAGS)
 ifeq ($(DEBUG), yes)
 CFLAGS += -g -O0 -DTL_DEBUG
 CXXFLAGS += -g -O0 -DTL_DEBUG
-CUFLAGS += -lineinfo
+CUFLAGS += -lineinfo -O0
 LDFLAGS += -g -O0
 else
 CFLAGS += -O3
 CXXFLAGS += -O3
-CUFLAGS +=
+CUFLAGS += -O3
 LDFLAGS += -O3
 endif
 
@@ -55,14 +55,20 @@ CXXFLAGS += -fPIC
 CUFLAGS += --compiler-options '-fPIC' --linker-options '-Wl,--no-undefined -shared' -shared
 LDFLAGS += -shared -Wl,--no-undefined
 
+SRC = $(wildcard *.c)
+SRC += $(wildcard *.cpp)
+SRC += $(wildcard *.cc)
+SRC += $(wildcard *.cu)
+NORMAL_SRC = $(filter-out %cuda.c %cuda.cu,$(SRC))
+CUDA_SRC = $(filter %cuda.c %cuda.cu,$(SRC))
+
 OBJDIR = obj
-OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(wildcard *.c))
-OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(wildcard *.cpp))
-OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(wildcard *.cc))
+OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(NORMAL_SRC)))
+OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(filter %.cpp,$(NORMAL_SRC)))
+OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(filter %.cc,$(NORMAL_SRC)))
 ifeq ($(WITH_CUDA), yes)
-CUOBJS = $(patsubst %.cu,$(OBJDIR)/%.o,$(wildcard *.cu))
-else
-CUOBJS =
+OBJS  += $(patsubst %.cu,$(OBJDIR)/%.o,$(filter %.cu,$(CUDA_SRC)))
+OBJS  += $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(CUDA_SRC)))
 endif
 
 define concat
@@ -91,11 +97,11 @@ liba: $(OBJDIR)/$(LIBTARGET_A)
 
 libso: $(OBJDIR)/$(LIBTARGET_SO)
 
-$(OBJDIR)/$(LIBTARGET_A): $(OBJS) $(CUOBJS)
+$(OBJDIR)/$(LIBTARGET_A): $(OBJS)
 	$(ECHO) Packing: $^
 	$(AT)$(AR) $@ $^
 
-$(OBJDIR)/$(LIBTARGET_SO): $(OBJS) $(CUOBJS)
+$(OBJDIR)/$(LIBTARGET_SO): $(OBJS)
 	$(ECHO) Linking: $^
 	$(AT)$(CC) -o $@ $^ $(LDFLAGS)
 

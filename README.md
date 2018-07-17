@@ -35,7 +35,7 @@ Remember to put `nvcc` (usually in `/usr/local/cuda/bin`) in environment variabl
     You can append them after `./configure`. For example, use
     
     ```
-    ./configure --cuda-enable=yes
+    ./configure --with-cuda=yes
     ```
     if you want to build with CUDA support.
     Detailed `./configure` options can be printed using `./configure -h`.

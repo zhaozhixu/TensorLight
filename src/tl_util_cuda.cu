@@ -30,6 +30,20 @@
 
 #include "tl_util.h"
 
+#define MAX_DEVICE_NUM 16
+
+void tl_cuda_set_device(int n)
+{
+     TL_CUDA_CK(cudaSetDevice(n));
+}
+
+int tl_cuda_get_device()
+{
+     int n = 0;
+     TL_CUDA_CK(cudaGetDevice(&n));
+     return n;
+}
+
 int tl_is_device_mem(const void *ptr)
 {
      assert(ptr);
@@ -55,21 +69,21 @@ void *tl_alloc_cuda(size_t size)
      return p;
 }
 
-void tl_memcpy_cuda_h2d(void *dst, const void *src, size_t size)
+void tl_memcpy_h2d(void *dst, const void *src, size_t size)
 {
      assert(!tl_is_device_mem(src));
      assert(tl_is_device_mem(dst));
      TL_CUDA_CK(cudaMemcpy(dst, src, size, cudaMemcpyHostToDevice));
 }
 
-void tl_memcpy_cuda_d2h(void *dst, const void *src, size_t size)
+void tl_memcpy_d2h(void *dst, const void *src, size_t size)
 {
      assert(tl_is_device_mem(src));
      assert(!tl_is_device_mem(dst));
      TL_CUDA_CK(cudaMemcpy(dst, src, size, cudaMemcpyDeviceToHost));
 }
 
-void tl_memcpy_cuda_d2d(void *dst, const void *src, size_t size)
+void tl_memcpy_d2d(void *dst, const void *src, size_t size)
 {
      assert(tl_is_device_mem(src));
      assert(tl_is_device_mem(dst));
@@ -147,5 +161,26 @@ void *tl_repeat_d2d(void *data, size_t size, int times)
           TL_CUDA_CK(cudaMemcpy(p, data, size, cudaMemcpyDeviceToDevice));
      return dst;
 }
+
+#ifdef TL_CUDNN
+
+cudnnHandle_t tl_cudnn_handle()
+{
+     static int has_init[MAX_DEVICE_NUM] = {0};
+     static cudnnHandle_t handles[MAX_DEVICE_NUM];
+     int i = tl_cuda_get_device();
+
+     if (i >= MAX_DEVICE_NUM) {
+          tl_err_bt("ERROR: CUDA device number(%d) exceeds MAX_DEVICE_NUM(%d)",
+                    i, MAX_DEVICE_NUM);
+     }
+     if (!has_init[i]) {
+          cudnnCreate(&handles[i]);
+          has_init[i] = 1;
+     }
+     return handles[i];
+}
+
+#endif  /* TL_CUDNN */
 
 #endif  /* TL_CUDA */

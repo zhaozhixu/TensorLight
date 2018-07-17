@@ -99,7 +99,7 @@ static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)
  * Nonfatal error unrelated to a system call.
  * Print a message and return.
  */
-void tl_err_msg(const char *fmt, ...)
+void tl_warn_msg(const char *fmt, ...)
 {
      va_list ap;
      va_start(ap, fmt);
@@ -112,7 +112,7 @@ void tl_err_msg(const char *fmt, ...)
  * Error code passed as explict parameter.
  * Print a message and return.
  */
-void tl_err_cont(int error, const char *fmt, ...)
+void tl_warn_cont(int error, const char *fmt, ...)
 {
      va_list ap;
      va_start(ap, fmt);
@@ -124,7 +124,7 @@ void tl_err_cont(int error, const char *fmt, ...)
  * Nonfatal error related to a system call.
  * Print a message and return.
  */
-void tl_err_ret(const char *fmt, ...)
+void tl_warn_ret(const char *fmt, ...)
 {
      va_list ap;
      va_start(ap, fmt);

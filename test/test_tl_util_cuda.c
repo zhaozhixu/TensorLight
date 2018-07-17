@@ -53,14 +53,14 @@ START_TEST(test_tl_alloc_cuda)
 }
 END_TEST
 
-START_TEST(test_tl_memcpy_cuda_h2d)
+START_TEST(test_tl_memcpy_h2d)
 {
      int array[] = {0, 1, 2};
      int *array_h = tl_alloc(sizeof(int)*3);
      int *array_d = tl_alloc_cuda(sizeof(int)*3);
 
-     tl_memcpy_cuda_h2d(array_d, array, sizeof(int)*3);
-     tl_memcpy_cuda_d2h(array_h, array_d, sizeof(int)*3);
+     tl_memcpy_h2d(array_d, array, sizeof(int)*3);
+     tl_memcpy_d2h(array_h, array_d, sizeof(int)*3);
      for (int i = 0; i < 3; i++)
           ck_assert_int_eq(array_h[i], array[i]);
 
@@ -69,21 +69,21 @@ START_TEST(test_tl_memcpy_cuda_h2d)
 }
 END_TEST
 
-START_TEST(test_tl_memcpy_cuda_d2h)
+START_TEST(test_tl_memcpy_d2h)
 {
 }
 END_TEST
 
-START_TEST(test_tl_memcpy_cuda_d2d)
+START_TEST(test_tl_memcpy_d2d)
 {
      int array[] = {0, 1, 2};
      int *array_h = tl_alloc(sizeof(int)*3);
      int *array_d1 = tl_alloc_cuda(sizeof(int)*3);
      int *array_d2 = tl_alloc_cuda(sizeof(int)*3);
 
-     tl_memcpy_cuda_h2d(array_d1, array, sizeof(int)*3);
-     tl_memcpy_cuda_d2d(array_d2, array_d1, sizeof(int)*3);
-     tl_memcpy_cuda_d2h(array_h, array_d2, sizeof(int)*3);
+     tl_memcpy_h2d(array_d1, array, sizeof(int)*3);
+     tl_memcpy_d2d(array_d2, array_d1, sizeof(int)*3);
+     tl_memcpy_d2h(array_h, array_d2, sizeof(int)*3);
      for (int i = 0; i < 3; i++)
           ck_assert_int_eq(array_h[i], array[i]);
 
@@ -194,9 +194,9 @@ Suite *make_util_cuda_suite(void)
 
      tcase_add_test(tc_util_cuda, test_tl_is_device_mem);
      tcase_add_test(tc_util_cuda, test_tl_alloc_cuda);
-     tcase_add_test(tc_util_cuda, test_tl_memcpy_cuda_h2d);
-     tcase_add_test(tc_util_cuda, test_tl_memcpy_cuda_d2h);
-     tcase_add_test(tc_util_cuda, test_tl_memcpy_cuda_d2d);
+     tcase_add_test(tc_util_cuda, test_tl_memcpy_h2d);
+     tcase_add_test(tc_util_cuda, test_tl_memcpy_d2h);
+     tcase_add_test(tc_util_cuda, test_tl_memcpy_d2d);
      tcase_add_test(tc_util_cuda, test_tl_clone_h2d);
      tcase_add_test(tc_util_cuda, test_tl_clone_d2h);
      tcase_add_test(tc_util_cuda, test_tl_clone_d2d);

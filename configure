@@ -15,6 +15,8 @@ options:
   --pkgconfig-dir=<path>     pkgconfig directory, default is
                              /usr/local/lib/pkgconfig
   --with-cuda=<value>        set to yes if build with CUDA, default is no
+  --with-cudnn=<value>       set to yes if build with cudnn library,
+                             default is no
   --cuda-install-dir=<path>  cuda installation directory, default is
                              /usr/local/cuda
   --debug=<value>            set to yes when debugging, default is no
@@ -27,6 +29,7 @@ my %opts = (
             "INSTALL_DIR" => "/usr/local",
             "PKGCONFIG_DIR" => "/usr/local/lib/pkgconfig",
             "WITH_CUDA" => "no",
+            "WITH_CUDNN" => "no",
             "CUDA_INSTALL_DIR" => "/usr/local/cuda",
             "DEBUG" => "no",
            );
@@ -74,6 +77,13 @@ if ($output eq "") {
 $output = `pkg-config --modversion check`;;
 if ($output eq "") {
   &err_exit("check not installed");
+}
+
+if ($opts{WITH_CUDNN} eq "yes") {
+  if (not $opts{WITH_CUDA} eq "yes") {
+    $opts{WITH_CUDA} = "yes";
+    print ("automatically set --with-cuda=yes\n");
+  }
 }
 
 if ($opts{WITH_CUDA} eq "yes") {

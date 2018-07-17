@@ -236,7 +236,7 @@ int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt)
 
      fp = fopen(file_name, "w");
      if (!fp) {
-          tl_err_ret("ERROR: cannot open %s", file_name);
+          tl_warn_ret("ERROR: cannot open %s", file_name);
           return -1;
      }
      tl_tensor_fprint(fp, t, fmt);

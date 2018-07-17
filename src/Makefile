@@ -38,12 +38,18 @@ INCPATHS = -I/usr/local/include
 LDFLAGS += -L/usr/local/lib -lm
 
 ifeq ($(WITH_CUDA), yes)
-CUDA_INSTALL_DIR ?= /usr/local/cuda
 CFLAGS += -DTL_CUDA
 CXXFLAGS += -DTL_CUDA
 CUFLAGS += -DTL_CUDA
+CUDA_INSTALL_DIR ?= /usr/local/cuda
 INCPATHS += -I$(CUDA_INSTALL_DIR)/include
 LDFLAGS += -L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart -lcublas -lcurand -lstdc++
+ifeq ($(WITH_CUDNN), yes)
+CFLAGS += -DTL_CUDNN
+CXXFLAGS += -DTL_CUDNN
+CUFLAGS += -DTL_CUDNN
+LDFLAGS += -lcudnn
+endif
 endif
 
 CFLAGS += $(INCPATHS)

@@ -59,28 +59,63 @@ tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
                                  tl_dtype dtype)
 {
      tl_tensor *t;
-     size_t size;
 
-     t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
+     t = tl_alloc(sizeof(tl_tensor));
      t->len = tl_compute_length(ndim, dims);
      t->ndim = ndim;
-     t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
+     t->dims = tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
-     size = t->len * tl_size_of(dtype);
-     if (!data) {
-          t->data = tl_alloc_cuda(size);
-          TL_CUDA_CK(cudaMemset(t->data, 0, size));
-     } else {
-          t->data = data;
-     }
+     t->data = data;
+
+#ifdef TL_CUDNN
+     cudnnTensorDescriptor_t td;
+     cudnnDataType_t cudnn_dtype = tl_dtype_to_cudnn_dtype(dtype);
+     int *strides = tl_alloc(ndim * sizeof(int));
+
+     strides[ndim-1] = 1;
+     for (int i = ndim-2; i >= 0; i--)
+          strides[i] = strides[i+1] * dims[i+1];
+     TL_CUDNN_CK(cudnnCreateTensorDescriptor(&td));
+     if (ndim == 4)
+          TL_CUDNN_CK(cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW,
+                                                 cudnn_dtype, dims[0], dims[1],
+                                                 dims[2], dims[3]));
+     else
+          TL_CUDNN_CK(cudnnSetTensorNdDescriptor(td, cudnn_dtype,
+                                                 ndim, dims, strides));
+     t->backend_data = td;
+     tl_free(strides);
+#endif
 
      return t;
+}
+
+void tl_tensor_free_cuda(tl_tensor *t)
+{
+     assert(t);
+     tl_free(t->dims);
+#ifdef TL_CUDNN
+     TL_CUDNN_CK(cudnnDestroyTensorDescriptor(t->backend_data));
+#endif
+     tl_free(t);
 }
 
 void tl_tensor_free_data_too_cuda(tl_tensor *t)
 {
      TL_CUDA_CK(cudaFree(t->data));
-     tl_tensor_free(t);
+     tl_tensor_free_cuda(t);
+}
+
+tl_tensor *tl_tensor_zeros_cuda(int ndim, const int *dims, tl_dtype dtype)
+{
+     tl_tensor *t;
+     size_t size;
+
+     t = tl_tensor_create_cuda(NULL, ndim, dims, dtype);
+     size = t->len * tl_size_of(dtype);
+     t->data = tl_alloc_cuda(size);
+     TL_CUDA_CK(cudaMemset(t->data, 0, size));
+     return t;
 }
 
 tl_tensor *tl_tensor_clone_h2d(const tl_tensor *src)

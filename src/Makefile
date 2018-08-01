@@ -65,8 +65,9 @@ SRC = $(wildcard *.c)
 SRC += $(wildcard *.cpp)
 SRC += $(wildcard *.cc)
 SRC += $(wildcard *.cu)
-NORMAL_SRC = $(filter-out %cuda.c %cuda.cu,$(SRC))
+NORMAL_SRC = $(filter-out %cuda.c %cuda.cu %cudnn.c %cudnn.cu,$(SRC))
 CUDA_SRC = $(filter %cuda.c %cuda.cu,$(SRC))
+CUDNN_SRC = $(filter %cudnn.c %cudnn.cu,$(SRC))
 
 OBJDIR = obj
 OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(NORMAL_SRC)))
@@ -75,6 +76,10 @@ OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(filter %.cc,$(NORMAL_SRC)))
 ifeq ($(WITH_CUDA), yes)
 OBJS  += $(patsubst %.cu,$(OBJDIR)/%.o,$(filter %.cu,$(CUDA_SRC)))
 OBJS  += $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(CUDA_SRC)))
+ifeq ($(WITH_CUDNN), yes)
+OBJS  += $(patsubst %.cu,$(OBJDIR)/%.o,$(filter %.cu,$(CUDNN_SRC)))
+OBJS  += $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(CUDNN_SRC)))
+endif
 endif
 
 define concat

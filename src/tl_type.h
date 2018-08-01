@@ -111,7 +111,6 @@ TL_CPPEND
 #endif
 
 #ifdef TL_CUDA
-#include <cuda_runtime.h>
 
 #define tl_passign_h2d(pd, offd, ps, offs, dsize)                    \
      TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),           \
@@ -138,6 +137,10 @@ TL_CPPSTART
 #endif
 
 int tl_fprintf_cuda(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
+
+#ifdef TL_CUDNN
+cudnnDataType_t tl_dtype_to_cudnn_dtype(tl_dtype dtype);
+#endif  /* TL_CUDNN */
 
 #ifdef __cplusplus
 TL_CPPEND

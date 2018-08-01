@@ -84,20 +84,14 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
                             tl_dtype dtype)
 {
      tl_tensor *t;
-     size_t size;
 
-     t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
+     t = tl_alloc(sizeof(tl_tensor));
      t->len = tl_compute_length(ndim, dims);
      t->ndim = ndim;
-     t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
+     t->dims = tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
-     size = t->len * tl_size_of(dtype);
-     if (!data) {
-          t->data = tl_alloc(size);
-          memset(t->data, 0, size);
-     } else {
-          t->data = data;
-     }
+     t->other = NULL;
+     t->data = data;
 
      return t;
 }
@@ -115,25 +109,15 @@ void tl_tensor_free_data_too(tl_tensor *t)
      tl_tensor_free(t);
 }
 
-/* TODO: va_list length not checked */
-tl_tensor *tl_tensor_zeros(tl_dtype dtype, int ndim, ...)
+tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype)
 {
      tl_tensor *t;
-     int *dims;
-     va_list ap;
-     int i;
-
-     assert(ndim > 0);
-     dims = (int *)tl_alloc(sizeof(int) * ndim);
-     va_start(ap, ndim);
-     for (i = 0; i < ndim; i++) {
-          dims[i] = va_arg(ap, int);
-          assert(dims[i] > 0);
-     }
-     va_end(ap);
+     size_t size;
 
      t = tl_tensor_create(NULL, ndim, dims, dtype);
-     tl_free(dims);
+     size = t->len * tl_size_of(dtype);
+     t->data = tl_alloc(size);
+     memset(t->data, 0, size);
      return t;
 }
 

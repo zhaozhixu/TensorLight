@@ -30,10 +30,9 @@
 
 #include "tl_util.h"
 
-#define MAX_DEVICE_NUM 16
-
 void tl_cuda_set_device(int n)
 {
+     assert(n <= TL_MAX_CUDA_DEVICE);
      TL_CUDA_CK(cudaSetDevice(n));
 }
 
@@ -47,7 +46,7 @@ int tl_cuda_get_device()
 int tl_is_device_mem(const void *ptr)
 {
      assert(ptr);
-     cudaPointerAttributes attributes;
+     struct cudaPointerAttributes attributes;
      cudaError_t status;
 
      status = cudaPointerGetAttributes(&attributes, ptr);
@@ -161,26 +160,5 @@ void *tl_repeat_d2d(void *data, size_t size, int times)
           TL_CUDA_CK(cudaMemcpy(p, data, size, cudaMemcpyDeviceToDevice));
      return dst;
 }
-
-#ifdef TL_CUDNN
-
-cudnnHandle_t tl_cudnn_handle()
-{
-     static int has_init[MAX_DEVICE_NUM] = {0};
-     static cudnnHandle_t handles[MAX_DEVICE_NUM];
-     int i = tl_cuda_get_device();
-
-     if (i >= MAX_DEVICE_NUM) {
-          tl_err_bt("ERROR: CUDA device number(%d) exceeds MAX_DEVICE_NUM(%d)",
-                    i, MAX_DEVICE_NUM);
-     }
-     if (!has_init[i]) {
-          cudnnCreate(&handles[i]);
-          has_init[i] = 1;
-     }
-     return handles[i];
-}
-
-#endif  /* TL_CUDNN */
 
 #endif  /* TL_CUDA */

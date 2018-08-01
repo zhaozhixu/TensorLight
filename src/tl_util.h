@@ -52,10 +52,12 @@ void tl_err_dump(const char *fmt, ...);
 #ifdef TL_CUDA
 #include <cuda_runtime.h>
 
+#define TL_MAX_CUDA_DEVICE 15
+
 #define TL_CUDA_CK(status)                                              \
      do {                                                               \
           if (status != cudaSuccess)                                    \
-               tl_err_bt("CUDA_ERROR(%d) %s: %s\n", status,             \
+               tl_err_bt("CUDA_ERROR(%d) %s: %s", status,               \
                          cudaGetErrorName(status), cudaGetErrorString(status)); \
      } while(0)
 
@@ -76,6 +78,15 @@ void *tl_repeat_d2d(void *data, size_t size, int times);
 
 #ifdef TL_CUDNN
 #include <cudnn.h>
+
+#define TL_CUDNN_CK(status)                                     \
+     do {                                                       \
+          if (status != CUDNN_STATUS_SUCCESS)                   \
+               tl_err_bt("CUDNN_ERROR(%d): %s", status,         \
+                         cudnnGetErrorString(status));          \
+     } while(0)
+
+cudnnHandle_t tl_cudnn_handle(void);
 
 #endif  /* TL_CUDNN */
 #endif  /* TL_CUDA */

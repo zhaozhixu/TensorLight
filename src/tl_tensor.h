@@ -35,6 +35,7 @@ struct tl_tensor {
      int       ndim;
      int      *dims;
      void     *data;
+     void     *backend_data;  /* for other backend dependent data */
 };
 typedef struct tl_tensor tl_tensor;
 
@@ -47,6 +48,7 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
                             tl_dtype dtype);
 void tl_tensor_free(tl_tensor *t);
 void tl_tensor_free_data_too(tl_tensor *t);
+tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype);
 tl_tensor *tl_tensor_clone(const tl_tensor *src);
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *t, const char *fmt);
@@ -69,6 +71,7 @@ tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
 
 tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
                                  tl_dtype dtype);
+void tl_tensor_free_cuda(tl_tensor *t);
 void tl_tensor_free_data_too_cuda(tl_tensor *t);
 tl_tensor *tl_tensor_clone_h2d(const tl_tensor *src);
 tl_tensor *tl_tensor_clone_d2h(const tl_tensor *src);

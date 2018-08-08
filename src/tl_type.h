@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <stddef.h>
 #include "tl_util.h"
 
 enum tl_bool_t {
@@ -63,17 +64,6 @@ enum tl_elew_op {
 };
 typedef enum tl_elew_op tl_elew_op;
 
-/* pointer subtraction and pointer addition */
-#define tl_psub(p1, p2, dsize)                                  \
-     (((uint8_t *)(p1) - (uint8_t *)(p2)) / ((ptrdiff_t)dsize))
-#define tl_padd(p, offset, dsize)               \
-     ((uint8_t *)(p) + (offset) * (dsize))
-
-/* array element assignment */
-#define tl_passign(pd, offd, ps, offs, dsize)           \
-     memmove(tl_padd((pd), (offd), (dsize)),            \
-             tl_padd((ps), (offs), (dsize)), (dsize))
-
 typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
 typedef int (*tl_cmp_func) (void *p1, void *p2);
 typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
@@ -84,16 +74,28 @@ typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
 #define tl_check_elew_op(op)                    \
      assert(op >= 0 && op < TL_ELEW_OP_SIZE)
 
-#define tl_pointer_sub(p1, p2, dtype)           \
-     tl_psub((p1), (p2), tl_size_of(dtype))
-#define tl_pointer_add(p, offset, dtype)        \
-     tl_padd((p), (offset), tl_size_of(dtype))
-#define tl_pointer_assign(pd, offd, ps, offs, dtype)            \
-     tl_passign((pd), (offd), (ps), (offs), tl_size_of(dtype))
-
 #ifdef __cplusplus
 TL_CPPSTART
 #endif
+
+/* pointer subtraction and pointer addition */
+static inline ptrdiff_t tl_psub(void *p1, void *p2, size_t dsize)
+{
+     return (((uint8_t *)(p1) - (uint8_t *)(p2)) / ((ptrdiff_t)dsize));
+}
+static inline void *tl_padd(void *p, ptrdiff_t offset, size_t dsize)
+{
+     return ((uint8_t *)(p) + (offset) * (dsize));
+}
+
+/* array element assignment */
+static inline void tl_passign(void *pd, ptrdiff_t offd,
+                              void *ps, ptrdiff_t offs, size_t dsize)
+{
+     memmove(tl_padd((pd), (offd), (dsize)),
+             tl_padd((ps), (offs), (dsize)), (dsize));
+
+}
 
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_fmt(tl_dtype dtype);
@@ -106,41 +108,74 @@ tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);
 void tl_elew(void *p1, void *p2, void *res, tl_elew_op elew_op, tl_dtype dtype);
 tl_elew_func tl_elew_getfunc(tl_dtype dtype);
 
+static inline ptrdiff_t tl_pointer_sub(void *p1, void *p2, tl_dtype dtype)
+{
+     return tl_psub((p1), (p2), tl_size_of(dtype));
+}
+
+static inline void *tl_pointer_add(void *p, ptrdiff_t offset, tl_dtype dtype)
+{
+     return tl_padd((p), (offset), tl_size_of(dtype));
+}
+
+static inline void tl_pointer_assign(void *pd, ptrdiff_t offd,
+                                     void *ps, ptrdiff_t offs, tl_dtype dtype)
+{
+     tl_passign((pd), (offd), (ps), (offs), tl_size_of(dtype));
+}
+
 #ifdef __cplusplus
 TL_CPPEND
 #endif
 
 #ifdef TL_CUDA
-
-#define tl_passign_h2d(pd, offd, ps, offs, dsize)                    \
-     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),           \
-                           tl_padd((ps), (offs), (dsize)),           \
-                           (dsize), cudaMemcpyHostToDevice))
-#define tl_passign_d2h(pd, offd, ps, offs, dsize)                    \
-     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),           \
-                           tl_padd((ps), (offs), (dsize)),           \
-                           (dsize), cudaMemcpyDeviceToHost))
-#define tl_passign_d2d(pd, offd, ps, offs, dsize)               \
-     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),      \
-                           tl_padd((ps), (offs), (dsize)),      \
-                           (dsize), cudaMemcpyDeviceToDevice))
-
-#define tl_pointer_assign_h2d(pd, offd, ps, offs, dtype)                \
-     tl_passign_h2d((pd), (offd), (ps), (offs), tl_size_of(dtype))
-#define tl_pointer_assign_d2h(pd, offd, ps, offs, dtype)                \
-     tl_passign_d2h((pd), (offd), (ps), (offs), tl_size_of(dtype))
-#define tl_pointer_assign_d2d(pd, offd, ps, offs, dtype)                \
-     tl_passign_d2d((pd), (offd), (ps), (offs), tl_size_of(dtype))
-
 #ifdef __cplusplus
 TL_CPPSTART
 #endif
 
-int tl_fprintf_cuda(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
+static inline void tl_passign_h2d(void *pd, ptrdiff_t offd,
+                                  void *ps, ptrdiff_t offs, size_t dsize)
+{
+     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),
+                           tl_padd((ps), (offs), (dsize)),
+                           (dsize), cudaMemcpyHostToDevice));
+}
 
-#ifdef TL_CUDNN
-cudnnDataType_t tl_dtype_to_cudnn_dtype(tl_dtype dtype);
-#endif  /* TL_CUDNN */
+static inline void tl_passign_d2h(void *pd, ptrdiff_t offd,
+                                  void *ps, ptrdiff_t offs, size_t dsize)
+{
+     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),
+                           tl_padd((ps), (offs), (dsize)),
+                           (dsize), cudaMemcpyDeviceToHost));
+}
+
+static inline void tl_passign_d2d(void *pd, ptrdiff_t offd,
+                                  void *ps, ptrdiff_t offs, size_t dsize)
+{
+     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),
+                           tl_padd((ps), (offs), (dsize)),
+                           (dsize), cudaMemcpyDeviceToDevice));
+}
+
+static inline void tl_pointer_assign_h2d(void *pd, ptrdiff_t offd,
+                                         void *ps, ptrdiff_t offs, tl_dtype dtype)
+{
+     tl_passign_h2d((pd), (offd), (ps), (offs), tl_size_of(dtype));
+}
+
+static inline void tl_pointer_assign_d2h(void *pd, ptrdiff_t offd,
+                                         void *ps, ptrdiff_t offs, tl_dtype dtype)
+{
+     tl_passign_d2h((pd), (offd), (ps), (offs), tl_size_of(dtype));
+}
+
+static inline void tl_pointer_assign_d2d(void *pd, ptrdiff_t offd,
+                                         void *ps, ptrdiff_t offs, tl_dtype dtype)
+{
+     tl_passign_d2d((pd), (offd), (ps), (offs), tl_size_of(dtype));
+}
+
+int tl_fprintf_cuda(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
 
 #ifdef __cplusplus
 TL_CPPEND

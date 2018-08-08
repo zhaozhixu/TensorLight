@@ -92,10 +92,10 @@ uninstall:
 
 info:
 	@echo "Available make targets:"
-	@echo "  all: compile library and run tests"
-	@echo "  lib: compile library"
+	@echo "  all: compile libraries and run tests"
+	@echo "  lib: compile libraries"
 	@echo "  test: compile and run tests"
-	@echo "  install: install headers and library files"
+	@echo "  install: install headers and libraries files"
 	@echo "  clean: clean up all object files"
-	@echo "  uninstall: uninstall headers and library files"
+	@echo "  uninstall: uninstall headers and libraries files"
 	@echo "  info: show this infomation"

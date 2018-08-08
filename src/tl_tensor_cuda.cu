@@ -60,32 +60,13 @@ tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
 {
      tl_tensor *t;
 
-     t = tl_alloc(sizeof(tl_tensor));
+     t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
      t->len = tl_compute_length(ndim, dims);
      t->ndim = ndim;
-     t->dims = tl_clone(dims, sizeof(int) * ndim);
+     t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
      t->data = data;
-
-#ifdef TL_CUDNN
-     cudnnTensorDescriptor_t td;
-     cudnnDataType_t cudnn_dtype = tl_dtype_to_cudnn_dtype(dtype);
-     int *strides = tl_alloc(ndim * sizeof(int));
-
-     strides[ndim-1] = 1;
-     for (int i = ndim-2; i >= 0; i--)
-          strides[i] = strides[i+1] * dims[i+1];
-     TL_CUDNN_CK(cudnnCreateTensorDescriptor(&td));
-     if (ndim == 4)
-          TL_CUDNN_CK(cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW,
-                                                 cudnn_dtype, dims[0], dims[1],
-                                                 dims[2], dims[3]));
-     else
-          TL_CUDNN_CK(cudnnSetTensorNdDescriptor(td, cudnn_dtype,
-                                                 ndim, dims, strides));
-     t->backend_data = td;
-     tl_free(strides);
-#endif
+     t->backend_data = NULL;
 
      return t;
 }
@@ -94,9 +75,6 @@ void tl_tensor_free_cuda(tl_tensor *t)
 {
      assert(t);
      tl_free(t->dims);
-#ifdef TL_CUDNN
-     TL_CUDNN_CK(cudnnDestroyTensorDescriptor(t->backend_data));
-#endif
      tl_free(t);
 }
 
@@ -189,7 +167,7 @@ tl_tensor *tl_tensor_create_slice_cuda(const tl_tensor *src, int axis, int len,
 
      dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
      dims[axis] = len;
-     dst = tl_tensor_create_cuda(NULL, src->ndim, dims, dtype);
+     dst = tl_tensor_zeros_cuda(src->ndim, dims, dtype);
      tl_free(dims);
 
      return dst;
@@ -650,7 +628,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
           assert(tl_tensor_issameshape(src1, dst));
           assert(src1->dtype == dst->dtype);
      } else {
-          dst = tl_tensor_create_cuda(NULL, src1->ndim, src2->dims, src1->dtype);
+          dst = tl_tensor_zeros_cuda(src1->ndim, src2->dims, src1->dtype);
      }
 
      int thread_num = dst->len;
@@ -1730,7 +1708,7 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
           assert(tl_tensor_issameshape(src, dst));
           assert(dst->dtype == dtype_d);
      } else {
-          dst = tl_tensor_create_cuda(NULL, src->ndim, src->dims, dtype_d);
+          dst = tl_tensor_zeros_cuda(src->ndim, src->dims, dtype_d);
      }
 
      dtype_s = src->dtype;
@@ -1794,7 +1772,7 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
           d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
           for (i = 0; i < src->ndim; i++)
                d_dims[i] = src->dims[axes[i]];
-          dst = tl_tensor_create_cuda(NULL, src->ndim, d_dims, src->dtype);
+          dst = tl_tensor_zeros_cuda(src->ndim, d_dims, src->dtype);
           tl_free(d_dims);
      }
 

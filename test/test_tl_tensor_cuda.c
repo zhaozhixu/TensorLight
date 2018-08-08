@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+c */
 
 #ifdef TL_CUDA
 
@@ -41,7 +41,7 @@ START_TEST(test_tl_tensor_create_cuda)
      void *data_h, *data_d;
      int i;
 
-     t = tl_tensor_create_cuda(NULL, 3, (int[]){1, 2, 3}, TL_DOUBLE);
+     t = tl_tensor_zeros_cuda(3, (int[]){1, 2, 3}, TL_DOUBLE);
      data_h = tl_clone_d2h(t->data, sizeof(double)*t->len);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_DOUBLE);
@@ -53,7 +53,7 @@ START_TEST(test_tl_tensor_create_cuda)
      tl_tensor_free_data_too_cuda(t);
      tl_free(data_h);
 
-     t = tl_tensor_create_cuda(NULL, 3, dims, TL_FLOAT);
+     t = tl_tensor_zeros_cuda(3, dims, TL_FLOAT);
      data_h = tl_clone_d2h(t->data, sizeof(float)*t->len);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_FLOAT);
@@ -177,7 +177,7 @@ START_TEST(test_tl_tensor_fprint_cuda)
      FILE *fp;
      char s[BUFSIZ];
 
-     t = tl_tensor_create_cuda(NULL, 3, (int[]){1, 2, 3}, TL_FLOAT);
+     t = tl_tensor_zeros_cuda(3, (int[]){1, 2, 3}, TL_FLOAT);
 
      fp = tmpfile();
      ck_assert_ptr_ne(fp, NULL);
@@ -214,7 +214,7 @@ START_TEST(test_tl_tensor_save_cuda)
      FILE *fp;
      char s[BUFSIZ];
 
-     t = tl_tensor_create_cuda(NULL, 3, (int[]){1, 2, 3}, TL_FLOAT);
+     t = tl_tensor_zeros_cuda(3, (int[]){1, 2, 3}, TL_FLOAT);
 
      tl_tensor_save_cuda("__test_tensor_save_tmp", t, NULL);
      fp = fopen("__test_tensor_save_tmp", "r");
@@ -237,7 +237,7 @@ START_TEST(test_tl_tensor_create_slice_cuda)
      void *data_h;
      int i;
 
-     t1 = tl_tensor_create_cuda(NULL, 1, (int[]){1}, TL_INT8);
+     t1 = tl_tensor_zeros_cuda(1, (int[]){1}, TL_INT8);
      t2 = tl_tensor_create_slice_cuda(t1, 0, 1, TL_INT8);
      data_h = tl_clone_d2h(t2->data, tl_size_of(t2->dtype)*t2->len);
      ck_assert_int_eq(t2->ndim, 1);
@@ -250,7 +250,7 @@ START_TEST(test_tl_tensor_create_slice_cuda)
      tl_tensor_free_data_too_cuda(t2);
      tl_free(data_h);
 
-     t1 = tl_tensor_create_cuda(NULL, 3, (int[]){1, 2, 3}, TL_INT16);
+     t1 = tl_tensor_zeros_cuda(3, (int[]){1, 2, 3}, TL_INT16);
      t2 = tl_tensor_create_slice_cuda(t1, 2, 2, TL_UINT8);
      data_h = tl_clone_d2h(t2->data, tl_size_of(t2->dtype)*t2->len);
      ck_assert_int_eq(t2->ndim, 3);
@@ -415,7 +415,7 @@ START_TEST(test_tl_tensor_elew_cuda)
 
      src1 = tl_tensor_create_cuda(data_d1, 2, dims, TL_INT8);
      src2 = tl_tensor_create_cuda(data_d2, 2, dims, TL_INT8);
-     dst = tl_tensor_create_cuda(NULL, 2, dims, TL_INT8);
+     dst = tl_tensor_zeros_cuda(2, dims, TL_INT8);
      dst = tl_tensor_elew_cuda(src1, src2, dst, TL_MUL);
      data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
      ck_assert_int_eq(dst->ndim, 2);
@@ -456,7 +456,7 @@ START_TEST(test_tl_tensor_convert_cuda)
      tl_tensor_free_data_too_cuda(t2);
      tl_free(data_h);
 
-     t2 = tl_tensor_create_cuda(NULL, 1, (int[]){5}, TL_UINT8);
+     t2 = tl_tensor_zeros_cuda(1, (int[]){5}, TL_UINT8);
      t2 = tl_tensor_convert_cuda(t1, t2, TL_UINT8);
      ck_assert_int_eq(t2->ndim, 1);
      ck_assert_int_eq(t2->dtype, TL_UINT8);
@@ -502,7 +502,7 @@ START_TEST(test_tl_tensor_transpose_cuda)
      tl_tensor_free_data_too_cuda(dst);
      tl_free(data_h);
 
-     dst = tl_tensor_create_cuda(NULL, 3, dims2, TL_UINT8);
+     dst = tl_tensor_zeros_cuda(3, dims2, TL_UINT8);
      dst = tl_tensor_transpose_cuda(src, dst, axes2, NULL);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_UINT8);
@@ -516,8 +516,8 @@ START_TEST(test_tl_tensor_transpose_cuda)
      tl_tensor_free_data_too_cuda(dst);
      tl_free(data_h);
 
-     dst = tl_tensor_create_cuda(NULL, 3, dims2, TL_UINT8);
-     ws = tl_tensor_create_cuda(NULL, 1, (int[]){dst->ndim*dst->len*2}, TL_INT32);
+     dst = tl_tensor_zeros_cuda(3, dims2, TL_UINT8);
+     ws = tl_tensor_zeros_cuda(1, (int[]){dst->ndim*dst->len*2}, TL_INT32);
      dst = tl_tensor_transpose_cuda(src, dst, axes2, ws);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_UINT8);

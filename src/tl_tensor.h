@@ -71,6 +71,7 @@ tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
 
 tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
                                  tl_dtype dtype);
+tl_tensor *tl_tensor_zeros_cuda(int ndim, const int *dims, tl_dtype dtype);
 void tl_tensor_free_cuda(tl_tensor *t);
 void tl_tensor_free_data_too_cuda(tl_tensor *t);
 tl_tensor *tl_tensor_clone_h2d(const tl_tensor *src);

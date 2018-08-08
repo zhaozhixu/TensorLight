@@ -90,7 +90,7 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
      t->ndim = ndim;
      t->dims = tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
-     t->other = NULL;
+     t->backend_data = NULL;
      t->data = data;
 
      return t;
@@ -240,7 +240,7 @@ tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int axis, int len,
 
      dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
      dims[axis] = len;
-     dst = tl_tensor_create(NULL, src->ndim, dims, dtype);
+     dst = tl_tensor_zeros(src->ndim, dims, dtype);
      tl_free(dims);
 
      return dst;
@@ -418,7 +418,7 @@ tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
           assert(tl_tensor_issameshape(src1, dst));
           assert(src1->dtype == dst->dtype);
      } else {
-          dst = tl_tensor_create(NULL, src1->ndim, src2->dims, src1->dtype);
+          dst = tl_tensor_zeros(src1->ndim, src2->dims, src1->dtype);
      }
 
      thread_num = dst->len;
@@ -476,7 +476,7 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
           d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
           for (i = 0; i < src->ndim; i++)
                d_dims[i] = src->dims[axes[i]];
-          dst = tl_tensor_create(NULL, src->ndim, d_dims, src->dtype);
+          dst = tl_tensor_zeros(src->ndim, d_dims, src->dtype);
           tl_free(d_dims);
      }
 
@@ -554,7 +554,7 @@ tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
           assert(tl_tensor_issameshape(src, dst));
           assert(dst->dtype == dtype_d);
      } else {
-          dst = tl_tensor_create(NULL, src->ndim, src->dims, dtype_d);
+          dst = tl_tensor_zeros(src->ndim, src->dims, dtype_d);
      }
 
      dtype_s = src->dtype;

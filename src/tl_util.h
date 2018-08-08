@@ -76,19 +76,6 @@ void *tl_repeat_h2d(void *data, size_t size, int times);
 void *tl_repeat_d2h(void *data, size_t size, int times);
 void *tl_repeat_d2d(void *data, size_t size, int times);
 
-#ifdef TL_CUDNN
-#include <cudnn.h>
-
-#define TL_CUDNN_CK(status)                                     \
-     do {                                                       \
-          if (status != CUDNN_STATUS_SUCCESS)                   \
-               tl_err_bt("CUDNN_ERROR(%d): %s", status,         \
-                         cudnnGetErrorString(status));          \
-     } while(0)
-
-cudnnHandle_t tl_cudnn_handle(void);
-
-#endif  /* TL_CUDNN */
 #endif  /* TL_CUDA */
 
 #ifdef __cplusplus

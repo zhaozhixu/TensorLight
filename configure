@@ -2,6 +2,8 @@
 
 use warnings;
 use strict;
+use File::Copy;
+use File::Path;
 
 my $usage = <<EOF;
 Usage: $0 [<option>[=<value>]...]
@@ -10,6 +12,7 @@ Generate configuration makefile for building TensorLight.
 options:
   -h, --help                 print this information
   --target=<name>            target name, default is tensorlight
+  --abbr=<abbr>              abbreviation for target name, default is tl
   --build-dir=<path>         building directory, default is build
   --install-dir=<path>       installation directory, default is /usr/local
   --pkgconfig-dir=<path>     pkgconfig directory, default is
@@ -23,6 +26,7 @@ EOF
 # default options
 my %opts = (
             "TARGET" => "tensorlight",
+            "ABBR" => "tl",
             "BUILD_DIR" => "build",
             "INSTALL_DIR" => "/usr/local",
             "PKGCONFIG_DIR" => "/usr/local/lib/pkgconfig",
@@ -57,28 +61,28 @@ while (@ARGV > 0) {
 # TODO: check versions
 my $output;
 $output = `gcc --version`;
-if ($output eq "") {
+if (!defined $output or $output eq "") {
   &err_exit("gcc not installed");
 }
 
 $output = `make --version`;;
-if ($output eq "") {
+if (!defined $output or $output eq "") {
   &err_exit("make not installed");
 }
 
 $output = `pkg-config --version`;;
-if ($output eq "") {
+if (!defined $output or $output eq "") {
   &err_exit("pkg-config not installed");
 }
 
 $output = `pkg-config --modversion check`;;
-if ($output eq "") {
+if (!defined $output or $output eq "") {
   &err_exit("check not installed");
 }
 
 if ($opts{WITH_CUDA} eq "yes") {
   $output = `nvcc --version`;;
-  if ($output eq "") {
+  if (!defined $output or $output eq "") {
     &err_exit("nvcc not installed");
   }
 }
@@ -97,7 +101,7 @@ if (not defined $major or not defined $minor or not defined $micro) {
   &err_exit("cannot find version macros in $version_h, maybe a bug?");
 }
 
-# print configuration
+# print configuration to config.mk
 my $config_str = <<EOF;
 .SUFFIXES:
 MAJOR = $major

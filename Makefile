@@ -1,6 +1,8 @@
 include config.mk
+include common.mk
 
 TARGET ?= tensorlight
+ABBR ?= tl
 LIBTARGET_A = lib$(TARGET).a
 LIBTARGET_SO = lib$(TARGET).so
 LIBTARGET_SO_MAJOR_MINOR = $(LIBTARGET_SO).$(MAJOR).$(MINOR)
@@ -19,7 +21,7 @@ PKGCONFIG_DIR ?= /usr/local/lib/pkgconfig
 
 OBJ_A = $(OBJ_DIR)/$(LIBTARGET_A)
 OBJ_SO = $(OBJ_DIR)/$(LIBTARGET_SO)
-SRC_HEADERS = $(wildcard $(SRC_DIR)/tl_*.h)
+SRC_HEADERS = $(wildcard $(SRC_DIR)/$(ABBR)_*.h)
 HEADERS = $(patsubst $(SRC_DIR)/%.h,%.h,$(SRC_HEADERS))
 
 BUILD_A = $(BUILD_LIB_DIR)/$(LIBTARGET_A)
@@ -33,12 +35,6 @@ INSTALL_SO = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO)
 INSTALL_SO_MAJOR_MINOR = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR)
 INSTALL_SO_MAJOR_MINOR_MICRO = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR_MICRO)
 INSTALL_HEADERS = $(patsubst %.h,$(INSTALL_INCLUDE_DIR)/%.h,$(HEADERS))
-
-ifdef VERBOSE
-AT =
-else
-AT = @
-endif
 
 define make-build-dir
   $(AT)if [ ! -d $(BUILD_DIR) ]; then mkdir -p $(BUILD_DIR); fi

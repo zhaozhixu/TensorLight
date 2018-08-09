@@ -98,13 +98,16 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
 
 void tl_tensor_free(tl_tensor *t)
 {
-     assert(t);
+     if (!t)
+          return;
      tl_free(t->dims);
      tl_free(t);
 }
 
 void tl_tensor_free_data_too(tl_tensor *t)
 {
+     if (!t)
+          return;
      tl_free(t->data);
      tl_tensor_free(t);
 }

@@ -98,7 +98,8 @@ static inline void tl_passign(void *pd, ptrdiff_t offd,
 }
 
 size_t tl_size_of(tl_dtype dtype);
-const char *tl_fmt(tl_dtype dtype);
+const char *tl_dtype_fmt(tl_dtype dtype);
+const char *tl_dtype_name(tl_dtype dtype);
 void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s);
 
 int tl_fprintf(FILE *fp, const char *fmt,void *p, tl_dtype dtype);

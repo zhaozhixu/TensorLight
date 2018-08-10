@@ -188,35 +188,35 @@ START_TEST(test_tl_passign)
 }
 END_TEST
 
-START_TEST(test_tl_fmt)
+START_TEST(test_tl_dtype_fmt)
 {
      const char *fmt;
 
-     fmt = tl_fmt(TL_DOUBLE);
+     fmt = tl_dtype_fmt(TL_DOUBLE);
      ck_assert_str_eq(fmt, "%.3f");
 
-     fmt = tl_fmt(TL_FLOAT);
+     fmt = tl_dtype_fmt(TL_FLOAT);
      ck_assert_str_eq(fmt, "%.3f");
 
-     fmt = tl_fmt(TL_INT32);
+     fmt = tl_dtype_fmt(TL_INT32);
      ck_assert_str_eq(fmt, "%d");
 
-     fmt = tl_fmt(TL_INT16);
+     fmt = tl_dtype_fmt(TL_INT16);
      ck_assert_str_eq(fmt, "%d");
 
-     fmt = tl_fmt(TL_INT8);
+     fmt = tl_dtype_fmt(TL_INT8);
      ck_assert_str_eq(fmt, "%d");
 
-     fmt = tl_fmt(TL_UINT32);
+     fmt = tl_dtype_fmt(TL_UINT32);
      ck_assert_str_eq(fmt, "%u");
 
-     fmt = tl_fmt(TL_UINT16);
+     fmt = tl_dtype_fmt(TL_UINT16);
      ck_assert_str_eq(fmt, "%u");
 
-     fmt = tl_fmt(TL_UINT8);
+     fmt = tl_dtype_fmt(TL_UINT8);
      ck_assert_str_eq(fmt, "%u");
 
-     fmt = tl_fmt(TL_BOOL);
+     fmt = tl_dtype_fmt(TL_BOOL);
      ck_assert_str_eq(fmt, "%d");
 }
 END_TEST
@@ -1440,7 +1440,7 @@ Suite *make_type_suite(void)
      tcase_add_test(tc_type, test_tl_psub);
      tcase_add_test(tc_type, test_tl_padd);
      tcase_add_test(tc_type, test_tl_passign);
-     tcase_add_test(tc_type, test_tl_fmt);
+     tcase_add_test(tc_type, test_tl_dtype_fmt);
      tcase_add_test(tc_type, test_tl_pointer_sub);
      tcase_add_test(tc_type, test_tl_pointer_add);
      tcase_add_test(tc_type, test_tl_pointer_assign);

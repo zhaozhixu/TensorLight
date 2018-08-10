@@ -47,16 +47,27 @@ static const char *dtype_fmt[TL_DTYPE_SIZE] = {
      "%.3f", "%.3f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"
 };
 
+static const char *dtype_name[TL_DTYPE_SIZE] = {
+     "TL_DOUBLE", "TL_FLOAT", "TL_INT32", "TL_INT16", "TL_INT8",
+     "TL_UINT32", "TL_UINT16", "TL_UINT8", "TL_BOOL"
+};
+
 size_t tl_size_of(tl_dtype dtype)
 {
      tl_check_dtype(dtype);
      return dtype_size[dtype];
 }
 
-const char *tl_fmt(tl_dtype dtype)
+const char *tl_dtype_fmt(tl_dtype dtype)
 {
      tl_check_dtype(dtype);
      return dtype_fmt[dtype];
+}
+
+const char *tl_dtype_name(tl_dtype dtype)
+{
+     tl_check_dtype(dtype);
+     return dtype_name[dtype];
 }
 
 /* tl_fprintf_func */

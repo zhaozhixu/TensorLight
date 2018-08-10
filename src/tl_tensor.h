@@ -62,6 +62,7 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
                                tl_tensor *arg, int axis);
 tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
                           tl_tensor *dst, tl_elew_op elew_op);
+/* (optional) workspace is a int32 tensor of shape [dst->ndim * dst->len * 2] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes, tl_tensor *workspace);
 tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,

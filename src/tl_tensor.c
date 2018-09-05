@@ -124,6 +124,11 @@ tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype)
      return t;
 }
 
+size_t tl_tensor_size(tl_tensor *t)
+{
+     return t->len * tl_size_of(t->dtype);
+}
+
 tl_tensor *tl_tensor_clone(const tl_tensor *src)
 {
      void *data;

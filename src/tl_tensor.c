@@ -140,6 +140,24 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src)
      return dst;
 }
 
+tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
+{
+     void *data;
+     int ndim;
+     int *dims;
+     tl_tensor *dst;
+
+     assert(src);
+     data = tl_repeat(src->data, src->len*tl_size_of(src->dtype), times);
+     ndim = src->ndim + 1;
+     dims = tl_alloc(sizeof(int)*ndim);
+     memmove(dims, src->dims, sizeof(int)*(ndim-1));
+     dims[ndim-1] = times;
+     dst = tl_tensor_create(data, ndim, dims, src->dtype);
+     tl_free(dims);
+     return dst;
+}
+
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
 {
      int ndim, len, *dims; /* pointer short cut */
@@ -294,6 +312,49 @@ tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
      }
 
      return dst;
+}
+
+tl_tensor *tl_tensor_concat(const tl_tensor *src1, const tl_tensor *src2,
+                            tl_tensor *dst, int axis)
+{
+     int i;
+     int d_vol, s1_vol, s2_vol, vol;
+     int di, si;
+     int thread_num;
+     int *dims;
+     size_t dsize;
+
+     assert(src1 && src1->data);
+     assert(src2 && src2->data);
+     assert(src1->dtype == src2->dtype);
+     assert(src1->ndim == src2->ndim);
+     assert(axis >= 0 && axis < src1->ndim);
+     for (i = 0; i < src1->ndim; i++)
+          assert(i == axis ? 1 : src1->dims[i] == src2->dims[i]);
+
+     if (dst) {
+          assert(dst->data);
+          assert(src1->dtype == dst->dtype);
+          assert(src1->ndim == dst->ndim);
+          assert(dst->dims[axis] == src1->dims[axis] + src2->dims[axis]);
+     } else {
+          dims = tl_clone(src1->dims, sizeof(int)*src1->ndim);
+          dims[axis] = src1->dims[axis] + src2->dims[axis];
+          dst = tl_tensor_zeros(src1->ndim, dims, src1->dtype);
+          tl_free(dims);
+     }
+
+     for (i = axis+1, vol = 1; i < dst->ndim; i++)
+          vol *= dst->dims[i];
+     d_vol = vol * dst->dims[axis];
+     s1_vol = vol * src1->dims[axis];
+     s2_vol = vol * src2->dims[axis];
+     thread_num = dst->len;
+
+     dsize = tl_size_of(src1->dtype);
+     for (di = 0; di < thread_num; di++) {
+
+     }
 }
 
 /* in-place reshape tensor */

@@ -59,6 +59,8 @@ tl_tensor *tl_tensor_create_slice(const tl_tensor *src, int axis, int len,
                                   tl_dtype dtype);
 tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
                            int start, int len);
+tl_tensor *tl_tensor_concat(const tl_tensor *src1, const tl_tensor *src2,
+                            tl_tensor *dst, int axis);
 tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims);
 tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
                                tl_tensor *arg, int axis);

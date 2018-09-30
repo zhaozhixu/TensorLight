@@ -97,6 +97,13 @@ static inline void tl_passign(void *pd, ptrdiff_t offd,
 
 }
 
+static inline void tl_pmove(void *pd, ptrdiff_t offd,
+                            void *ps, ptrdiff_t offs, size_t dsize, size_t n)
+{
+     memmove(tl_padd((pd), (offd), (dsize)),
+             tl_padd((ps), (offs), (dsize)), (dsize)*(n));
+}
+
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_dtype_fmt(tl_dtype dtype);
 const char *tl_dtype_name(tl_dtype dtype);

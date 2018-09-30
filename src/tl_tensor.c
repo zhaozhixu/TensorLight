@@ -143,19 +143,23 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src)
 tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
 {
      void *data;
-     int ndim;
      int *dims;
      tl_tensor *dst;
 
      assert(src);
      data = tl_repeat(src->data, src->len*tl_size_of(src->dtype), times);
-     ndim = src->ndim + 1;
-     dims = tl_alloc(sizeof(int)*ndim);
-     memmove(dims, src->dims, sizeof(int)*(ndim-1));
-     dims[ndim-1] = times;
-     dst = tl_tensor_create(data, ndim, dims, src->dtype);
+     dims = tl_alloc(sizeof(int)*(src->ndim+1));
+     memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+     dims[0] = times;
+     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
      tl_free(dims);
      return dst;
+}
+
+tl_tensor *tl_tensor_arange(const tl_tensor *params)
+{
+     assert(params && params->data);
+     assert(params->len == 3);
 }
 
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)
@@ -318,8 +322,8 @@ tl_tensor *tl_tensor_concat(const tl_tensor *src1, const tl_tensor *src2,
                             tl_tensor *dst, int axis)
 {
      int i;
-     int d_vol, s1_vol, s2_vol, vol;
-     int di, si;
+     int s1_nvol, s2_nvol, vol;
+     int di, s1i, s2i;
      int thread_num;
      int *dims;
      size_t dsize;
@@ -346,15 +350,23 @@ tl_tensor *tl_tensor_concat(const tl_tensor *src1, const tl_tensor *src2,
 
      for (i = axis+1, vol = 1; i < dst->ndim; i++)
           vol *= dst->dims[i];
-     d_vol = vol * dst->dims[axis];
-     s1_vol = vol * src1->dims[axis];
-     s2_vol = vol * src2->dims[axis];
-     thread_num = dst->len;
+     s1_nvol = src1->dims[axis];
+     s2_nvol = src2->dims[axis];
+     thread_num = 1;
+     for (i = 0; i <= axis; i++)
+          thread_num *= dst->dims[i];
 
-     dsize = tl_size_of(src1->dtype);
-     for (di = 0; di < thread_num; di++) {
-
+     dsize = tl_size_of(src1->dtype) * vol;
+     for (di = 0, s1i = 0, s2i = 0; di < thread_num;) {
+          tl_pmove(dst->data, di, src1->data, s1i, dsize, s1_nvol);
+          di += s1_nvol;
+          s1i += s1_nvol;
+          tl_pmove(dst->data, di, src2->data, s2i, dsize, s2_nvol);
+          di += s2_nvol;
+          s2i += s2_nvol;
      }
+
+     return dst;
 }
 
 /* in-place reshape tensor */

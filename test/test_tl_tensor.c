@@ -23,6 +23,7 @@
 #include "test_tensorlight.h"
 #include "../src/tl_tensor.h"
 #include "../src/tl_util.h"
+#include "../src/tl_check.h"
 
 static void setup(void)
 {
@@ -102,6 +103,39 @@ START_TEST(test_tl_tensor_clone)
           ck_assert(((int32_t *)t2->data)[i] == data[i]);
      tl_tensor_free(t1);
      tl_tensor_free_data_too(t2);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_repeat)
+{
+     int dims[] = {2, 3};
+     float data[] = {1, 2, 3, 4, 5, 6};
+     int dims1[] = {1, 2, 3};
+     float data1[] = {1, 2, 3, 4, 5, 6};
+     int dims2[] = {2, 2, 3};
+     float data2[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     int dims3[] = {3, 2, 3};
+     float data3[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     tl_tensor *t, *t1, *t2, *t3;
+
+     t = tl_tensor_create(data, 2, dims, TL_FLOAT);
+
+     t1 = tl_tensor_repeat(t, 1);
+     ck_assert_array_int_eq(t1->dims, dims1, 3);
+     ck_assert_array_float_eq_tol((float*)t1->data, data1, t1->len, 0);
+     tl_tensor_free_data_too(t1);
+
+     t2 = tl_tensor_repeat(t, 2);
+     ck_assert_array_int_eq(t2->dims, dims2, 3);
+     ck_assert_array_float_eq_tol((float*)t2->data, data2, t2->len, 0);
+     tl_tensor_free_data_too(t2);
+
+     t3 = tl_tensor_repeat(t, 3);
+     ck_assert_array_int_eq(t3->dims, dims3, 3);
+     ck_assert_array_float_eq_tol((float*)t3->data, data3, t3->len, 0);
+     tl_tensor_free_data_too(t3);
+
+     tl_tensor_free(t);
 }
 END_TEST
 
@@ -246,6 +280,53 @@ START_TEST(test_tl_tensor_slice)
           ck_assert(((uint16_t *)t2->data)[i] == data_slice2[i]);
      tl_tensor_free(t1);
      tl_tensor_free_data_too(t2);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_concat)
+{
+     tl_tensor *t, *t1, *t2, *t3, *t4, *t5, *t6;
+     int ndim = 3;
+     int dims[] = {2, 2, 3};
+     uint16_t data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+     int dims1[] = {1, 2, 3};
+     uint16_t data_slice1[] = {1, 2, 3, 4, 5, 6};
+     int dims2[] = {1, 2, 3};
+     uint16_t data_slice2[] = {7, 8, 9, 10, 11, 12};
+     int dims3[] = {2, 1, 3};
+     uint16_t data_slice3[] = {1, 2, 3, 7, 8, 9};
+     int dims4[] = {2, 1, 3};
+     uint16_t data_slice4[] = {4, 5, 6, 10, 11, 12};
+     int dims5[] = {2, 2, 1};
+     uint16_t data_slice5[] = {1, 4, 7, 10};
+     int dims6[] = {2, 2, 2};
+     uint16_t data_slice6[] = {2, 3, 5, 6, 8, 9, 11, 12};
+
+     t = tl_tensor_zeros(ndim, dims, TL_UINT16);
+     t1 = tl_tensor_create(data_slice1, ndim, dims1, TL_UINT16);
+     t2 = tl_tensor_create(data_slice2, ndim, dims2, TL_UINT16);
+     tl_tensor_concat(t1, t2, t, 0);
+     ck_assert_array_uint_eq((uint16_t*)t->data, data, t->len);
+     tl_tensor_free_data_too(t);
+     tl_tensor_free(t1);
+     tl_tensor_free(t2);
+
+     t = tl_tensor_zeros(ndim, dims, TL_UINT16);
+     t3 = tl_tensor_create(data_slice3, ndim, dims3, TL_UINT16);
+     t4 = tl_tensor_create(data_slice4, ndim, dims4, TL_UINT16);
+     tl_tensor_concat(t3, t4, t, 1);
+     ck_assert_array_uint_eq((uint16_t*)t->data, data, t->len);
+     tl_tensor_free_data_too(t);
+     tl_tensor_free(t3);
+     tl_tensor_free(t4);
+
+     t5 = tl_tensor_create(data_slice5, ndim, dims5, TL_UINT16);
+     t6 = tl_tensor_create(data_slice6, ndim, dims6, TL_UINT16);
+     t = tl_tensor_concat(t5, t6, NULL, 2);
+     ck_assert_array_uint_eq((uint16_t*)t->data, data, t->len);
+     tl_tensor_free_data_too(t);
+     tl_tensor_free(t5);
+     tl_tensor_free(t6);
 }
 END_TEST
 
@@ -471,12 +552,14 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_create);
      tcase_add_test(tc_tensor, test_tl_tensor_free);
      tcase_add_test(tc_tensor, test_tl_tensor_clone);
+     tcase_add_test(tc_tensor, test_tl_tensor_repeat);
      tcase_add_test(tc_tensor, test_tl_tensor_issameshape);
      tcase_add_test(tc_tensor, test_tl_tensor_fprint);
      tcase_add_test(tc_tensor, test_tl_tensor_print);
      tcase_add_test(tc_tensor, test_tl_tensor_save);
      tcase_add_test(tc_tensor, test_tl_tensor_create_slice);
      tcase_add_test(tc_tensor, test_tl_tensor_slice);
+     tcase_add_test(tc_tensor, test_tl_tensor_concat);
      tcase_add_test(tc_tensor, test_tl_tensor_reshape);
      tcase_add_test(tc_tensor, test_tl_tensor_maxreduce);
      tcase_add_test(tc_tensor, test_tl_tensor_elew);

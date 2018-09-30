@@ -24,6 +24,7 @@
 #define _TL_CHECK_H_
 
 #include <check.h>
+#include <math.h>
 
 #ifndef ck_assert_float_eq_tol
 #define ck_assert_float_eq_tol(X, Y, T)					\
@@ -45,8 +46,8 @@
      do {								\
 	  int _ck_n = (N);						\
 	  for (int i = 0; i < _ck_n; i++) {				\
-	       intmax_t _ck_x = ((int*)AX)[i];				\
-	       intmax_t _ck_y = ((int*)AY)[i];				\
+	       intmax_t _ck_x = (AX)[i];				\
+	       intmax_t _ck_y = (AY)[i];				\
 	       if (_ck_x != _ck_y)					\
 		    ck_assert_msg(0,					\
 				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %d, "#AY"[%d] == %d", \
@@ -60,11 +61,11 @@
      do {								\
 	  int _ck_n = (N);						\
 	  for (int i = 0; i < _ck_n; i++) {				\
-	       uintmax_t _ck_x = ((unsigned int*)AX)[i];		\
-	       uintmax_t _ck_y = ((unsigned int*)AY)[i];		\
+	       uintmax_t _ck_x = (AX)[i];                               \
+	       uintmax_t _ck_y = (AY)[i];                               \
 	       if (_ck_x != _ck_y)					\
 		    ck_assert_msg(0,					\
-				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %ud, "#AY"[%d] == %ud", \
+				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %u, "#AY"[%d] == %u", \
 				  i, _ck_x, i, _ck_y);			\
 	  }								\
      } while(0)
@@ -76,8 +77,8 @@
 	  int _ck_n = (N);						\
 	  float _ck_t = (T);						\
 	  for (int i = 0; i < _ck_n; i++) {				\
-	       float _ck_x = ((float*)AX)[i];				\
-	       float _ck_y = ((float*)AY)[i];				\
+	       float _ck_x = (AX)[i];                                   \
+	       float _ck_y = (AY)[i];                                   \
 	       if (fabsf(_ck_x - _ck_y) > _ck_t)			\
 		    ck_assert_msg(0,					\
 				  "Assertion array '"#AX" ~= "#AY"' failed: "#AX"[%d] == %f, "#AY"[%d] == %f, "#T" == %f", \

@@ -25,6 +25,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <math.h>
 
 #include "tl_tensor.h"
 #include "tl_util.h"
@@ -158,8 +159,20 @@ tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
 
 tl_tensor *tl_tensor_arange(const tl_tensor *params)
 {
+     void *data;
+     int dims[1];
+     tl_tensor *dst;
+     double start, stop, step, len;
+
      assert(params && params->data);
      assert(params->len == 3);
+
+     start = ((double *)params->data)[0];
+     stop = ((double *)params->data)[1];
+     step = ((double *)params->data)[2];
+     len = ceil((stop - start) / step);
+     if (len > INT32_MAX)
+          return NULL;
 }
 
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)

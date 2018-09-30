@@ -52,6 +52,7 @@ size_t tl_tensor_size(tl_tensor *t);
 tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype);
 tl_tensor *tl_tensor_clone(const tl_tensor *src);
 tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times);
+tl_tensor *tl_tensor_arange(const tl_tensor *params);
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *t, const char *fmt);
 int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt);

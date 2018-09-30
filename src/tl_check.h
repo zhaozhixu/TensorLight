@@ -114,7 +114,7 @@
           const char *dtype_fmt = tl_dtype_fmt(_ck_tx->dtype);          \
           const char *msg_fmt = "Assertion tensor '"#TX" == "#TY"' failed: "#TX"->data[%%d] == %s, "#TY"->data[%%d] == %s, "#T" == %s"; \
           size_t n = (strlen(msg_fmt)+20);                              \
-          char *msg = ln_alloc(sizeof(char)*n);                         \
+          char *msg = tl_alloc(sizeof(char)*n);                         \
           snprintf(msg, n, msg_fmt, dtype_fmt, dtype_fmt, dtype_fmt);   \
           for (int i = 0; i < _ck_tx->len; i++) {                       \
                switch (_ck_tx->dtype) {                                 \
@@ -150,7 +150,7 @@
                     break;                                              \
                }                                                        \
           }                                                             \
-          ln_free(msg);                                                 \
+          tl_free(msg);                                                 \
      } while(0)
 #endif
 

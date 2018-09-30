@@ -25,6 +25,8 @@
 #include "../src/tl_util.h"
 #include "../src/tl_check.h"
 
+#define ARR(type, varg...) (type[]){varg}
+
 static void setup(void)
 {
 }
@@ -136,6 +138,36 @@ START_TEST(test_tl_tensor_repeat)
      tl_tensor_free_data_too(t3);
 
      tl_tensor_free(t);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_arange)
+{
+     tl_tensor *params, *dst, *t;
+
+     params = tl_tensor_create(ARR(int16_t,0,3,1), 1, ARR(int,3), TL_INT16);
+     t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16);
+     dst = tl_tensor_arange(params);
+     tl_assert_tensor_eq(dst, t);
+     tl_tensor_free(params);
+     tl_tensor_free(t);
+     tl_tensor_free_data_too(dst);
+
+     params = tl_tensor_create(ARR(float,0.1,3.2,1.5), 1, ARR(int,3), TL_FLOAT);
+     t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT);
+     dst = tl_tensor_arange(params);
+     tl_assert_tensor_eq(dst, t);
+     tl_tensor_free(params);
+     tl_tensor_free(t);
+     tl_tensor_free_data_too(dst);
+
+     params = tl_tensor_create(ARR(float,0.1,3.1,1.5), 1, ARR(int,3), TL_FLOAT);
+     t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT);
+     dst = tl_tensor_arange(params);
+     tl_assert_tensor_eq(dst, t);
+     tl_tensor_free(params);
+     tl_tensor_free(t);
+     tl_tensor_free_data_too(dst);
 }
 END_TEST
 
@@ -553,6 +585,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_free);
      tcase_add_test(tc_tensor, test_tl_tensor_clone);
      tcase_add_test(tc_tensor, test_tl_tensor_repeat);
+     tcase_add_test(tc_tensor, test_tl_tensor_arange);
      tcase_add_test(tc_tensor, test_tl_tensor_issameshape);
      tcase_add_test(tc_tensor, test_tl_tensor_fprint);
      tcase_add_test(tc_tensor, test_tl_tensor_print);

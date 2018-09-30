@@ -159,20 +159,35 @@ tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
 
 tl_tensor *tl_tensor_arange(const tl_tensor *params)
 {
-     void *data;
      int dims[1];
      tl_tensor *dst;
-     double start, stop, step, len;
+     double start, stop, step, len, elem;
+     size_t dsize;
+     tl_dtype dtype;
 
      assert(params && params->data);
      assert(params->len == 3);
 
-     start = ((double *)params->data)[0];
-     stop = ((double *)params->data)[1];
-     step = ((double *)params->data)[2];
+     dtype = params->dtype;
+     dsize = tl_size_of(dtype);
+     tl_convert(&start, TL_DOUBLE, tl_padd(params->data, 0, dsize), dtype);
+     tl_convert(&stop, TL_DOUBLE, tl_padd(params->data, 1, dsize), dtype);
+     tl_convert(&step, TL_DOUBLE, tl_padd(params->data, 2, dsize), dtype);
+     assert(step != 0);
+     assert(stop > start);      /* TODO: expand to all possibilities */
+
      len = ceil((stop - start) / step);
      if (len > INT32_MAX)
           return NULL;
+
+     dims[0] = (int)len;
+     dst = tl_tensor_zeros(1, dims, dtype);
+     for (int i = 0; i < dims[0]; i++) {
+          elem = start + step * i;
+          tl_convert(tl_padd(dst->data, i, dsize), dtype, &elem, TL_DOUBLE);
+     }
+
+     return dst;
 }
 
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)

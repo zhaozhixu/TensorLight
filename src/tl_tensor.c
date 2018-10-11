@@ -157,22 +157,18 @@ tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
      return dst;
 }
 
-tl_tensor *tl_tensor_arange(const tl_tensor *params)
+tl_tensor *tl_tensor_arange(double start, double stop, double step,
+                            tl_dtype dtype)
 {
      int dims[1];
      tl_tensor *dst;
-     double start, stop, step, len, elem;
+     double len, elem;
      size_t dsize;
-     tl_dtype dtype;
 
-     assert(params && params->data);
-     assert(params->len == 3);
-
-     dtype = params->dtype;
      dsize = tl_size_of(dtype);
-     tl_convert(&start, TL_DOUBLE, tl_padd(params->data, 0, dsize), dtype);
-     tl_convert(&stop, TL_DOUBLE, tl_padd(params->data, 1, dsize), dtype);
-     tl_convert(&step, TL_DOUBLE, tl_padd(params->data, 2, dsize), dtype);
+     assert(start >= tl_dtype_min(dtype) && start <= tl_dtype_max(dtype));
+     assert(stop >= tl_dtype_min(dtype) && stop <= tl_dtype_max(dtype));
+     assert(step >= tl_dtype_min(dtype) && step <= tl_dtype_max(dtype));
      assert(step != 0);
      assert(stop > start);      /* TODO: expand to all possibilities */
 
@@ -408,27 +404,27 @@ tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims)
      return dst;
 }
 
-tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...)
-{
-     tl_tensor *dst;
-     int *dims;
-     va_list ap;
-     int i;
+/* tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...) */
+/* { */
+/*      tl_tensor *dst; */
+/*      int *dims; */
+/*      va_list ap; */
+/*      int i; */
 
-     assert(src && src->data);
-     assert(ndim > 0);
-     dims = (int *)tl_alloc(sizeof(int) * ndim);
-     va_start(ap, ndim);
-     for (i = 0; i < ndim; i++) {
-          dims[i] = va_arg(ap, int);
-          assert(dims[i] > 0);
-     }
-     va_end(ap);
-     assert(src->len == tl_compute_length(ndim, dims));
-     dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
-     tl_free(dims);
-     return dst;
-}
+/*      assert(src && src->data); */
+/*      assert(ndim > 0); */
+/*      dims = (int *)tl_alloc(sizeof(int) * ndim); */
+/*      va_start(ap, ndim); */
+/*      for (i = 0; i < ndim; i++) { */
+/*           dims[i] = va_arg(ap, int); */
+/*           assert(dims[i] > 0); */
+/*      } */
+/*      va_end(ap); */
+/*      assert(src->len == tl_compute_length(ndim, dims)); */
+/*      dst = tl_tensor_create(src->data, ndim, dims, src->dtype); */
+/*      tl_free(dims); */
+/*      return dst; */
+/* } */
 
 tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
                                tl_tensor *arg, int axis)
@@ -548,6 +544,45 @@ tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
      return dst;
 }
 
+tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
+                                tl_tensor *dst, tl_elew_op elew_op)
+{
+     int thread_num;
+     int di;
+     size_t dsize;
+     tl_dtype dtype;
+     void *s_data, *d_data;
+     void *elew_res, *param_data;
+     tl_elew_func elew;
+
+     assert(src && src->data);
+     if (dst) {
+          assert(dst->data);
+          assert(tl_tensor_issameshape(src, dst));
+          assert(src->dtype == dst->dtype);
+     } else {
+          dst = tl_tensor_zeros(src->ndim, src->dims, src->dtype);
+     }
+
+     thread_num = dst->len;
+     s_data = src->data;
+     d_data = dst->data;
+     dtype = src->dtype;
+     dsize = tl_size_of(dtype);
+     elew = tl_elew_getfunc(dtype);
+     elew_res = tl_alloc(dsize);
+     param_data = tl_alloc(dsize);
+     tl_convert(param_data, dtype, &param, TL_DOUBLE);
+     for (di = 0; di < thread_num; di++) {
+          elew(tl_padd(s_data, di, dsize), param_data, elew_res, elew_op);
+          tl_passign(d_data, di, elew_res, 0, dsize);
+     }
+     tl_free(elew_res);
+     tl_free(param_data);
+
+     return dst;
+}
+
 /* (optional) workspace is a int32 tensor of shape [dst->ndim * dst->len * 2] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes, tl_tensor *workspace)
@@ -628,25 +663,25 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      return dst;
 }
 
-tl_tensor *tl_tensor_vtranspose(const tl_tensor *src, tl_tensor *dst,
-                                tl_tensor *workspace, ...)
-{
-     int *axes;
-     va_list ap;
-     int i;
+/* tl_tensor *tl_tensor_vtranspose(const tl_tensor *src, tl_tensor *dst, */
+/*                                 tl_tensor *workspace, ...) */
+/* { */
+/*      int *axes; */
+/*      va_list ap; */
+/*      int i; */
 
-     assert(src && src->ndim > 0);
-     axes = tl_alloc(sizeof(int) * src->ndim);
-     va_start(ap, workspace);
-     for (i = 0; i < src->ndim; i++) {
-          axes[i] = va_arg(ap, int);
-          assert(axes[i] > 0);
-     }
-     va_end(ap);
-     dst = tl_tensor_transpose(src, dst, axes, workspace);
-     tl_free(axes);
-     return dst;
-}
+/*      assert(src && src->ndim > 0); */
+/*      axes = tl_alloc(sizeof(int) * src->ndim); */
+/*      va_start(ap, workspace); */
+/*      for (i = 0; i < src->ndim; i++) { */
+/*           axes[i] = va_arg(ap, int); */
+/*           assert(axes[i] > 0); */
+/*      } */
+/*      va_end(ap); */
+/*      dst = tl_tensor_transpose(src, dst, axes, workspace); */
+/*      tl_free(axes); */
+/*      return dst; */
+/* } */
 
 tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
                              tl_dtype dtype_d)

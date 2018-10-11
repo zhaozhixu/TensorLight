@@ -52,6 +52,42 @@ static const char *dtype_name[TL_DTYPE_SIZE] = {
      "TL_UINT32", "TL_UINT16", "TL_UINT8", "TL_BOOL"
 };
 
+static const double dtype_max[TL_DTYPE_SIZE] = {
+     (double)DBL_MAX,
+     (double)FLT_MAX,
+     (double)INT32_MAX,
+     (double)INT16_MAX,
+     (double)INT8_MAX,
+     (double)UINT32_MAX,
+     (double)UINT16_MAX,
+     (double)UINT8_MAX,
+     (double)1
+};
+
+static const double dtype_min[TL_DTYPE_SIZE] = {
+     (double)-DBL_MAX,
+     (double)-FLT_MAX,
+     (double)INT32_MIN,
+     (double)INT16_MIN,
+     (double)INT8_MIN,
+     (double)0,
+     (double)0,
+     (double)0,
+     (double)0
+};
+
+double tl_dtype_max(tl_dtype dtype)
+{
+     tl_check_dtype(dtype);
+     return dtype_max[dtype];
+}
+
+double tl_dtype_min(tl_dtype dtype)
+{
+     tl_check_dtype(dtype);
+     return dtype_min[dtype];
+}
+
 size_t tl_size_of(tl_dtype dtype)
 {
      tl_check_dtype(dtype);

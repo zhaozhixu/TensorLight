@@ -143,29 +143,23 @@ END_TEST
 
 START_TEST(test_tl_tensor_arange)
 {
-     tl_tensor *params, *dst, *t;
+     tl_tensor *dst, *t;
 
-     params = tl_tensor_create(ARR(int16_t,0,3,1), 1, ARR(int,3), TL_INT16);
      t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16);
-     dst = tl_tensor_arange(params);
+     dst = tl_tensor_arange(0, 3, 1, TL_INT16);
      tl_assert_tensor_eq(dst, t);
-     tl_tensor_free(params);
      tl_tensor_free(t);
      tl_tensor_free_data_too(dst);
 
-     params = tl_tensor_create(ARR(float,0.1,3.2,1.5), 1, ARR(int,3), TL_FLOAT);
      t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT);
-     dst = tl_tensor_arange(params);
+     dst = tl_tensor_arange(0.1, 3.2, 1.5, TL_FLOAT);
      tl_assert_tensor_eq(dst, t);
-     tl_tensor_free(params);
      tl_tensor_free(t);
      tl_tensor_free_data_too(dst);
 
-     params = tl_tensor_create(ARR(float,0.1,3.1,1.5), 1, ARR(int,3), TL_FLOAT);
      t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT);
-     dst = tl_tensor_arange(params);
+     dst = tl_tensor_arange(0.1, 3.1, 1.5, TL_FLOAT);
      tl_assert_tensor_eq(dst, t);
-     tl_tensor_free(params);
      tl_tensor_free(t);
      tl_tensor_free_data_too(dst);
 }
@@ -484,6 +478,42 @@ START_TEST(test_tl_tensor_elew)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_elew_param)
+{
+     tl_tensor *src, *dst;
+     int8_t src_data[6] = {1, 1, 2, 2, 3, 3};
+     double param = 2;
+     int8_t dst_data[6] = {2, 2, 4, 4, 6, 6};
+     int dims[2] = {2, 3};
+     int i;
+
+     src = tl_tensor_create(src_data, 2, dims, TL_INT8);
+     dst = tl_tensor_elew_param(src, param, NULL, TL_MUL);
+     ck_assert_int_eq(dst->ndim, 2);
+     ck_assert_int_eq(dst->dtype, TL_INT8);
+     ck_assert_int_eq(dst->len, 6);
+     ck_assert(dst->dims[0] == 2);
+     ck_assert(dst->dims[1] == 3);
+     for (i = 0; i < dst->len; i++)
+          ck_assert(((int8_t *)dst->data)[i] == dst_data[i]);
+     tl_tensor_free_data_too(dst);
+
+     src = tl_tensor_create(src_data, 2, dims, TL_INT8);
+     dst = tl_tensor_zeros(2, dims, TL_INT8);
+     dst = tl_tensor_elew_param(src, param, dst, TL_MUL);
+     ck_assert_int_eq(dst->ndim, 2);
+     ck_assert_int_eq(dst->dtype, TL_INT8);
+     ck_assert_int_eq(dst->len, 6);
+     ck_assert(dst->dims[0] == 2);
+     ck_assert(dst->dims[1] == 3);
+     for (i = 0; i < dst->len; i++)
+          ck_assert(((int8_t *)dst->data)[i] == dst_data[i]);
+     tl_tensor_free_data_too(dst);
+
+     tl_tensor_free(src);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_transpose)
 {
      tl_tensor *src, *dst;
@@ -596,6 +626,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_reshape);
      tcase_add_test(tc_tensor, test_tl_tensor_maxreduce);
      tcase_add_test(tc_tensor, test_tl_tensor_elew);
+     tcase_add_test(tc_tensor, test_tl_tensor_elew_param);
      tcase_add_test(tc_tensor, test_tl_tensor_transpose);
      tcase_add_test(tc_tensor, test_tl_tensor_convert);
      /* end of adding tests */

@@ -52,7 +52,8 @@ size_t tl_tensor_size(tl_tensor *t);
 tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype);
 tl_tensor *tl_tensor_clone(const tl_tensor *src);
 tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times);
-tl_tensor *tl_tensor_arange(const tl_tensor *params);
+tl_tensor *tl_tensor_arange(double start, double stop, double step,
+                            tl_dtype dtype);
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *t, const char *fmt);
 int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt);
@@ -67,6 +68,8 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
                                tl_tensor *arg, int axis);
 tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
                           tl_tensor *dst, tl_elew_op elew_op);
+tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
+                                tl_tensor *dst, tl_elew_op elew_op);
 /* (optional) workspace is a int32 tensor of shape [dst->ndim * dst->len * 2] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes, tl_tensor *workspace);

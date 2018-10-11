@@ -404,6 +404,15 @@ tl_tensor *tl_tensor_reshape(const tl_tensor *src, int ndim, const int *dims)
      return dst;
 }
 
+void tl_tensor_reshape_src(tl_tensor *src, int ndim, const int *dims)
+{
+     assert(src && src->data);
+     assert(src->len == tl_compute_length(ndim, dims));
+     src->ndim = ndim;
+     tl_free(src->dims);
+     src->dims = tl_clone(dims, sizeof(int)*ndim);
+}
+
 /* tl_tensor *tl_tensor_vreshape(const tl_tensor *src, int ndim, ...) */
 /* { */
 /*      tl_tensor *dst; */

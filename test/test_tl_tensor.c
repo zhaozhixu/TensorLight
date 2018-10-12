@@ -553,7 +553,7 @@ START_TEST(test_tl_tensor_transpose)
      tl_tensor_free_data_too(dst);
 
      dst = tl_tensor_zeros(3, dims2, TL_UINT8);
-     ws = tl_tensor_zeros(1, (int[]){dst->ndim*dst->len*2}, TL_INT32);
+     ws = tl_tensor_zeros(1, (int[]){dst->ndim*(dst->len*2+2)}, TL_INT32);
      dst = tl_tensor_transpose(src, dst, axes2, ws);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_UINT8);

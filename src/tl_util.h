@@ -38,6 +38,7 @@ TL_CPPSTART
 void *tl_alloc(size_t size);
 void tl_memcpy(void *dst, void *src, size_t size);
 void *tl_clone(const void *src, size_t size);
+void tl_copy(const void *src, void *dst, size_t size);
 void *tl_repeat(void *data, size_t size, int times);
 int tl_compute_length(int ndim, const int *dims);
 void tl_warn_msg(const char *fmt, ...);

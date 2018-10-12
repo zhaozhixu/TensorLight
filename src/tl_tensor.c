@@ -592,7 +592,7 @@ tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
      return dst;
 }
 
-/* (optional) workspace is a int32 tensor of shape [dst->ndim * dst->len * 2] */
+/* (optional) workspace is a int32 tensor of shape [dst->ndim * (dst->len * 2 + 2)] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes, tl_tensor *workspace)
 {
@@ -634,17 +634,21 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      }
 
      thread_num = dst->len;
-     s_dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
-     d_dims = (int *)tl_clone(dst->dims, sizeof(int) * dst->ndim);
      if (!workspace) {
           s_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
           d_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
+          s_dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
+          d_dims = (int *)tl_clone(dst->dims, sizeof(int) * dst->ndim);
      } else {
           assert(workspace->data);
           assert(workspace->dtype == TL_INT32);
-          assert(workspace->len == dst->ndim * dst->len * 2);
+          assert(workspace->len == dst->ndim * (dst->len * 2 + 2));
           s_ids = (int32_t *)workspace->data;
-          d_ids = &((int32_t *)workspace->data)[workspace->len / 2];
+          d_ids = &((int32_t *)workspace->data)[dst->ndim * dst->len];
+          s_dims = &((int32_t *)workspace->data)[dst->ndim * dst->len * 2];
+          d_dims = &((int32_t *)workspace->data)[dst->ndim * (dst->len * 2 + 1)];
+          tl_copy(src->dims, s_dims, sizeof(int) * src->ndim);
+          tl_copy(dst->dims, d_dims, sizeof(int) * dst->ndim);
      }
 
      dsize = tl_size_of(src->dtype);
@@ -665,9 +669,9 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      if (!workspace) {
           tl_free(s_ids);
           tl_free(d_ids);
+          tl_free(s_dims);
+          tl_free(d_dims);
      }
-     tl_free(s_dims);
-     tl_free(d_dims);
 
      return dst;
 }

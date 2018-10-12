@@ -55,6 +55,12 @@ void *tl_clone(const void *src, size_t size)
      return p;
 }
 
+void tl_copy(const void *src, void *dst, size_t size)
+{
+     assert(src && dst);
+     memmove(dst, src, size);
+}
+
 void *tl_repeat(void *data, size_t size, int times)
 {
      void *p, *dst;

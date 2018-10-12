@@ -51,6 +51,7 @@ define make-install-dir
   $(AT)if [ ! -d $(INSTALL_DIR) ]; then mkdir -p $(INSTALL_DIR); fi
   $(AT)if [ ! -d $(INSTALL_INCLUDE_DIR) ]; then mkdir -p $(INSTALL_INCLUDE_DIR); fi
   $(AT)if [ ! -d $(INSTALL_LIB_DIR) ]; then mkdir -p $(INSTALL_LIB_DIR); fi
+  $(AT)if [ ! -d $(PKGCONFIG_DIR) ]; then mkdir -p $(PKGCONFIG_DIR); fi
   cp $(BUILD_HEADERS) $(INSTALL_INCLUDE_DIR)
   cp $(BUILD_A) $(INSTALL_A)
   cp $(BUILD_SO) $(INSTALL_SO)

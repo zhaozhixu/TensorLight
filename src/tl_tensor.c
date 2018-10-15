@@ -86,10 +86,10 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
 {
      tl_tensor *t;
 
-     t = tl_alloc(sizeof(tl_tensor));
+     t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
      t->len = tl_compute_length(ndim, dims);
      t->ndim = ndim;
-     t->dims = tl_clone(dims, sizeof(int) * ndim);
+     t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
      t->dtype = dtype;
      t->backend_data = NULL;
      t->data = data;
@@ -149,7 +149,7 @@ tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
 
      assert(src);
      data = tl_repeat(src->data, src->len*tl_size_of(src->dtype), times);
-     dims = tl_alloc(sizeof(int)*(src->ndim+1));
+     dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
      memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
      dims[0] = times;
      dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
@@ -607,7 +607,7 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      int i;
 
 #ifndef NDEBUG
-     int *tmp = tl_alloc(src->ndim * sizeof(int));
+     int *tmp = (int *)tl_alloc(src->ndim * sizeof(int));
      memset(tmp, 0, src->ndim * sizeof(int));
      for (i = 0; i < src->ndim; i++)
           tmp[axes[i]] = 1;

@@ -66,6 +66,25 @@ static inline void check_tensor(const tl_tensor *t)
      assert(t->len == tl_compute_length(t->ndim, t->dims));
 }
 
+int tl_tensor_index(const tl_tensor *t, int *coords)
+{
+     assert(t);
+     assert(coords);
+#ifdef NDEBUG
+     for (int i = 0; i < t->ndim; i++)
+          assert(coords[i] >= 0 && coords[i] < t->dims[i]);
+#endif
+     return get_index(coords, t->ndim, t->dims);
+}
+
+void tl_tensor_coords(const tl_tensor *t, int index, int *coords)
+{
+     assert(t);
+     assert(index >= 0 && index < t->len);
+     assert(coords);
+     get_coords(index, coords, t->ndim, t->dims);
+}
+
 int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
 {
      int ndim;

@@ -43,6 +43,8 @@ typedef struct tl_tensor tl_tensor;
 TL_CPPSTART
 #endif
 
+int tl_tensor_index(const tl_tensor *t, int *coords);
+void tl_tensor_coords(const tl_tensor *t, int index, int *coords);
 int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2);
 tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
                             tl_dtype dtype);

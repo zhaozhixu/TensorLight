@@ -101,7 +101,7 @@ int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
 }
 
 tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
-                            tl_dtype dtype, tl_tensor *owner)
+                            tl_dtype dtype, int owndata)
 {
      tl_tensor *t;
 
@@ -112,7 +112,7 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
      t->dtype = dtype;
      t->backend_data = NULL;
      t->data = data;
-     t->owner = owner;
+     t->owner = owndata ? t : NULL;
 
      return t;
 }
@@ -138,7 +138,7 @@ tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype)
      tl_tensor *t;
      size_t size;
 
-     t = tl_tensor_create(NULL, ndim, dims, dtype, NULL);
+     t = tl_tensor_create(NULL, ndim, dims, dtype, 1);
      size = t->len * tl_size_of(dtype);
      t->data = tl_alloc(size);
      memset(t->data, 0, size);
@@ -157,7 +157,7 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src)
 
      assert(src);
      data = tl_clone(src->data, src->len*tl_size_of(src->dtype));
-     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype, NULL);
+     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype, 1);
      return dst;
 }
 
@@ -172,7 +172,7 @@ tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
      dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
      memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
      dims[0] = times;
-     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype, NULL);
+     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype, 1);
      tl_free(dims);
      return dst;
 }
@@ -303,7 +303,7 @@ int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt)
 }
 
 tl_tensor *tl_tensor_create_slice(void *data, const tl_tensor *src, int axis,
-                                  int len, tl_dtype dtype, tl_tensor *owner)
+                                  int len, tl_dtype dtype, int owndata)
 {
      tl_tensor *dst;
      int *dims;
@@ -314,14 +314,14 @@ tl_tensor *tl_tensor_create_slice(void *data, const tl_tensor *src, int axis,
 
      dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
      dims[axis] = len;
-     dst = tl_tensor_create(data, src->ndim, dims, dtype, owner);
+     dst = tl_tensor_create(data, src->ndim, dims, dtype, owndata);
      tl_free(dims);
 
      return dst;
 }
 
 tl_tensor *tl_tensor_zeros_slice(const tl_tensor *src, int axis, int len,
-                                  tl_dtype dtype)
+                                 tl_dtype dtype)
 {
      tl_tensor *dst;
      int *dims;
@@ -376,6 +376,36 @@ tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
           si = di / d_vol * s_vol + di % d_vol + start * vol;
           tl_passign(dst->data, di, src->data, si, dsize);
      }
+
+     return dst;
+}
+
+tl_tensor *tl_tensor_slice_nocopy(tl_tensor *src, tl_tensor *dst,
+                                  int axis, int start, int len)
+{
+     int i, volumn;
+
+     assert(src && src->data);
+     assert(axis == 0);
+     assert(len <= src->dims[axis] && len > 0);
+     assert(start < src->dims[axis] && start >= 0);
+     assert(len + start <= src->dims[axis]);
+     if (dst) {
+#ifndef NDEBUG
+          assert(src->dtype == dst->dtype);
+          assert(dst->ndim == src->ndim);
+          for (i = 0; i < src->ndim; i++)
+               assert(i == axis ? dst->dims[i] == len :
+                      dst->dims[i] == src->dims[i]);
+#endif
+     } else {
+          dst = tl_tensor_create_slice(NULL, src, axis, len, src->dtype, 0);
+     }
+
+     dst->owner = src;
+     for (i = axis+1, volumn = 1; i < dst->ndim; i++)
+          volumn *= dst->dims[i];
+     dst->data = tl_padd(src->data, start*volumn, tl_size_of(src->dtype));
 
      return dst;
 }
@@ -438,7 +468,8 @@ tl_tensor *tl_tensor_reshape(tl_tensor *src, int ndim, const int *dims)
 
      assert(src && src->data);
      assert(src->len == tl_compute_length(ndim, dims));
-     dst = tl_tensor_create(src->data, ndim, dims, src->dtype, src);
+     dst = tl_tensor_create(src->data, ndim, dims, src->dtype, 0);
+     dst->owner = src;
      return dst;
 }
 

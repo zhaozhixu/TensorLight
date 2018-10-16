@@ -48,7 +48,7 @@ int tl_tensor_index(const tl_tensor *t, int *coords);
 void tl_tensor_coords(const tl_tensor *t, int index, int *coords);
 int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2);
 tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
-                            tl_dtype dtype, tl_tensor *owner);
+                            tl_dtype dtype, int owndata);
 void tl_tensor_free(tl_tensor *t);
 void tl_tensor_free_data_too(tl_tensor *t);
 size_t tl_tensor_size(tl_tensor *t);
@@ -61,11 +61,13 @@ void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *t, const char *fmt);
 int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt);
 tl_tensor *tl_tensor_create_slice(void *data, const tl_tensor *src, int axis,
-                                  int len, tl_dtype dtype, tl_tensor *owner);
+                                  int len, tl_dtype dtype, int owndata);
 tl_tensor *tl_tensor_zeros_slice(const tl_tensor *src, int axis, int len,
                                  tl_dtype dtype);
 tl_tensor *tl_tensor_slice(const tl_tensor *src, tl_tensor *dst, int axis,
                            int start, int len);
+tl_tensor *tl_tensor_slice_nocopy(tl_tensor *src, tl_tensor *dst,
+                                  int axis, int start, int len);
 tl_tensor *tl_tensor_concat(const tl_tensor *src1, const tl_tensor *src2,
                             tl_tensor *dst, int axis);
 tl_tensor *tl_tensor_reshape(tl_tensor *src, int ndim, const int *dims);

@@ -42,7 +42,7 @@ START_TEST(test_tl_tensor_create)
      int32_t data[6] = {1, 2, 3, 4, 5, 6};
      int i;
 
-     t = tl_tensor_create(NULL, 3, (int[]){1, 2, 3}, TL_DOUBLE);
+     t = tl_tensor_create(NULL, 3, (int[]){1, 2, 3}, TL_DOUBLE, NULL);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_DOUBLE);
      ck_assert_int_eq(t->len, 6);
@@ -51,7 +51,7 @@ START_TEST(test_tl_tensor_create)
      ck_assert_ptr_eq(t->data, NULL);
      tl_tensor_free_data_too(t);
 
-     t = tl_tensor_create(NULL, 3, dims, TL_FLOAT);
+     t = tl_tensor_create(NULL, 3, dims, TL_FLOAT, NULL);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_FLOAT);
      ck_assert_int_eq(t->len, 6);
@@ -60,7 +60,7 @@ START_TEST(test_tl_tensor_create)
      ck_assert_ptr_eq(t->data, NULL);
      tl_tensor_free_data_too(t);
 
-     t = tl_tensor_create(data, 3, dims, TL_INT32);
+     t = tl_tensor_create(data, 3, dims, TL_INT32, NULL);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_INT32);
      ck_assert_int_eq(t->len, 6);
@@ -70,7 +70,7 @@ START_TEST(test_tl_tensor_create)
           ck_assert(((int32_t *)t->data)[i] == data[i]);
      tl_tensor_free(t);
 
-     t = tl_tensor_create(data, 3, dims, TL_INT32);
+     t = tl_tensor_create(data, 3, dims, TL_INT32, NULL);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_INT32);
      ck_assert_int_eq(t->len, 6);
@@ -94,7 +94,7 @@ START_TEST(test_tl_tensor_clone)
      int32_t data[6] = {1, 2, 3, 4, 5, 6};
      int i;
 
-     t1 = tl_tensor_create(data, 3, dims, TL_INT32);
+     t1 = tl_tensor_create(data, 3, dims, TL_INT32, NULL);
      t2 = tl_tensor_clone(t1);
      ck_assert_int_eq(t2->ndim, 3);
      ck_assert_int_eq(t2->dtype, TL_INT32);
@@ -120,7 +120,7 @@ START_TEST(test_tl_tensor_repeat)
      float data3[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
      tl_tensor *t, *t1, *t2, *t3;
 
-     t = tl_tensor_create(data, 2, dims, TL_FLOAT);
+     t = tl_tensor_create(data, 2, dims, TL_FLOAT, NULL);
 
      t1 = tl_tensor_repeat(t, 1);
      ck_assert_array_int_eq(t1->dims, dims1, 3);
@@ -145,19 +145,19 @@ START_TEST(test_tl_tensor_arange)
 {
      tl_tensor *dst, *t;
 
-     t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16);
+     t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16, NULL);
      dst = tl_tensor_arange(0, 3, 1, TL_INT16);
      tl_assert_tensor_eq(dst, t);
      tl_tensor_free(t);
      tl_tensor_free_data_too(dst);
 
-     t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT);
+     t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT, NULL);
      dst = tl_tensor_arange(0.1, 3.2, 1.5, TL_FLOAT);
      tl_assert_tensor_eq(dst, t);
      tl_tensor_free(t);
      tl_tensor_free_data_too(dst);
 
-     t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT);
+     t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT, NULL);
      dst = tl_tensor_arange(0.1, 3.1, 1.5, TL_FLOAT);
      tl_assert_tensor_eq(dst, t);
      tl_tensor_free(t);
@@ -238,13 +238,13 @@ START_TEST(test_tl_tensor_save)
 }
 END_TEST
 
-START_TEST(test_tl_tensor_create_slice)
+START_TEST(test_tl_tensor_zeros_slice)
 {
      tl_tensor *t1, *t2;
      int i;
 
      t1 = tl_tensor_zeros(1, (int[]){1}, TL_INT8);
-     t2 = tl_tensor_create_slice(t1, 0, 1, TL_INT8);
+     t2 = tl_tensor_zeros_slice(t1, 0, 1, TL_INT8);
      ck_assert_int_eq(t2->ndim, 1);
      ck_assert_int_eq(t2->dtype, TL_INT8);
      ck_assert_int_eq(t2->len, 1);
@@ -256,7 +256,7 @@ START_TEST(test_tl_tensor_create_slice)
      tl_tensor_free_data_too(t2);
 
      t1 = tl_tensor_zeros(3, (int[]){1, 2, 3}, TL_INT16);
-     t2 = tl_tensor_create_slice(t1, 2, 2, TL_UINT8);
+     t2 = tl_tensor_zeros_slice(t1, 2, 2, TL_UINT8);
      ck_assert_int_eq(t2->ndim, 3);
      ck_assert_int_eq(t2->dtype, TL_UINT8);
      ck_assert_int_eq(t2->len, 4);
@@ -280,7 +280,7 @@ START_TEST(test_tl_tensor_slice)
      uint16_t data_slice2[3] = {1, 2, 3};
      int i;
 
-     t1 = tl_tensor_create(data, ndim, dims, TL_UINT16);
+     t1 = tl_tensor_create(data, ndim, dims, TL_UINT16, NULL);
      t2 = tl_tensor_slice(t1, NULL, 2, 1, 2);
      ck_assert_int_eq(t2->ndim, 3);
      ck_assert_int_eq(t2->dtype, TL_UINT16);
@@ -293,8 +293,8 @@ START_TEST(test_tl_tensor_slice)
      tl_tensor_free(t1);
      tl_tensor_free_data_too(t2);
 
-     t1 = tl_tensor_create(data, ndim, dims, TL_UINT16);
-     t2 = tl_tensor_create_slice(t1, 1, 1, TL_UINT16);
+     t1 = tl_tensor_create(data, ndim, dims, TL_UINT16, NULL);
+     t2 = tl_tensor_zeros_slice(t1, 1, 1, TL_UINT16);
      t2 = tl_tensor_slice(t1, t2, 1, 0, 1);
      ck_assert_int_eq(t2->ndim, 3);
      ck_assert_int_eq(t2->dtype, TL_UINT16);
@@ -329,8 +329,8 @@ START_TEST(test_tl_tensor_concat)
      uint16_t data_slice6[] = {2, 3, 5, 6, 8, 9, 11, 12};
 
      t = tl_tensor_zeros(ndim, dims, TL_UINT16);
-     t1 = tl_tensor_create(data_slice1, ndim, dims1, TL_UINT16);
-     t2 = tl_tensor_create(data_slice2, ndim, dims2, TL_UINT16);
+     t1 = tl_tensor_create(data_slice1, ndim, dims1, TL_UINT16, NULL);
+     t2 = tl_tensor_create(data_slice2, ndim, dims2, TL_UINT16, NULL);
      tl_tensor_concat(t1, t2, t, 0);
      ck_assert_array_uint_eq((uint16_t*)t->data, data, t->len);
      tl_tensor_free_data_too(t);
@@ -338,16 +338,16 @@ START_TEST(test_tl_tensor_concat)
      tl_tensor_free(t2);
 
      t = tl_tensor_zeros(ndim, dims, TL_UINT16);
-     t3 = tl_tensor_create(data_slice3, ndim, dims3, TL_UINT16);
-     t4 = tl_tensor_create(data_slice4, ndim, dims4, TL_UINT16);
+     t3 = tl_tensor_create(data_slice3, ndim, dims3, TL_UINT16, NULL);
+     t4 = tl_tensor_create(data_slice4, ndim, dims4, TL_UINT16, NULL);
      tl_tensor_concat(t3, t4, t, 1);
      ck_assert_array_uint_eq((uint16_t*)t->data, data, t->len);
      tl_tensor_free_data_too(t);
      tl_tensor_free(t3);
      tl_tensor_free(t4);
 
-     t5 = tl_tensor_create(data_slice5, ndim, dims5, TL_UINT16);
-     t6 = tl_tensor_create(data_slice6, ndim, dims6, TL_UINT16);
+     t5 = tl_tensor_create(data_slice5, ndim, dims5, TL_UINT16, NULL);
+     t6 = tl_tensor_create(data_slice6, ndim, dims6, TL_UINT16, NULL);
      t = tl_tensor_concat(t5, t6, NULL, 2);
      ck_assert_array_uint_eq((uint16_t*)t->data, data, t->len);
      tl_tensor_free_data_too(t);
@@ -364,7 +364,7 @@ START_TEST(test_tl_tensor_reshape)
      int data[6] = {1, 2, 3, 4, 5, 6};
      int i;
 
-     t1 = tl_tensor_create(data, 3, dims1, TL_UINT32);
+     t1 = tl_tensor_create(data, 3, dims1, TL_UINT32, NULL);
      t2 = tl_tensor_reshape(t1, 2, dims2);
      ck_assert_int_eq(t2->ndim, 2);
      ck_assert_int_eq(t2->dtype, TL_UINT32);
@@ -389,7 +389,7 @@ START_TEST(test_tl_tensor_maxreduce)
      int arg_data[6] = {1, 1, 1, 1, 1, 1};
      int i;
 
-     src = tl_tensor_create(data, 3, dims, TL_INT32);
+     src = tl_tensor_create(data, 3, dims, TL_INT32, NULL);
      dst = tl_tensor_maxreduce(src, NULL, NULL, 1);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_INT32);
@@ -401,7 +401,7 @@ START_TEST(test_tl_tensor_maxreduce)
           ck_assert(((int32_t *)dst->data)[i] == dst_data1[i]);
      tl_tensor_free_data_too(dst);
 
-     dst = tl_tensor_create_slice(src, 0, 1, TL_INT32);
+     dst = tl_tensor_zeros_slice(src, 0, 1, TL_INT32);
      dst = tl_tensor_maxreduce(src, dst, NULL, 0);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_INT32);
@@ -413,8 +413,8 @@ START_TEST(test_tl_tensor_maxreduce)
           ck_assert(((int32_t *)dst->data)[i] == dst_data2[i]);
      tl_tensor_free_data_too(dst);
 
-     dst = tl_tensor_create_slice(src, 2, 1, TL_INT32);
-     arg = tl_tensor_create_slice(src, 2, 1, TL_INT32);
+     dst = tl_tensor_zeros_slice(src, 2, 1, TL_INT32);
+     arg = tl_tensor_zeros_slice(src, 2, 1, TL_INT32);
      dst = tl_tensor_maxreduce(src, dst, arg, 2);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_INT32);
@@ -448,8 +448,8 @@ START_TEST(test_tl_tensor_elew)
      int dims[2] = {2, 3};
      int i;
 
-     src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8);
-     src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8);
+     src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8, NULL);
+     src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8, NULL);
      dst = tl_tensor_elew(src1, src2, NULL, TL_MUL);
      ck_assert_int_eq(dst->ndim, 2);
      ck_assert_int_eq(dst->dtype, TL_INT8);
@@ -460,8 +460,8 @@ START_TEST(test_tl_tensor_elew)
           ck_assert(((int8_t *)dst->data)[i] == dst_data[i]);
      tl_tensor_free_data_too(dst);
 
-     src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8);
-     src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8);
+     src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8, NULL);
+     src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8, NULL);
      dst = tl_tensor_zeros(2, dims, TL_INT8);
      dst = tl_tensor_elew(src1, src2, dst, TL_MUL);
      ck_assert_int_eq(dst->ndim, 2);
@@ -487,7 +487,7 @@ START_TEST(test_tl_tensor_elew_param)
      int dims[2] = {2, 3};
      int i;
 
-     src = tl_tensor_create(src_data, 2, dims, TL_INT8);
+     src = tl_tensor_create(src_data, 2, dims, TL_INT8, NULL);
      dst = tl_tensor_elew_param(src, param, NULL, TL_MUL);
      ck_assert_int_eq(dst->ndim, 2);
      ck_assert_int_eq(dst->dtype, TL_INT8);
@@ -498,7 +498,7 @@ START_TEST(test_tl_tensor_elew_param)
           ck_assert(((int8_t *)dst->data)[i] == dst_data[i]);
      tl_tensor_free_data_too(dst);
 
-     src = tl_tensor_create(src_data, 2, dims, TL_INT8);
+     src = tl_tensor_create(src_data, 2, dims, TL_INT8, NULL);
      dst = tl_tensor_zeros(2, dims, TL_INT8);
      dst = tl_tensor_elew_param(src, param, dst, TL_MUL);
      ck_assert_int_eq(dst->ndim, 2);
@@ -527,7 +527,7 @@ START_TEST(test_tl_tensor_transpose)
      tl_tensor *ws;
      int i;
 
-     src = tl_tensor_create(data, 3, dims1, TL_UINT8);
+     src = tl_tensor_create(data, 3, dims1, TL_UINT8, NULL);
 
      dst = tl_tensor_transpose(src, NULL, axes1, NULL);
      ck_assert_int_eq(dst->ndim, 3);
@@ -576,7 +576,7 @@ START_TEST(test_tl_tensor_convert)
      uint8_t data_ui8[5] = {0, 0, 1, 255, 255};
      tl_tensor *t1, *t2;
 
-     t1 = tl_tensor_create(data_f, 1, (int[]){5}, TL_FLOAT);
+     t1 = tl_tensor_create(data_f, 1, (int[]){5}, TL_FLOAT, NULL);
 
      t2 = tl_tensor_convert(t1, NULL, TL_UINT8);
      ck_assert_int_eq(t2->ndim, 1);
@@ -620,7 +620,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_fprint);
      tcase_add_test(tc_tensor, test_tl_tensor_print);
      tcase_add_test(tc_tensor, test_tl_tensor_save);
-     tcase_add_test(tc_tensor, test_tl_tensor_create_slice);
+     tcase_add_test(tc_tensor, test_tl_tensor_zeros_slice);
      tcase_add_test(tc_tensor, test_tl_tensor_slice);
      tcase_add_test(tc_tensor, test_tl_tensor_concat);
      tcase_add_test(tc_tensor, test_tl_tensor_reshape);

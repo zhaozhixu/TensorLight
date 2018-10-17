@@ -101,7 +101,7 @@ int tl_tensor_issameshape(const tl_tensor *t1, const tl_tensor *t2)
 }
 
 tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
-                            tl_dtype dtype, int owndata)
+                            tl_dtype dtype)
 {
      tl_tensor *t;
 
@@ -112,7 +112,7 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
      t->dtype = dtype;
      t->backend_data = NULL;
      t->data = data;
-     t->owner = owndata ? t : NULL;
+     t->owner = NULL;
 
      return t;
 }
@@ -138,7 +138,8 @@ tl_tensor *tl_tensor_zeros(int ndim, const int *dims, tl_dtype dtype)
      tl_tensor *t;
      size_t size;
 
-     t = tl_tensor_create(NULL, ndim, dims, dtype, 1);
+     t = tl_tensor_create(NULL, ndim, dims, dtype);
+     t->owner = t;
      size = t->len * tl_size_of(dtype);
      t->data = tl_alloc(size);
      memset(t->data, 0, size);
@@ -157,7 +158,8 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src)
 
      assert(src);
      data = tl_clone(src->data, src->len*tl_size_of(src->dtype));
-     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype, 1);
+     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
+     dst->owner = dst;
      return dst;
 }
 
@@ -172,7 +174,8 @@ tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times)
      dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
      memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
      dims[0] = times;
-     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype, 1);
+     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+     dst->owner = dst;
      tl_free(dims);
      return dst;
 }
@@ -303,7 +306,7 @@ int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt)
 }
 
 tl_tensor *tl_tensor_create_slice(void *data, const tl_tensor *src, int axis,
-                                  int len, tl_dtype dtype, int owndata)
+                                  int len, tl_dtype dtype)
 {
      tl_tensor *dst;
      int *dims;
@@ -314,7 +317,7 @@ tl_tensor *tl_tensor_create_slice(void *data, const tl_tensor *src, int axis,
 
      dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
      dims[axis] = len;
-     dst = tl_tensor_create(data, src->ndim, dims, dtype, owndata);
+     dst = tl_tensor_create(data, src->ndim, dims, dtype);
      tl_free(dims);
 
      return dst;
@@ -399,7 +402,7 @@ tl_tensor *tl_tensor_slice_nocopy(tl_tensor *src, tl_tensor *dst,
                       dst->dims[i] == src->dims[i]);
 #endif
      } else {
-          dst = tl_tensor_create_slice(NULL, src, axis, len, src->dtype, 0);
+          dst = tl_tensor_create_slice(NULL, src, axis, len, src->dtype);
      }
 
      dst->owner = src;
@@ -468,7 +471,7 @@ tl_tensor *tl_tensor_reshape(tl_tensor *src, int ndim, const int *dims)
 
      assert(src && src->data);
      assert(src->len == tl_compute_length(ndim, dims));
-     dst = tl_tensor_create(src->data, ndim, dims, src->dtype, 0);
+     dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
      dst->owner = src;
      return dst;
 }

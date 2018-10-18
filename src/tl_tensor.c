@@ -469,7 +469,7 @@ tl_tensor *tl_tensor_reshape(tl_tensor *src, int ndim, const int *dims)
 {
      tl_tensor *dst;
 
-     assert(src && src->data);
+     assert(src);
      assert(src->len == tl_compute_length(ndim, dims));
      dst = tl_tensor_create(src->data, ndim, dims, src->dtype);
      dst->owner = src;
@@ -478,7 +478,7 @@ tl_tensor *tl_tensor_reshape(tl_tensor *src, int ndim, const int *dims)
 
 void tl_tensor_reshape_src(tl_tensor *src, int ndim, const int *dims)
 {
-     assert(src && src->data);
+     assert(src);
      assert(src->len == tl_compute_length(ndim, dims));
      src->ndim = ndim;
      tl_free(src->dims);

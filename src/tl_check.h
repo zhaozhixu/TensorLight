@@ -90,7 +90,7 @@
 #ifndef tl_assert_tensor_eq_tol
 #define _tl_tensor_abs(X, Y) ((X) > (Y) ? (X) - (Y) : (Y) - (X))
 #define _tl_tensor_msg(TP, T)                                           \
-     ck_assert_msg(_tl_tensor_abs(((TP*)_ck_tx->data)[i], ((TP*)_ck_ty->data)[i]) <= T, \
+     ck_assert_msg(_tl_tensor_abs(((TP*)_ck_tx->data)[i], ((TP*)_ck_ty->data)[i]) <= (T), \
                    msg, i, ((TP*)_ck_tx->data)[i], i, ((TP*)_ck_ty->data)[i]);
 #define tl_assert_tensor_eq_tol(TX, TY, T)                              \
      do {                                                               \
@@ -119,31 +119,31 @@
           for (int i = 0; i < _ck_tx->len; i++) {                       \
                switch (_ck_tx->dtype) {                                 \
                case TL_DOUBLE:                                          \
-                    _tl_tensor_msg(double, T);                          \
+                    _tl_tensor_msg(double, (T));                        \
                     break;                                              \
                case TL_FLOAT:                                           \
-                    _tl_tensor_msg(float, T);                           \
+                    _tl_tensor_msg(float, (T));                         \
                     break;                                              \
                case TL_INT32:                                           \
-                    _tl_tensor_msg(int32_t, T);                         \
+                    _tl_tensor_msg(int32_t, (T));                       \
                     break;                                              \
                case TL_INT16:                                           \
-                    _tl_tensor_msg(int16_t, T);                         \
+                    _tl_tensor_msg(int16_t, (T));                       \
                     break;                                              \
                case TL_INT8:                                            \
-                    _tl_tensor_msg(int8_t, T);                          \
+                    _tl_tensor_msg(int8_t, (T));                        \
                     break;                                              \
                case TL_UINT32:                                          \
-                    _tl_tensor_msg(uint32_t, T);                        \
+                    _tl_tensor_msg(uint32_t, (T));                      \
                     break;                                              \
                case TL_UINT16:                                          \
-                    _tl_tensor_msg(uint16_t, T);                        \
+                    _tl_tensor_msg(uint16_t, (T));                      \
                     break;                                              \
                case TL_UINT8:                                           \
-                    _tl_tensor_msg(uint8_t, T);                         \
+                    _tl_tensor_msg(uint8_t, (T));                       \
                     break;                                              \
                case TL_BOOL:                                            \
-                    _tl_tensor_msg(tl_bool_t, T);                       \
+                    _tl_tensor_msg(tl_bool_t, (T));                     \
                     break;                                              \
                default:                                                 \
                     assert(0 && "unsupported tl_dtype");                \

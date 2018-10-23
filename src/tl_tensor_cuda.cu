@@ -20,8 +20,6 @@
  * SOFTWARE.
  */
 
-#ifdef TL_CUDA
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -55,33 +53,12 @@ static inline __device__ void get_coords(int id, int *ids, int ndim, int *dims)
      }
 }
 
-tl_tensor *tl_tensor_create_cuda(void *data, int ndim, const int *dims,
-                                 tl_dtype dtype)
-{
-     tl_tensor *t;
-
-     t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
-     t->len = tl_compute_length(ndim, dims);
-     t->ndim = ndim;
-     t->dims = (int *)tl_clone(dims, sizeof(int) * ndim);
-     t->dtype = dtype;
-     t->data = data;
-     t->backend_data = NULL;
-
-     return t;
-}
-
-void tl_tensor_free_cuda(tl_tensor *t)
-{
-     assert(t);
-     tl_free(t->dims);
-     tl_free(t);
-}
-
 void tl_tensor_free_data_too_cuda(tl_tensor *t)
 {
-     TL_CUDA_CK(cudaFree(t->data));
-     tl_tensor_free_cuda(t);
+     if (!t)
+          return;
+     tl_free_cuda(t->data);
+     tl_tensor_free(t);
 }
 
 tl_tensor *tl_tensor_zeros_cuda(int ndim, const int *dims, tl_dtype dtype)
@@ -89,7 +66,8 @@ tl_tensor *tl_tensor_zeros_cuda(int ndim, const int *dims, tl_dtype dtype)
      tl_tensor *t;
      size_t size;
 
-     t = tl_tensor_create_cuda(NULL, ndim, dims, dtype);
+     t = tl_tensor_create(NULL, ndim, dims, dtype);
+     t->owner = t;
      size = t->len * tl_size_of(dtype);
      t->data = tl_alloc_cuda(size);
      TL_CUDA_CK(cudaMemset(t->data, 0, size));
@@ -103,7 +81,8 @@ tl_tensor *tl_tensor_clone_h2d(const tl_tensor *src)
 
      assert(src);
      data = tl_clone_h2d(src->data, src->len*tl_size_of(src->dtype));
-     dst = tl_tensor_create_cuda(data, src->ndim, src->dims, src->dtype);
+     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
+     dst->owner = dst;
      return dst;
 }
 
@@ -115,6 +94,7 @@ tl_tensor *tl_tensor_clone_d2h(const tl_tensor *src)
      assert(src);
      data = tl_clone_d2h(src->data, src->len*tl_size_of(src->dtype));
      dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
+     dst->owner = dst;
      return dst;
 }
 
@@ -125,7 +105,92 @@ tl_tensor *tl_tensor_clone_d2d(const tl_tensor *src)
 
      assert(src);
      data = tl_clone_d2d(src->data, src->len*tl_size_of(src->dtype));
-     dst = tl_tensor_create_cuda(data, src->ndim, src->dims, src->dtype);
+     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
+     dst->owner = dst;
+     return dst;
+}
+
+tl_tensor *tl_tensor_repeat_h2d(const tl_tensor *src, int times)
+{
+     void *data;
+     int *dims;
+     tl_tensor *dst;
+
+     assert(src);
+     data = tl_repeat_h2d(src->data, src->len*tl_size_of(src->dtype), times);
+     dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
+     memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+     dims[0] = times;
+     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+     dst->owner = dst;
+     tl_free(dims);
+     return dst;
+}
+
+tl_tensor *tl_tensor_repeat_d2h(const tl_tensor *src, int times)
+{
+     void *data;
+     int *dims;
+     tl_tensor *dst;
+
+     assert(src);
+     data = tl_repeat_d2h(src->data, src->len*tl_size_of(src->dtype), times);
+     dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
+     memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+     dims[0] = times;
+     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+     dst->owner = dst;
+     tl_free(dims);
+     return dst;
+}
+
+tl_tensor *tl_tensor_repeat_d2d(const tl_tensor *src, int times)
+{
+     void *data;
+     int *dims;
+     tl_tensor *dst;
+
+     assert(src);
+     data = tl_repeat_d2d(src->data, src->len*tl_size_of(src->dtype), times);
+     dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
+     memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+     dims[0] = times;
+     dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+     dst->owner = dst;
+     tl_free(dims);
+     return dst;
+}
+
+/* arrange at host, copy to device */
+tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
+                                 tl_dtype dtype)
+{
+     int dims[1];
+     void *data;
+     tl_tensor *dst;
+     double len, elem;
+     size_t dsize;
+
+     dsize = tl_size_of(dtype);
+     assert(start >= tl_dtype_min(dtype) && start <= tl_dtype_max(dtype));
+     assert(stop >= tl_dtype_min(dtype) && stop <= tl_dtype_max(dtype));
+     assert(step >= tl_dtype_min(dtype) && step <= tl_dtype_max(dtype));
+     assert(step != 0);
+     assert(stop > start);      /* TODO: expand to all possibilities */
+
+     len = ceil((stop - start) / step);
+     if (len > INT32_MAX)
+          return NULL;
+
+     dims[0] = (int)len;
+     dst = tl_tensor_zeros_cuda(1, dims, dtype);
+     data = tl_tensor_zeros(1, dims, dtype);
+     for (int i = 0; i < dims[0]; i++) {
+          elem = start + step * i;
+          tl_convert(tl_padd(data, i, dsize), dtype, &elem, TL_DOUBLE);
+     }
+     tl_memcpy_h2d(dst->data, data, tl_size_of(dst->dtype));
+
      return dst;
 }
 
@@ -155,8 +220,8 @@ int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t,
      return ret;
 }
 
-tl_tensor *tl_tensor_create_slice_cuda(const tl_tensor *src, int axis, int len,
-                                       tl_dtype dtype)
+tl_tensor *tl_tensor_zeros_slice_cuda(const tl_tensor *src, int axis, int len,
+                                      tl_dtype dtype)
 {
      tl_tensor *dst;
      int *dims;
@@ -206,7 +271,7 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
                       dst->dims[i] == src->dims[i]);
 #endif
      } else {
-          dst = tl_tensor_create_slice_cuda(src, axis, len, src->dtype);
+          dst = tl_tensor_zeros_slice_cuda(src, axis, len, src->dtype);
      }
 
      for (i = axis+1, vol = 1; i < dst->ndim; i++)
@@ -329,7 +394,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
                       dst->dims[i] == src->dims[i]);
 #endif
      } else {
-          dst = tl_tensor_create_slice_cuda(src, axis, 1, src->dtype);
+          dst = tl_tensor_zeros_slice_cuda(src, axis, 1, src->dtype);
      }
      if (arg) {
 #ifndef NDEBUG
@@ -1919,5 +1984,3 @@ tl_tensor *tl_tensor_vtranspose_cuda(const tl_tensor *src, tl_tensor *dst,
      tl_free(axes);
      return dst;
 }
-
-#endif  /* TL_CUDA */

@@ -91,6 +91,8 @@ void tl_memcpy_d2d(void *dst, const void *src, size_t size)
 
 void tl_free_cuda(void *p)
 {
+     if (!p)
+          return;
      assert(tl_is_device_mem(p));
      TL_CUDA_CK(cudaFree(p));
 }

@@ -33,7 +33,7 @@ static void teardown(void)
 {
 }
 
-START_TEST(test_tl_tensor_create_cuda)
+START_TEST(test_tl_tensor_zeros_cuda)
 {
      tl_tensor *t;
      int dims[3] = {1, 2, 3};
@@ -66,7 +66,7 @@ START_TEST(test_tl_tensor_create_cuda)
      tl_free(data_h);
 
      data_d = tl_clone_h2d(data, sizeof(int32_t)*6);
-     t = tl_tensor_create_cuda(data_d, 3, dims, TL_INT32);
+     t = tl_tensor_create(data_d, 3, dims, TL_INT32);
      data_h = tl_clone_d2h(t->data, sizeof(int32_t)*t->len);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_INT32);
@@ -78,7 +78,7 @@ START_TEST(test_tl_tensor_create_cuda)
      tl_tensor_free(t);
      tl_free(data_h);
 
-     t = tl_tensor_create_cuda(data_d, 3, dims, TL_INT32);
+     t = tl_tensor_create(data_d, 3, dims, TL_INT32);
      data_h = tl_clone_d2h(t->data, sizeof(int32_t)*t->len);
      ck_assert_int_eq(t->ndim, 3);
      ck_assert_int_eq(t->dtype, TL_INT32);
@@ -130,7 +130,7 @@ START_TEST(test_tl_tensor_clone_d2h)
      int i;
 
      data_d = tl_clone_h2d(data, sizeof(int32_t)*6);
-     t1 = tl_tensor_create_cuda(data_d, 3, dims, TL_INT32);
+     t1 = tl_tensor_create(data_d, 3, dims, TL_INT32);
      t2 = tl_tensor_clone_d2h(t1);
      ck_assert_int_eq(t2->ndim, 3);
      ck_assert_int_eq(t2->dtype, TL_INT32);
@@ -231,14 +231,14 @@ START_TEST(test_tl_tensor_save_cuda)
 }
 END_TEST
 
-START_TEST(test_tl_tensor_create_slice_cuda)
+START_TEST(test_tl_tensor_zeros_slice_cuda)
 {
      tl_tensor *t1, *t2;
      void *data_h;
      int i;
 
      t1 = tl_tensor_zeros_cuda(1, (int[]){1}, TL_INT8);
-     t2 = tl_tensor_create_slice_cuda(t1, 0, 1, TL_INT8);
+     t2 = tl_tensor_zeros_slice_cuda(t1, 0, 1, TL_INT8);
      data_h = tl_clone_d2h(t2->data, tl_size_of(t2->dtype)*t2->len);
      ck_assert_int_eq(t2->ndim, 1);
      ck_assert_int_eq(t2->dtype, TL_INT8);
@@ -251,7 +251,7 @@ START_TEST(test_tl_tensor_create_slice_cuda)
      tl_free(data_h);
 
      t1 = tl_tensor_zeros_cuda(3, (int[]){1, 2, 3}, TL_INT16);
-     t2 = tl_tensor_create_slice_cuda(t1, 2, 2, TL_UINT8);
+     t2 = tl_tensor_zeros_slice_cuda(t1, 2, 2, TL_UINT8);
      data_h = tl_clone_d2h(t2->data, tl_size_of(t2->dtype)*t2->len);
      ck_assert_int_eq(t2->ndim, 3);
      ck_assert_int_eq(t2->dtype, TL_UINT8);
@@ -279,7 +279,7 @@ START_TEST(test_tl_tensor_slice_cuda)
      int i;
 
      data_d = tl_clone_h2d(data, sizeof(uint16_t)*6);
-     t1 = tl_tensor_create_cuda(data_d, ndim, dims, TL_UINT16);
+     t1 = tl_tensor_create(data_d, ndim, dims, TL_UINT16);
      t2 = tl_tensor_slice_cuda(t1, NULL, 2, 1, 2);
      data_h = tl_clone_d2h(t2->data, tl_size_of(t2->dtype)*t2->len);
      ck_assert_int_eq(t2->ndim, 3);
@@ -297,7 +297,7 @@ START_TEST(test_tl_tensor_slice_cuda)
 
      data_d = tl_clone_h2d(data, sizeof(uint16_t)*6);
      t1 = tl_tensor_create(data_d, ndim, dims, TL_UINT16);
-     t2 = tl_tensor_create_slice_cuda(t1, 1, 1, TL_UINT16);
+     t2 = tl_tensor_zeros_slice_cuda(t1, 1, 1, TL_UINT16);
      t2 = tl_tensor_slice_cuda(t1, t2, 1, 0, 1);
      data_h = tl_clone_d2h(t2->data, tl_size_of(t2->dtype)*t2->len);
      ck_assert_int_eq(t2->ndim, 3);
@@ -328,7 +328,7 @@ START_TEST(test_tl_tensor_maxreduce_cuda)
      int i;
 
      data_d = tl_clone_h2d(data, sizeof(int32_t)*12);
-     src = tl_tensor_create_cuda(data_d, 3, dims, TL_INT32);
+     src = tl_tensor_create(data_d, 3, dims, TL_INT32);
      dst = tl_tensor_maxreduce_cuda(src, NULL, NULL, 1);
      data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
      ck_assert_int_eq(dst->ndim, 3);
@@ -342,7 +342,7 @@ START_TEST(test_tl_tensor_maxreduce_cuda)
      tl_tensor_free_data_too_cuda(dst);
      tl_free(data_h);
 
-     dst = tl_tensor_create_slice_cuda(src, 0, 1, TL_INT32);
+     dst = tl_tensor_zeros_slice_cuda(src, 0, 1, TL_INT32);
      dst = tl_tensor_maxreduce_cuda(src, dst, NULL, 0);
      data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
      ck_assert_int_eq(dst->ndim, 3);
@@ -356,8 +356,8 @@ START_TEST(test_tl_tensor_maxreduce_cuda)
      tl_tensor_free_data_too_cuda(dst);
      tl_free(data_h);
 
-     dst = tl_tensor_create_slice_cuda(src, 2, 1, TL_INT32);
-     arg = tl_tensor_create_slice_cuda(src, 2, 1, TL_INT32);
+     dst = tl_tensor_zeros_slice_cuda(src, 2, 1, TL_INT32);
+     arg = tl_tensor_zeros_slice_cuda(src, 2, 1, TL_INT32);
      dst = tl_tensor_maxreduce_cuda(src, dst, arg, 2);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_INT32);
@@ -399,8 +399,8 @@ START_TEST(test_tl_tensor_elew_cuda)
      data_d1 = tl_clone_h2d(src1_data, sizeof(int8_t)*6);
      data_d2 = tl_clone_h2d(src2_data, sizeof(int8_t)*6);
 
-     src1 = tl_tensor_create_cuda(data_d1, 2, dims, TL_INT8);
-     src2 = tl_tensor_create_cuda(data_d2, 2, dims, TL_INT8);
+     src1 = tl_tensor_create(data_d1, 2, dims, TL_INT8);
+     src2 = tl_tensor_create(data_d2, 2, dims, TL_INT8);
      dst = tl_tensor_elew_cuda(src1, src2, NULL, TL_MUL);
      data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
      ck_assert_int_eq(dst->ndim, 2);
@@ -413,8 +413,8 @@ START_TEST(test_tl_tensor_elew_cuda)
      tl_tensor_free_data_too_cuda(dst);
      tl_free(data_h);
 
-     src1 = tl_tensor_create_cuda(data_d1, 2, dims, TL_INT8);
-     src2 = tl_tensor_create_cuda(data_d2, 2, dims, TL_INT8);
+     src1 = tl_tensor_create(data_d1, 2, dims, TL_INT8);
+     src2 = tl_tensor_create(data_d2, 2, dims, TL_INT8);
      dst = tl_tensor_zeros_cuda(2, dims, TL_INT8);
      dst = tl_tensor_elew_cuda(src1, src2, dst, TL_MUL);
      data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
@@ -443,7 +443,7 @@ START_TEST(test_tl_tensor_convert_cuda)
      tl_tensor *t1, *t2;
 
      data_d = tl_clone_h2d(data_f, sizeof(float)*5);
-     t1 = tl_tensor_create_cuda(data_d, 1, (int[]){5}, TL_FLOAT);
+     t1 = tl_tensor_create(data_d, 1, (int[]){5}, TL_FLOAT);
 
      t2 = tl_tensor_convert_cuda(t1, NULL, TL_UINT8);
      ck_assert_int_eq(t2->ndim, 1);
@@ -487,7 +487,7 @@ START_TEST(test_tl_tensor_transpose_cuda)
      int i;
 
      data_d = tl_clone_h2d(data, sizeof(uint8_t)*12);
-     src = tl_tensor_create_cuda(data_d, 3, dims1, TL_UINT8);
+     src = tl_tensor_create(data_d, 3, dims1, TL_UINT8);
 
      dst = tl_tensor_transpose_cuda(src, NULL, axes1, NULL);
      ck_assert_int_eq(dst->ndim, 3);
@@ -547,7 +547,7 @@ Suite *make_tensor_cuda_suite(void)
      tc_tensor_cuda = tcase_create("tensor_cuda");
      tcase_add_checked_fixture(tc_tensor_cuda, setup, teardown);
 
-     tcase_add_test(tc_tensor_cuda, test_tl_tensor_create_cuda);
+     tcase_add_test(tc_tensor_cuda, test_tl_tensor_zeros_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_free_data_too_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_h2d);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_d2h);
@@ -555,7 +555,7 @@ Suite *make_tensor_cuda_suite(void)
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_fprint_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_print_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_save_cuda);
-     tcase_add_test(tc_tensor_cuda, test_tl_tensor_create_slice_cuda);
+     tcase_add_test(tc_tensor_cuda, test_tl_tensor_zeros_slice_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_slice_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_maxreduce_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_elew_cuda);

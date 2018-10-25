@@ -23,6 +23,8 @@
 #ifndef _TL_TENSOR_H_
 #define _TL_TENSOR_H_
 
+/* end of config defines */
+
 #include "tl_type.h"
 
 #define TL_MAJOR_VERSION (0)

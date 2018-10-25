@@ -24,6 +24,10 @@ if (@ARGV < 1 or $ARGV[0] eq "-h" or $ARGV[0] eq "--help") {
 my $file = shift @ARGV;
 my @defines = @ARGV;
 
+if (@defines == 0) {
+  exit;
+}
+
 my $config_defines = "";
 foreach (@defines) {
   $config_defines .= "#define $_\n";

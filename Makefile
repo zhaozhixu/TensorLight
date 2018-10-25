@@ -30,11 +30,21 @@ BUILD_SO_MAJOR_MINOR = $(BUILD_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR)
 BUILD_SO_MAJOR_MINOR_MICRO = $(BUILD_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR_MICRO)
 BUILD_HEADERS = $(patsubst %.h,$(BUILD_INCLUDE_DIR)/%.h,$(HEADERS))
 
+CONFIG_HEADER = $(BUILD_INCLUDE_DIR)/$(ABBR)_tensor.h
+CONFIG_DEFINES =
+ifeq ($(WITH_CUDA), yes)
+CONFIG_DEFINES += TL_CUDA
+endif
+
 INSTALL_A = $(INSTALL_LIB_DIR)/$(LIBTARGET_A)
 INSTALL_SO = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO)
 INSTALL_SO_MAJOR_MINOR = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR)
 INSTALL_SO_MAJOR_MINOR_MICRO = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR_MICRO)
 INSTALL_HEADERS = $(patsubst %.h,$(INSTALL_INCLUDE_DIR)/%.h,$(HEADERS))
+
+define add-config-defines
+  $(AT)scripts/addconfig.pl $(CONFIG_HEADER) $(CONFIG_DEFINES)
+endef
 
 define make-build-dir
   $(AT)if [ ! -d $(BUILD_DIR) ]; then mkdir -p $(BUILD_DIR); fi
@@ -73,6 +83,7 @@ test: lib
 lib:
 	$(AT)(cd $(SRC_DIR) && make)
 	$(call make-build-dir)
+	$(call add-config-defines)
 
 clean:
 	$(AT)(cd $(SRC_DIR) && make clean);\

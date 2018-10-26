@@ -106,6 +106,29 @@ const char *tl_dtype_name(tl_dtype dtype)
      return dtype_name[dtype];
 }
 
+tl_dtype tl_dtype_from_str(const char *str)
+{
+     if (!strcmp(str, "TL_DOUBLE"))
+          return TL_DOUBLE;
+     if (!strcmp(str, "TL_FLOAT"))
+          return TL_FLOAT;
+     if (!strcmp(str, "TL_INT32"))
+          return TL_INT32;
+     if (!strcmp(str, "TL_INT16"))
+          return TL_INT16;
+     if (!strcmp(str, "TL_INT8"))
+          return TL_INT8;
+     if (!strcmp(str, "TL_UINT32"))
+          return TL_UINT32;
+     if (!strcmp(str, "TL_UINT16"))
+          return TL_UINT16;
+     if (!strcmp(str, "TL_UINT8"))
+          return TL_UINT8;
+     if (!strcmp(str, "TL_BOOL"))
+          return TL_BOOL;
+     return -1;
+}
+
 /* tl_fprintf_func */
 static int fprintf_double(FILE *fp, const char *fmt, void *p)
 {
@@ -275,6 +298,36 @@ tl_cmp_func tl_cmp_getfunc(tl_dtype dtype)
 
 /* tl_elew_func */
 typedef void (*elew_op_func) (void *p1, void *p2, void *res);
+
+static const char *elew_op_name[TL_ELEW_OP_SIZE] = {
+     "TL_MUL", "TL_DIV", "TL_SUM", "TL_SUB", "TL_MAX",
+     "TL_MIN", "TL_POW"
+};
+
+tl_elew_op tl_elew_op_from_str(char *str)
+{
+     if (!strcmp(str, "TL_MUL"))
+          return TL_MUL;
+     if (!strcmp(str, "TL_DIV"))
+          return TL_DIV;
+     if (!strcmp(str, "TL_SUM"))
+          return TL_SUM;
+     if (!strcmp(str, "TL_SUB"))
+          return TL_SUB;
+     if (!strcmp(str, "TL_MAX"))
+          return TL_MAX;
+     if (!strcmp(str, "TL_MIN"))
+          return TL_MIN;
+     if (!strcmp(str, "TL_POW"))
+          return TL_POW;
+     return -1;
+}
+
+char *tl_elew_op_name(tl_elew_op op)
+{
+     tl_check_elew_op(op);
+     return elew_op_name[op];
+}
 
 static void mul_double(void *p1, void *p2, void *res)
 {

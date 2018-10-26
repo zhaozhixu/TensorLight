@@ -107,6 +107,7 @@ static inline void tl_pmove(void *pd, ptrdiff_t offd,
 size_t tl_size_of(tl_dtype dtype);
 const char *tl_dtype_fmt(tl_dtype dtype);
 const char *tl_dtype_name(tl_dtype dtype);
+tl_dtype tl_dtype_from_str(const char *str);
 double tl_dtype_max(tl_dtype dtype);
 double tl_dtype_min(tl_dtype dtype);
 void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s);
@@ -115,6 +116,8 @@ int tl_fprintf(FILE *fp, const char *fmt,void *p, tl_dtype dtype);
 tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);
 int tl_cmp(void *p1, void *p2, tl_dtype dtype);
 tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);
+tl_elew_op tl_elew_op_from_str(char *str);
+char *tl_elew_op_name(tl_elew_op op);
 void tl_elew(void *p1, void *p2, void *res, tl_elew_op elew_op, tl_dtype dtype);
 tl_elew_func tl_elew_getfunc(tl_dtype dtype);
 

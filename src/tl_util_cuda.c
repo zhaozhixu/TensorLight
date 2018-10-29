@@ -27,8 +27,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <cuda_runtime.h>
 
 #include "tl_util.h"
+
+#define TL_CUDA_CK(status)                                              \
+     do {                                                               \
+          if (status != cudaSuccess)                                    \
+               tl_err_bt("CUDA_ERROR(%d) %s: %s", status,               \
+                         cudaGetErrorName(status), cudaGetErrorString(status)); \
+     } while(0)
 
 void tl_cuda_set_device(int n)
 {
@@ -66,6 +74,12 @@ void *tl_alloc_cuda(size_t size)
      assert(p);
 
      return p;
+}
+
+void tl_memset_cuda(void *dst, int c, size_t n)
+{
+     assert(tl_is_device_mem(dst));
+     TL_CUDA_CK(cudaMemset(dst, c, n));
 }
 
 void tl_memcpy_h2d(void *dst, const void *src, size_t size)
@@ -161,6 +175,11 @@ void *tl_repeat_d2d(void *data, size_t size, int times)
      for (i = 0; i < times; i++, p = (char *)p + size)
           TL_CUDA_CK(cudaMemcpy(p, data, size, cudaMemcpyDeviceToDevice));
      return dst;
+}
+
+void tl_cuda_device_sync(void)
+{
+     TL_CUDA_CK(cudaDeviceSynchronize());
 }
 
 #endif  /* TL_CUDA */

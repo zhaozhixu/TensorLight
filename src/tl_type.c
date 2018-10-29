@@ -323,7 +323,7 @@ tl_elew_op tl_elew_op_from_str(char *str)
      return -1;
 }
 
-char *tl_elew_op_name(tl_elew_op op)
+const char *tl_elew_op_name(tl_elew_op op)
 {
      tl_check_elew_op(op);
      return elew_op_name[op];

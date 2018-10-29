@@ -117,7 +117,7 @@ tl_fprintf_func tl_fprintf_getfunc(tl_dtype dtype);
 int tl_cmp(void *p1, void *p2, tl_dtype dtype);
 tl_cmp_func tl_cmp_getfunc(tl_dtype dtype);
 tl_elew_op tl_elew_op_from_str(char *str);
-char *tl_elew_op_name(tl_elew_op op);
+const char *tl_elew_op_name(tl_elew_op op);
 void tl_elew(void *p1, void *p2, void *res, tl_elew_op elew_op, tl_dtype dtype);
 tl_elew_func tl_elew_getfunc(tl_dtype dtype);
 
@@ -149,25 +149,22 @@ TL_CPPSTART
 static inline void tl_passign_h2d(void *pd, ptrdiff_t offd,
                                   void *ps, ptrdiff_t offs, size_t dsize)
 {
-     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),
-                           tl_padd((ps), (offs), (dsize)),
-                           (dsize), cudaMemcpyHostToDevice));
+     tl_memcpy_h2d(tl_padd((pd), (offd), (dsize)),
+                   tl_padd((ps), (offs), (dsize)), (dsize));
 }
 
 static inline void tl_passign_d2h(void *pd, ptrdiff_t offd,
                                   void *ps, ptrdiff_t offs, size_t dsize)
 {
-     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),
-                           tl_padd((ps), (offs), (dsize)),
-                           (dsize), cudaMemcpyDeviceToHost));
+     tl_memcpy_d2h(tl_padd((pd), (offd), (dsize)),
+                   tl_padd((ps), (offs), (dsize)), (dsize));
 }
 
 static inline void tl_passign_d2d(void *pd, ptrdiff_t offd,
                                   void *ps, ptrdiff_t offs, size_t dsize)
 {
-     TL_CUDA_CK(cudaMemcpy(tl_padd((pd), (offd), (dsize)),
-                           tl_padd((ps), (offs), (dsize)),
-                           (dsize), cudaMemcpyDeviceToDevice));
+     tl_memcpy_d2d(tl_padd((pd), (offd), (dsize)),
+                   tl_padd((ps), (offs), (dsize)), (dsize));
 }
 
 static inline void tl_pointer_assign_h2d(void *pd, ptrdiff_t offd,

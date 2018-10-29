@@ -70,7 +70,7 @@ tl_tensor *tl_tensor_zeros_cuda(int ndim, const int *dims, tl_dtype dtype)
      t->owner = t;
      size = t->len * tl_size_of(dtype);
      t->data = tl_alloc_cuda(size);
-     TL_CUDA_CK(cudaMemset(t->data, 0, size));
+     tl_memset_cuda(t->data, 0, size);
      return t;
 }
 
@@ -340,7 +340,7 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     TL_CUDA_CK(cudaDeviceSynchronize());
+     tl_cuda_device_sync();
      return dst;
 }
 
@@ -512,7 +512,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     TL_CUDA_CK(cudaDeviceSynchronize());
+     tl_cuda_device_sync();
      return dst;
 }
 
@@ -1220,7 +1220,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     TL_CUDA_CK(cudaDeviceSynchronize());
+     tl_cuda_device_sync();
 
      return dst;
 }
@@ -1782,7 +1782,7 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
      convert_kernel<<<block_num, BLOCK_SIZE>>>(src->data, dst->data,
                                                dtype_s, dtype_d,
                                                BLOCK_SIZE, thread_num);
-     TL_CUDA_CK(cudaDeviceSynchronize());
+     tl_cuda_device_sync();
 
      return dst;
 }
@@ -1952,7 +1952,7 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
           assert(0 && "unsupported tl_dtype");
           break;
      }
-     TL_CUDA_CK(cudaDeviceSynchronize());
+     tl_cuda_device_sync();
 
      if (!workspace) {
           tl_free_cuda(s_ids);

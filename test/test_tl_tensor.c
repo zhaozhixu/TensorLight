@@ -639,6 +639,29 @@ START_TEST(test_tl_tensor_convert)
      tl_tensor_free(t1);
 }
 END_TEST
+
+START_TEST(test_tl_tensor_resize)
+{
+     float src_data[] = {1, 2, 3, 4};
+     float true_data[] = {1, 1, 2, 2, 1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4};
+     float dst_data[16];
+     tl_tensor *src, *dst, *true_tensor;
+
+     true_tensor = tl_tensor_create(true_data, 2, ARR(int,4,4), TL_FLOAT);
+     src = tl_tensor_create(src_data, 2, ARR(int,2,2), TL_FLOAT);
+     dst = tl_tensor_resize(src, NULL, ARR(int,4,4), TL_NEAREST);
+     tl_assert_tensor_eq(dst, true_tensor);
+     tl_tensor_free_data_too(dst);
+
+     dst = tl_tensor_create(dst_data, 2, ARR(int,4,4), TL_FLOAT);
+     dst = tl_tensor_resize(src, dst, ARR(int,4,4), TL_NEAREST);
+     tl_assert_tensor_eq(dst, true_tensor);
+     tl_tensor_free(dst);
+
+     tl_tensor_free(src);
+     tl_tensor_free(true_tensor);
+}
+END_TEST
 /* end of tests */
 
 Suite *make_tensor_suite(void)
@@ -669,6 +692,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_elew_param);
      tcase_add_test(tc_tensor, test_tl_tensor_transpose);
      tcase_add_test(tc_tensor, test_tl_tensor_convert);
+     tcase_add_test(tc_tensor, test_tl_tensor_resize);
      /* end of adding tests */
 
      suite_add_tcase(s, tc_tensor);

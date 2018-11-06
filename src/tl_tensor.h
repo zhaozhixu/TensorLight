@@ -85,6 +85,10 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes, tl_tensor *workspace);
 tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
                              tl_dtype dtype_d);
+tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims,
+                            tl_resize_type rtype);
+tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims,
+                            tl_resize_type rtype);
 
 #ifdef TL_CUDA
 
@@ -114,6 +118,8 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
                                   tl_dtype dtype_d);
 tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                     const int *axes, tl_tensor *workspace);
+tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
+                                 int *new_dims, tl_resize_type rtype);
 
 #endif  /* TL_CUDA */
 

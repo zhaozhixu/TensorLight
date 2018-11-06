@@ -43,7 +43,7 @@ INSTALL_SO_MAJOR_MINOR_MICRO = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MAJOR_MINOR_MIC
 INSTALL_HEADERS = $(patsubst %.h,$(INSTALL_INCLUDE_DIR)/%.h,$(HEADERS))
 
 define add-config-defines
-  $(AT)scripts/addconfig.pl $(CONFIG_HEADER) $(CONFIG_DEFINES)
+  $(AT)tools/addconfig.pl $(CONFIG_HEADER) $(CONFIG_DEFINES)
 endef
 
 define make-build-dir
@@ -75,7 +75,7 @@ all: lib test
 
 install:
 	$(call make-install-dir)
-	$(AT)perl scripts/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
+	$(AT)perl tools/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
 
 test: lib
 	$(AT)(cd $(TEST_DIR) && make)

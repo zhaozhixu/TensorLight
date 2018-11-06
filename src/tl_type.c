@@ -1435,3 +1435,23 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
           break;
      }
 }
+
+
+static const char *resize_type_name[TL_RESIZE_TYPE_SIZE] = {
+     "TL_NEAREST", "TL_LINEAR"
+};
+
+const char *tl_resize_type_name(tl_resize_type rtype)
+{
+     tl_check_resize_type(rtype);
+     return resize_type_name[rtype];
+}
+
+tl_resize_type tl_resize_type_from_str(const char *str)
+{
+     if (!strcmp(str, "TL_NEAREST"))
+          return TL_NEAREST;
+     if (!strcmp(str, "TL_LINEAR"))
+          return TL_LINEAR;
+     return -1;
+}

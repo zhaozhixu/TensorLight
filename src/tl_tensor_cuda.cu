@@ -47,9 +47,545 @@ static inline __device__ int get_index(int *ids, int ndim, int *dims)
 
 static inline __device__ void get_coords(int id, int *ids, int ndim, int *dims)
 {
-     for (int i = ndim-1; i >=0; i--) {
+     for (int i = ndim-1; i >= 0; i--) {
           ids[i] = id % dims[i];
           id /= dims[i];
+     }
+}
+
+static __device__ void convert_device(void *pd, tl_dtype dtype_d,
+                                      const void *ps, tl_dtype dtype_s)
+{
+     tl_check_dtype(dtype_d);
+     tl_check_dtype(dtype_s);
+
+     double val_d;
+     float val_f;
+     int32_t val_i32;
+     uint32_t val_u32;
+     int16_t val_i16;
+     uint16_t val_u16;
+     int8_t val_i8;
+     uint8_t val_u8;
+
+     switch (dtype_d) {
+     case TL_DOUBLE:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               *(double *)pd = *(double *)ps;
+               break;
+          case TL_FLOAT:
+               *(double *)pd = (double)*(float *)ps;
+               break;
+          case TL_INT32:
+               *(double *)pd = (double)*(int32_t *)ps;
+               break;
+          case TL_INT16:
+               *(double *)pd = (double)*(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(double *)pd = (double)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               *(double *)pd = (double)*(uint32_t *)ps;
+               break;
+          case TL_UINT16:
+               *(double *)pd = (double)*(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(double *)pd = (double)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(double *)pd = (double)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_FLOAT:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+              val_d = *(double *)ps;
+               if (val_d >= FLT_MAX)
+                    *(float *)pd = FLT_MAX;
+               else if (val_d <= -FLT_MAX)
+                    *(float *)pd = -FLT_MAX;
+               else
+                    *(float *)pd = (float)val_d;
+               break;
+          case TL_FLOAT:
+               *(float *)pd = *(float *)ps;
+               break;
+          case TL_INT32:
+               *(float *)pd = (float)*(int32_t *)ps;
+               break;
+          case TL_INT16:
+               *(float *)pd = (float)*(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(float *)pd = (float)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               *(float *)pd = (float)*(uint32_t *)ps;
+               break;
+          case TL_UINT16:
+               *(float *)pd = (float)*(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(float *)pd = (float)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(float *)pd = (float)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_INT32:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= INT32_MAX)
+                    *(int32_t *)pd = INT32_MAX;
+               else if (val_d <= INT32_MIN)
+                    *(int32_t *)pd = INT32_MIN;
+               else
+                    *(int32_t *)pd = (int32_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= INT32_MAX)
+                    *(int32_t *)pd = INT32_MAX;
+               else if (val_f <= INT32_MIN)
+                    *(int32_t *)pd = INT32_MIN;
+               else
+                    *(int32_t *)pd = (int32_t)val_f;
+               break;
+          case TL_INT32:
+               *(int32_t *)pd = *(int32_t *)ps;
+               break;
+          case TL_INT16:
+               *(int32_t *)pd = (int32_t)*(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(int32_t *)pd = (int32_t)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= INT32_MAX)
+                    *(int32_t *)pd = INT32_MAX;
+               else
+                    *(int32_t *)pd = (int32_t)val_u32;
+               break;
+          case TL_UINT16:
+               /* printf("*ps = %d\n", *(uint16_t *)ps); */
+               *(int32_t *)pd = (int32_t)*(uint16_t *)ps;
+               /* printf("*pd = %d\n", *(int32_t *)pd); */
+               break;
+          case TL_UINT8:
+               *(int32_t *)pd = (int32_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(int32_t *)pd = (int32_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_INT16:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else if (val_d <= INT16_MIN)
+                    *(int16_t *)pd = INT16_MIN;
+               else
+                    *(int16_t *)pd = (int16_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else if (val_f <= INT16_MIN)
+                    *(int16_t *)pd = INT16_MIN;
+               else
+                    *(int16_t *)pd = (int16_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else if (val_i32 <= INT16_MIN)
+                    *(int16_t *)pd = INT16_MIN;
+               else
+                    *(int16_t *)pd = (int16_t)val_i32;
+               break;
+          case TL_INT16:
+               *(int16_t *)pd = *(int16_t *)ps;
+               break;
+          case TL_INT8:
+               *(int16_t *)pd = (int16_t)*(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else
+                    *(int16_t *)pd = (int16_t)val_u32;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16 >= INT16_MAX)
+                    *(int16_t *)pd = INT16_MAX;
+               else
+                    *(int16_t *)pd = (int16_t)val_u16;
+               break;
+          case TL_UINT8:
+               *(int16_t *)pd = (int16_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(int16_t *)pd = (int16_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_INT8:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_d <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_f <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_i32 <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_i32;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else if (val_i16 <= INT8_MIN)
+                    *(int8_t *)pd = INT8_MIN;
+               else
+                    *(int8_t *)pd = (int8_t)val_i16;
+               break;
+          case TL_INT8:
+               *(int8_t *)pd = *(int8_t *)ps;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else
+                    *(int8_t *)pd = (int8_t)val_u32;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else
+                    *(int8_t *)pd = (int8_t)val_u16;
+               break;
+          case TL_UINT8:
+               val_u8 = *(uint8_t *)ps;
+               if (val_u8 >= INT8_MAX)
+                    *(int8_t *)pd = INT8_MAX;
+               else
+                    *(int8_t *)pd = (int8_t)val_u8;
+               break;
+          case TL_BOOL:
+               *(int8_t *)pd = (int8_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_UINT32:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= UINT32_MAX)
+                    *(uint32_t *)pd = UINT32_MAX;
+               else if (val_d < 0)
+                    *(uint32_t *)pd = 0;
+               else
+                    *(uint32_t *)pd = (uint32_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= UINT32_MAX)
+                    *(uint32_t *)pd = UINT32_MAX;
+               else if (val_f < 0)
+                    *(uint32_t *)pd = 0;
+               else
+                    *(uint32_t *)pd = (uint32_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= 0)
+                    *(uint32_t *)pd = (uint32_t)val_i32;
+               else
+                    *(uint32_t *)pd = 0;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= 0)
+                    *(uint32_t *)pd = (uint32_t)val_i16;
+               else
+                    *(uint32_t *)pd = 0;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8 >= 0)
+                    *(uint32_t *)pd = (uint32_t)val_i8;
+               else
+                    *(uint32_t *)pd = 0;
+               break;
+          case TL_UINT32:
+               *(uint32_t *)pd = *(uint32_t *)ps;
+               break;
+          case TL_UINT16:
+               *(uint32_t *)pd = (uint32_t)*(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(uint32_t *)pd = (uint32_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(uint32_t *)pd = (uint32_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_UINT16:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else if (val_d < 0)
+                    *(uint16_t *)pd = 0;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else if (val_f < 0)
+                    *(uint16_t *)pd = 0;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else if (val_i32 < 0)
+                    *(uint16_t *)pd = 0;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_i32;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= 0)
+                    *(uint16_t *)pd = (uint16_t)val_i16;
+               else
+                    *(uint16_t *)pd = 0;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8 >= 0)
+                    *(uint16_t *)pd = (uint16_t)val_i8;
+               else
+                    *(uint16_t *)pd = 0;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= UINT16_MAX)
+                    *(uint16_t *)pd = UINT16_MAX;
+               else
+                    *(uint16_t *)pd = (uint16_t)val_u32;
+               break;
+          case TL_UINT16:
+               *(uint16_t *)pd = *(uint16_t *)ps;
+               break;
+          case TL_UINT8:
+               *(uint16_t *)pd = (uint16_t)*(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(uint16_t *)pd = (uint16_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_UINT8:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_d < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_d;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_f < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_f;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_i32 < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_i32;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else if (val_i16 < 0)
+                    *(uint8_t *)pd = 0;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_i16;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8 >= 0)
+                    *(uint8_t *)pd = (uint8_t)val_i8;
+               else
+                    *(uint8_t *)pd = 0;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_u32;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16 >= UINT8_MAX)
+                    *(uint8_t *)pd = UINT8_MAX;
+               else
+                    *(uint8_t *)pd = (uint8_t)val_u16;
+               break;
+          case TL_UINT8:
+               *(uint8_t *)pd = *(uint8_t *)ps;
+               break;
+          case TL_BOOL:
+               *(uint8_t *)pd = (uint8_t)*(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_BOOL:
+          switch (dtype_s) {
+          case TL_DOUBLE:
+               val_d = *(double *)ps;
+               if (val_d > 0 || val_d < 0)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_FLOAT:
+               val_f = *(float *)ps;
+               if (val_f > 0 || val_f < 0)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_INT32:
+               val_i32 = *(int32_t *)ps;
+               if (val_i32)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_INT16:
+               val_i16 = *(int16_t *)ps;
+               if (val_i16)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_INT8:
+               val_i8 = *(int8_t *)ps;
+               if (val_i8)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_UINT32:
+               val_u32 = *(uint32_t *)ps;
+               if (val_u32)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_UINT16:
+               val_u16 = *(uint16_t *)ps;
+               if (val_u16)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_UINT8:
+               val_u8 = *(uint8_t *)ps;
+               if (val_u8)
+                    *(tl_bool_t *)pd = TL_TRUE;
+               else
+                    *(tl_bool_t *)pd = TL_FALSE;
+               break;
+          case TL_BOOL:
+               *(tl_bool_t *)pd = *(tl_bool_t *)ps;
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     default:
+          assert(0 && "unsupported tl_dtype");
+          break;
      }
 }
 
@@ -239,8 +775,8 @@ tl_tensor *tl_tensor_zeros_slice_cuda(const tl_tensor *src, int axis, int len,
 }
 
 template <typename T>
-__global__ void slice_kernel(T *src, T *dst, int start, int s_vol,
-                             int d_vol, int vol, int block_size, int total)
+static __global__ void slice_kernel(T *src, T *dst, int start, int s_vol,
+                                    int d_vol, int vol, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -345,9 +881,9 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
 }
 
 template <typename T>
-__global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size,
-                                 int reduce_vol, int batch_vol,
-                                 int block_size, int total)
+static __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size,
+                                        int reduce_vol, int batch_vol,
+                                        int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -517,7 +1053,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
 }
 
 template <typename T>
-__global__ void mul_kernel(T *src1, T *src2, T *dst, int block_size, int total)
+static __global__ void mul_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -525,8 +1061,8 @@ __global__ void mul_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      dst[di] = src1[di] * src2[di];
 }
 
-__global__ void mul_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                tl_bool_t *dst, int block_size, int total)
+static __global__ void mul_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                       tl_bool_t *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -539,7 +1075,7 @@ __global__ void mul_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
 }
 
 template <typename T>
-__global__ void div_kernel(T *src1, T *src2, T *dst, int block_size, int total)
+static __global__ void div_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -548,8 +1084,8 @@ __global__ void div_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      dst[di] = src1[di] / src2[di];
 }
 
-__global__ void div_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                tl_bool_t *dst, int block_size, int total)
+static __global__ void div_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                       tl_bool_t *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -562,7 +1098,7 @@ __global__ void div_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
 }
 
 template <typename T>
-__global__ void sum_kernel(T *src1, T *src2, T *dst, int block_size, int total)
+static __global__ void sum_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -570,8 +1106,8 @@ __global__ void sum_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      dst[di] = src1[di] + src2[di];
 }
 
-__global__ void sum_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                tl_bool_t *dst, int block_size, int total)
+static __global__ void sum_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                       tl_bool_t *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -584,7 +1120,7 @@ __global__ void sum_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
 }
 
 template <typename T>
-__global__ void sub_kernel(T *src1, T *src2, T *dst, int block_size, int total)
+static __global__ void sub_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -592,8 +1128,8 @@ __global__ void sub_kernel(T *src1, T *src2, T *dst, int block_size, int total)
      dst[di] = src1[di] - src2[di];
 }
 
-__global__ void sub_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                tl_bool_t *dst, int block_size, int total)
+static __global__ void sub_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
+                                       tl_bool_t *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -606,7 +1142,7 @@ __global__ void sub_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
 }
 
 template <typename T>
-__global__ void max_kernel(T *src1, T *src2, T *dst, int block_size, int total)
+static __global__ void max_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -615,7 +1151,7 @@ __global__ void max_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 }
 
 template <typename T>
-__global__ void min_kernel(T *src1, T *src2, T *dst, int block_size, int total)
+static __global__ void min_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -624,8 +1160,8 @@ __global__ void min_kernel(T *src1, T *src2, T *dst, int block_size, int total)
 }
 
 template <typename T>
-__global__ void pow_int_kernel(T *src1, T *src2, T *dst, T type_max, T type_min,
-                               int block_size, int total)
+static __global__ void pow_int_kernel(T *src1, T *src2, T *dst, T type_max, T type_min,
+                                      int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -644,8 +1180,8 @@ __global__ void pow_int_kernel(T *src1, T *src2, T *dst, T type_max, T type_min,
           dst[di] = (T)fd;
 }
 
-__global__ void pow_double_kernel(double *src1, double *src2, double *dst,
-                                  int block_size, int total)
+static __global__ void pow_double_kernel(double *src1, double *src2, double *dst,
+                                         int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -654,8 +1190,8 @@ __global__ void pow_double_kernel(double *src1, double *src2, double *dst,
      dst[di] = pow(src1[di], src2[di]);
 }
 
-__global__ void pow_float_kernel(float *src1, float *src2, float *dst,
-                                 int block_size, int total)
+static __global__ void pow_float_kernel(float *src1, float *src2, float *dst,
+                                        int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -664,8 +1200,8 @@ __global__ void pow_float_kernel(float *src1, float *src2, float *dst,
      dst[di] = powf(src1[di], src2[di]);
 }
 
-__global__ void pow_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
-                                int block_size, int total)
+static __global__ void pow_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
+                                       int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -1225,9 +1761,9 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
      return dst;
 }
 
-__global__ void convert_kernel(void *src, void *dst,
-                               tl_dtype dtype_s, tl_dtype dtype_d,
-                               int block_size, int total)
+static __global__ void convert_kernel(void *src, void *dst,
+                                      tl_dtype dtype_s, tl_dtype dtype_d,
+                                      int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -1788,10 +2324,10 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
 }
 
 template <typename T>
-__global__ void transpose_kernel(T *src, T *dst, int ndim,
-                                 int *s_dims, int *d_dims,
-                                 int *s_ids, int *d_ids,
-                                 int *axes, int block_size, int total)
+static __global__ void transpose_kernel(T *src, T *dst, int ndim,
+                                        int *s_dims, int *d_dims,
+                                        int *s_ids, int *d_ids,
+                                        int *axes, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
@@ -1982,5 +2518,106 @@ tl_tensor *tl_tensor_vtranspose_cuda(const tl_tensor *src, tl_tensor *dst,
      va_end(ap);
      dst = tl_tensor_transpose_cuda(src, dst, axes, workspace);
      tl_free(axes);
+     return dst;
+}
+
+template <typename T>
+static __global__ void nearest_resize_kernel(T *src, T *dst, float *scales,
+                                             int *src_coords, int *dst_coords,
+                                             int ndim, int *dims, int *new_dims,
+                                             int block_size, int total)
+{
+     int di = blockIdx.x * block_size + threadIdx.x;
+     if (di > total)
+          return;
+
+     float rounded;
+     int si;
+     get_coords(di, dst_coords, ndim, new_dims);
+     for (int i = 0; i < ndim; i++) {printf("%d %d\n", i, dst_coords[i]);
+          rounded = roundf(((float)dst_coords[i] + 0.5) * scales[i] - 0.5);
+          convert_device(&src_coords[i], TL_INT32, &rounded, TL_FLOAT);
+     }
+     si = get_index(src_coords, ndim, dims);
+     dst[di] = src[si];
+}
+
+tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
+                                 int *new_dims, tl_resize_type rtype)
+{
+     assert(src && src->data);
+     assert(new_dims);
+     tl_check_resize_type(rtype);
+     if (dst) {
+          assert(dst->data);
+          assert(dst->dtype == src->dtype);
+          assert(dst->ndim == src->ndim);
+     } else {
+          dst = tl_tensor_zeros_cuda(src->ndim, new_dims, src->dtype);
+     }
+
+     int block_num, thread_num;
+     int *src_coords, *dst_coords, *dims_cuda, *new_dims_cuda;
+     float *scales, *scales_cuda;
+
+     src_coords = (int *)tl_alloc_cuda(sizeof(int)*src->ndim);
+     dst_coords = (int *)tl_alloc_cuda(sizeof(int)*dst->ndim);
+     dims_cuda = (int *)tl_clone_h2d(src->dims, sizeof(int)*src->ndim);
+     new_dims_cuda = (int *)tl_clone_h2d(new_dims, sizeof(int)*src->ndim);
+     scales = (float *)tl_alloc(sizeof(float)*src->ndim);
+     for (int i = 0; i < src->ndim; i++)
+          scales[i] = (float)src->dims[i] / (float)new_dims[i];
+     scales_cuda = (float *)tl_clone_h2d(scales, sizeof(float)*src->ndim);
+
+     thread_num = dst->len;
+     block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
+     switch (rtype) {
+     case TL_NEAREST:
+          switch (src->dtype) {
+          case TL_DOUBLE:
+               nearest_resize_kernel<double><<<block_num, BLOCK_SIZE>>>((double*)src->data, (double*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_FLOAT:
+               nearest_resize_kernel<float><<<block_num, BLOCK_SIZE>>>((float*)src->data, (float*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_INT32:
+               nearest_resize_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t*)src->data, (int32_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_INT16:
+               nearest_resize_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t*)src->data, (int16_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_INT8:
+               nearest_resize_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t*)src->data, (int8_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_UINT32:
+               nearest_resize_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t*)src->data, (uint32_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_UINT16:
+               nearest_resize_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t*)src->data, (uint16_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+          case TL_UINT8:
+               nearest_resize_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t*)src->data, (uint8_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          case TL_BOOL:
+               nearest_resize_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t*)src->data, (tl_bool_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               break;
+          default:
+               assert(0 && "unsupported tl_dtype");
+               break;
+          }
+          break;
+     case TL_LINEAR:
+          assert(0 && "not support TL_LINEAR yet");
+          break;
+     default:
+          assert(0 && "unsupported tl_resize_type");
+          break;
+     }
+
+     tl_free_cuda(src_coords);
+     tl_free_cuda(dst_coords);
+     tl_free_cuda(dims_cuda);
+     tl_free_cuda(new_dims_cuda);
+     tl_free(scales);
+     tl_free_cuda(scales_cuda);
      return dst;
 }

@@ -9,7 +9,7 @@ Usage: $0 FILE DEFINE(s)
 Generate c defines in FILE before /* end of config defines */.
 
 Example:
-	scripts/addconfig.pl build/include/config.h USE_XXX USE_YYY
+	tools/addconfig.pl build/include/config.h USE_XXX USE_YYY
 
 	This example will generate
 	#define USE_XXX

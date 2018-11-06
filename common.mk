@@ -56,7 +56,7 @@ define make-depend-c
 endef
 
 define make-depend-cxx
-  $(AT)$(CXX) -MM -MF $3 -MP -MT $2 $(CFLAGS) $1
+  $(AT)$(CXX) -MM -MF $3 -MP -MT $2 $(CXXFLAGS) $1
 endef
 
 define make-depend-cu

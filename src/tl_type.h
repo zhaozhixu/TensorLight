@@ -64,6 +64,17 @@ enum tl_elew_op {
 };
 typedef enum tl_elew_op tl_elew_op;
 
+/* keep the size and the enum order in sync with tl_type.c */
+#define TL_RESIZE_TYPE_SIZE 2
+enum tl_resize_type {
+     TL_NEAREST = 0,
+     TL_LINEAR,
+};
+typedef enum tl_resize_type tl_resize_type;
+
+#define tl_check_resize_type(rtype)                     \
+     assert(rtype >= 0 && rtype < TL_RESIZE_TYPE_SIZE)
+
 typedef int (*tl_fprintf_func) (FILE *fp, const char *fmt, void *p);
 typedef int (*tl_cmp_func) (void *p1, void *p2);
 typedef void (*tl_elew_func) (void *p1, void *p2, void *r, tl_elew_op elew_op);
@@ -120,6 +131,9 @@ tl_elew_op tl_elew_op_from_str(char *str);
 const char *tl_elew_op_name(tl_elew_op op);
 void tl_elew(void *p1, void *p2, void *res, tl_elew_op elew_op, tl_dtype dtype);
 tl_elew_func tl_elew_getfunc(tl_dtype dtype);
+
+const char *tl_resize_type_name(tl_resize_type rtype);
+tl_resize_type tl_resize_type_from_str(const char *str);
 
 static inline ptrdiff_t tl_pointer_sub(void *p1, void *p2, tl_dtype dtype)
 {

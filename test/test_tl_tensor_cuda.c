@@ -24,6 +24,9 @@ c */
 
 #include "test_tensorlight.h"
 #include "../src/tl_tensor.h"
+#include "../src/tl_check.h"
+
+#define ARR(type, varg...) (type[]){varg}
 
 static void setup(void)
 {
@@ -536,6 +539,41 @@ START_TEST(test_tl_tensor_transpose_cuda)
      tl_free_cuda(data_d);
 }
 END_TEST
+
+START_TEST(test_tl_tensor_resize_cuda)
+{
+     float src_data_h[] = {1, 2, 3, 4};
+     float true_data[] = {1, 1, 2, 2, 1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4};
+     float dst_data_h[16] = {0};
+     float *src_data_d, *dst_data_d;
+     tl_tensor *src, *dst;
+
+     src_data_d = tl_clone_h2d(src_data_h, sizeof(float)*4);
+     src = tl_tensor_create(src_data_d, 2, ARR(int,2,2), TL_FLOAT);
+
+     dst = tl_tensor_resize_cuda(src, NULL, ARR(int,4,4), TL_NEAREST);
+     tl_tensor_print_cuda(src, NULL);
+     tl_tensor_print_cuda(dst, NULL);
+     ck_assert_int_eq(dst->ndim, 2);
+     ck_assert_int_eq(dst->dtype, TL_FLOAT);
+     tl_memcpy_d2h(dst_data_h, dst->data, tl_size_of(TL_FLOAT)*16);
+     for (int i = 0; i < dst->len; i++)
+          ck_assert_float_eq_tol(((float *)dst_data_h)[i], true_data[i], 0);
+     tl_tensor_free_data_too_cuda(dst);
+
+     dst_data_d = tl_clone_h2d(dst_data_h, tl_size_of(TL_FLOAT)*16);
+     dst = tl_tensor_create(dst_data_d, 2, ARR(int,4,4), TL_FLOAT);
+     dst = tl_tensor_resize_cuda(src, dst, ARR(int,4,4), TL_NEAREST);
+     tl_memcpy_d2h(dst_data_h, dst->data, tl_size_of(TL_FLOAT)*16);
+     for (int i = 0; i < dst->len; i++)
+          ck_assert_float_eq_tol(((float *)dst_data_h)[i], true_data[i], 0);
+     tl_tensor_free(dst);
+
+     tl_tensor_free(src);
+     tl_free_cuda(src_data_d);
+     tl_free_cuda(dst_data_d);
+}
+END_TEST
 /* end of tests */
 
 Suite *make_tensor_cuda_suite(void)
@@ -561,6 +599,7 @@ Suite *make_tensor_cuda_suite(void)
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_elew_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_convert_cuda);
      tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
+     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
      /* end of adding tests */
 
      suite_add_tcase(s, tc_tensor_cuda);

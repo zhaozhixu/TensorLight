@@ -43,9 +43,9 @@ static inline int get_index(int *ids, int ndim, int *dims)
 
 static inline void get_coords(int id, int *ids, int ndim, int *dims)
 {
-     for (int i = ndim-1; i >=0; i--) {
+     for (int i = ndim-1; i >= 0; i--) {
           ids[i] = id % dims[i];
-          id = id / dims[i];
+          id /= dims[i];
      }
 }
 
@@ -796,5 +796,65 @@ tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
           tl_convert(tl_padd(d_data, di, dsize_d), dtype_d,
                      tl_padd(s_data, di, dsize_s), dtype_s);
 
+     return dst;
+}
+
+static void nearest_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims)
+{
+     int src_id, dst_id, i;
+     int *src_coords, *dst_coords;
+     size_t dsize = tl_size_of(src->dtype);
+     float rounded, *scales;
+
+     src_coords = (int *)tl_alloc(sizeof(int)*src->ndim);
+     dst_coords = (int *)tl_alloc(sizeof(int)*dst->ndim);
+     scales = (float *)tl_alloc(sizeof(float)*src->ndim);
+     for (i = 0; i < src->ndim; i++)
+          scales[i] = (float)src->dims[i] / (float)new_dims[i];
+     for (dst_id = 0; dst_id < dst->len; dst_id++) {
+          get_coords(dst_id, dst_coords, src->ndim, new_dims);
+          for (i = 0; i < src->ndim; i++) {
+               rounded = roundf(((float)dst_coords[i] + 0.5) * scales[i] - 0.5);
+               tl_convert(&src_coords[i], TL_INT32, &rounded, TL_FLOAT);
+          }
+          src_id = get_index(src_coords, src->ndim, src->dims);
+          tl_passign(dst->data, dst_id, src->data, src_id, dsize);
+     }
+
+     tl_free(src_coords);
+     tl_free(dst_coords);
+     tl_free(scales);
+}
+
+static void linear_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims)
+{
+     assert(0 && "not support TL_LINEAR yet");
+}
+
+tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims,
+                            tl_resize_type rtype)
+{
+     assert(src && src->data);
+     assert(new_dims);
+     tl_check_resize_type(rtype);
+     if (dst) {
+          assert(dst->data);
+          assert(dst->dtype == src->dtype);
+          assert(dst->ndim == src->ndim);
+     } else {
+          dst = tl_tensor_zeros(src->ndim, new_dims, src->dtype);
+     }
+
+     switch (rtype) {
+     case TL_NEAREST:
+          nearest_resize(src, dst, new_dims);
+          break;
+     case TL_LINEAR:
+          linear_resize(src, dst, new_dims);
+          break;
+     default:
+          assert(0 && "unsupported tl_resize_type");
+          break;
+     }
      return dst;
 }

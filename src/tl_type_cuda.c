@@ -20,8 +20,6 @@
  * SOFTWARE.
  */
 
-#ifdef TL_CUDA
-
 #include "tl_type.h"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -39,5 +37,3 @@ int tl_fprintf_cuda(FILE* fp, const char* fmt, void* p, tl_dtype dtype)
 
      return ret;
 }
-
-#endif  /* TL_CUDA */

@@ -2344,17 +2344,14 @@ static __global__ void transpose_kernel(T *src, T *dst, int ndim,
 tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                     const int *axes)
 {
-     int *s_dims, *d_dims;
      int i;
 
 #ifndef NDEBUG
-     int *tmp = (int *)tl_alloc(src->ndim * sizeof(int));
-     memset(tmp, 0, src->ndim * sizeof(int));
+     int tmp[TL_MAXDIM] = {0};
      for (i = 0; i < src->ndim; i++)
           tmp[axes[i]] = 1;
      for (i = 0; i < src->ndim; i++)
           assert(tmp[i] && "axes don't match src tensor's shape");
-     tl_free(tmp);
      assert(src && tl_is_device_mem(src->data));
 #endif
      if (dst) {
@@ -2367,14 +2364,14 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                assert(src->dims[axes[i]] = dst->dims[i]);
 #endif
      } else {
-          d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
+          int d_dims[TL_MAXDIM];
           for (i = 0; i < src->ndim; i++)
                d_dims[i] = src->dims[axes[i]];
           dst = tl_tensor_zeros_cuda(src->ndim, d_dims, src->dtype);
-          tl_free(d_dims);
      }
 
      int *axes_device;
+     int *s_dims, *d_dims;
      int thread_num, block_num;
 
      thread_num = dst->len;

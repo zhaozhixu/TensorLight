@@ -675,13 +675,11 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      int i;
 
 #ifndef NDEBUG
-     int *tmp = (int *)tl_alloc(src->ndim * sizeof(int));
-     memset(tmp, 0, src->ndim * sizeof(int));
+     int tmp[TL_MAXDIM] = {0};
      for (i = 0; i < src->ndim; i++)
           tmp[axes[i]] = 1;
      for (i = 0; i < src->ndim; i++)
           assert(tmp[i] && "axes don't match src tensor's shape");
-     tl_free(tmp);
      assert(src && src->data);
 #endif
      if (dst) {
@@ -694,11 +692,10 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                assert(src->dims[axes[i]] = dst->dims[i]);
 #endif
      } else {
-          int *d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
+          int d_dims[TL_MAXDIM];
           for (i = 0; i < src->ndim; i++)
                d_dims[i] = src->dims[axes[i]];
           dst = tl_tensor_zeros(src->ndim, d_dims, src->dtype);
-          tl_free(d_dims);
      }
 
      int di, si;
@@ -717,26 +714,6 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
 
      return dst;
 }
-
-/* tl_tensor *tl_tensor_vtranspose(const tl_tensor *src, tl_tensor *dst, */
-/*                                 tl_tensor *workspace, ...) */
-/* { */
-/*      int *axes; */
-/*      va_list ap; */
-/*      int i; */
-
-/*      assert(src && src->ndim > 0); */
-/*      axes = tl_alloc(sizeof(int) * src->ndim); */
-/*      va_start(ap, workspace); */
-/*      for (i = 0; i < src->ndim; i++) { */
-/*           axes[i] = va_arg(ap, int); */
-/*           assert(axes[i] > 0); */
-/*      } */
-/*      va_end(ap); */
-/*      dst = tl_tensor_transpose(src, dst, axes, workspace); */
-/*      tl_free(axes); */
-/*      return dst; */
-/* } */
 
 tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
                              tl_dtype dtype_d)

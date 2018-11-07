@@ -110,6 +110,7 @@ MICRO = $micro
 EOF
 foreach my $key (sort keys %opts) {
   $config_str .= "$key ?= $opts{$key}\n";
+  print "$key = $opts{$key}\n";
 }
 my $conf_file = "config.mk";
 open my $conf_fh, '>', $conf_file or die "Cannot open $conf_file: $!";

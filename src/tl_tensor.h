@@ -82,9 +82,8 @@ tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
                           tl_tensor *dst, tl_elew_op elew_op);
 tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
                                 tl_tensor *dst, tl_elew_op elew_op);
-/* (optional) workspace is a int32 tensor of shape [dst->ndim * dst->len * 2] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
-                               const int *axes, tl_tensor *workspace);
+                               const int *axes);
 tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
                              tl_dtype dtype_d);
 tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst,
@@ -117,7 +116,7 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
 tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
                                   tl_dtype dtype_d);
 tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
-                                    const int *axes, tl_tensor *workspace);
+                                    const int *axes);
 tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
                                  const int *new_dims, tl_resize_type rtype);
 

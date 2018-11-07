@@ -2326,28 +2326,25 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
 template <typename T>
 static __global__ void transpose_kernel(T *src, T *dst, int ndim,
                                         int *s_dims, int *d_dims,
-                                        int *s_ids, int *d_ids,
                                         int *axes, int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
      if (di >= total)
           return;
 
-     int *t_s_ids = s_ids + di * ndim;
-     int *t_d_ids = d_ids + di * ndim;
-     get_coords(di, t_d_ids, ndim, d_dims);
+     int s_ids[TL_MAXDIM], d_ids[TL_MAXDIM];
+     get_coords(di, d_ids, ndim, d_dims);
      for (int i = 0; i < ndim; i++)
-          t_s_ids[axes[i]] = t_d_ids[i];
-     int si = get_index(t_s_ids, ndim, s_dims);
+          s_ids[axes[i]] = d_ids[i];
+     int si = get_index(s_ids, ndim, s_dims);
 
      dst[di] = src[si];
 }
 
 tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
-                                    const int *axes, tl_tensor *workspace)
+                                    const int *axes)
 {
-     int *s_ids, *d_ids, *s_dims, *d_dims, *axes_device;
-     int thread_num, block_num;
+     int *s_dims, *d_dims;
      int i;
 
 #ifndef NDEBUG
@@ -2377,21 +2374,14 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
           tl_free(d_dims);
      }
 
+     int *axes_device;
+     int thread_num, block_num;
+
      thread_num = dst->len;
      block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
      s_dims = (int *)tl_clone_h2d(src->dims, sizeof(int) * src->ndim);
      d_dims = (int *)tl_clone_h2d(dst->dims, sizeof(int) * dst->ndim);
      axes_device = (int *)tl_clone_h2d(axes, sizeof(int) * src->ndim);
-     if (!workspace) {
-          s_ids = (int *)tl_alloc_cuda(sizeof(int) * dst->ndim * thread_num);
-          d_ids = (int *)tl_alloc_cuda(sizeof(int) * dst->ndim * thread_num);
-     } else {
-          assert(tl_is_device_mem(workspace->data));
-          assert(workspace->dtype == TL_INT32);
-          assert(workspace->len == dst->ndim * dst->len * 2);
-          s_ids = (int32_t *)workspace->data;
-          d_ids = &((int32_t *)workspace->data)[workspace->len / 2];
-     }
 
      switch (src->dtype) {
      case TL_DOUBLE:
@@ -2399,7 +2389,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                               (double *)dst->data,
                                                               dst->ndim,
                                                               s_dims, d_dims,
-                                                              s_ids, d_ids,
                                                               axes_device,
                                                               BLOCK_SIZE,
                                                               thread_num);
@@ -2409,7 +2398,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                              (float *)dst->data,
                                                              dst->ndim,
                                                              s_dims, d_dims,
-                                                             s_ids, d_ids,
                                                              axes_device,
                                                              BLOCK_SIZE,
                                                              thread_num);
@@ -2419,7 +2407,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                                (int32_t *)dst->data,
                                                                dst->ndim,
                                                                s_dims, d_dims,
-                                                               s_ids, d_ids,
                                                                axes_device,
                                                                BLOCK_SIZE,
                                                                thread_num);
@@ -2429,7 +2416,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                                (int16_t *)dst->data,
                                                                dst->ndim,
                                                                s_dims, d_dims,
-                                                               s_ids, d_ids,
                                                                axes_device,
                                                                BLOCK_SIZE,
                                                                thread_num);
@@ -2439,7 +2425,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                               (int8_t *)dst->data,
                                                               dst->ndim,
                                                               s_dims, d_dims,
-                                                              s_ids, d_ids,
                                                               axes_device,
                                                               BLOCK_SIZE,
                                                               thread_num);
@@ -2449,7 +2434,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                                 (uint32_t *)dst->data,
                                                                 dst->ndim,
                                                                 s_dims, d_dims,
-                                                                s_ids, d_ids,
                                                                 axes_device,
                                                                 BLOCK_SIZE,
                                                                 thread_num);
@@ -2459,7 +2443,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                                 (uint16_t *)dst->data,
                                                                 dst->ndim,
                                                                 s_dims, d_dims,
-                                                                s_ids, d_ids,
                                                                 axes_device,
                                                                 BLOCK_SIZE,
                                                                 thread_num);
@@ -2469,7 +2452,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                                (uint8_t *)dst->data,
                                                                dst->ndim,
                                                                s_dims, d_dims,
-                                                               s_ids, d_ids,
                                                                axes_device,
                                                                BLOCK_SIZE,
                                                                thread_num);
@@ -2479,7 +2461,6 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                                                  (tl_bool_t *)dst->data,
                                                                  dst->ndim,
                                                                  s_dims, d_dims,
-                                                                 s_ids, d_ids,
                                                                  axes_device,
                                                                  BLOCK_SIZE,
                                                                  thread_num);
@@ -2490,34 +2471,10 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
      }
      tl_cuda_device_sync();
 
-     if (!workspace) {
-          tl_free_cuda(s_ids);
-          tl_free_cuda(d_ids);
-     }
      tl_free_cuda(s_dims);
      tl_free_cuda(d_dims);
      tl_free_cuda(axes_device);
 
-     return dst;
-}
-
-tl_tensor *tl_tensor_vtranspose_cuda(const tl_tensor *src, tl_tensor *dst,
-                                     tl_tensor *workspace, ...)
-{
-     int *axes;
-     va_list ap;
-     int i;
-
-     assert(src && src->ndim > 0);
-     axes = (int *)tl_alloc(sizeof(int) * src->ndim);
-     va_start(ap, workspace);
-     for (i = 0; i < src->ndim; i++) {
-          axes[i] = va_arg(ap, int);
-          assert(axes[i] > 0);
-     }
-     va_end(ap);
-     dst = tl_tensor_transpose_cuda(src, dst, axes, workspace);
-     tl_free(axes);
      return dst;
 }
 
@@ -2610,6 +2567,7 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
           assert(0 && "unsupported tl_resize_type");
           break;
      }
+     tl_cuda_device_sync();
 
      tl_free_cuda(dims_cuda);
      tl_free_cuda(new_dims_cuda);

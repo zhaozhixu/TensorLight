@@ -486,13 +486,12 @@ START_TEST(test_tl_tensor_transpose_cuda)
      int axes2[3] = {1, 2, 0};
      uint8_t dst_data2[12] = {1, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12};
      void *data_d, *data_h;
-     tl_tensor *ws;
      int i;
 
      data_d = tl_clone_h2d(data, sizeof(uint8_t)*12);
      src = tl_tensor_create(data_d, 3, dims1, TL_UINT8);
 
-     dst = tl_tensor_transpose_cuda(src, NULL, axes1, NULL);
+     dst = tl_tensor_transpose_cuda(src, NULL, axes1);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_UINT8);
      ck_assert_int_eq(dst->len, 12);
@@ -506,7 +505,7 @@ START_TEST(test_tl_tensor_transpose_cuda)
      tl_free(data_h);
 
      dst = tl_tensor_zeros_cuda(3, dims2, TL_UINT8);
-     dst = tl_tensor_transpose_cuda(src, dst, axes2, NULL);
+     dst = tl_tensor_transpose_cuda(src, dst, axes2);
      ck_assert_int_eq(dst->ndim, 3);
      ck_assert_int_eq(dst->dtype, TL_UINT8);
      ck_assert_int_eq(dst->len, 12);
@@ -517,22 +516,6 @@ START_TEST(test_tl_tensor_transpose_cuda)
      for (i = 0; i < dst->len; i++)
           ck_assert(((int8_t *)data_h)[i] == dst_data2[i]);
      tl_tensor_free_data_too_cuda(dst);
-     tl_free(data_h);
-
-     dst = tl_tensor_zeros_cuda(3, dims2, TL_UINT8);
-     ws = tl_tensor_zeros_cuda(1, (int[]){dst->ndim*dst->len*2}, TL_INT32);
-     dst = tl_tensor_transpose_cuda(src, dst, axes2, ws);
-     ck_assert_int_eq(dst->ndim, 3);
-     ck_assert_int_eq(dst->dtype, TL_UINT8);
-     ck_assert_int_eq(dst->len, 12);
-     ck_assert(dst->dims[0] == 3);
-     ck_assert(dst->dims[1] == 2);
-     ck_assert(dst->dims[2] == 2);
-     data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
-     for (i = 0; i < dst->len; i++)
-          ck_assert(((int8_t *)data_h)[i] == dst_data2[i]);
-     tl_tensor_free_data_too_cuda(dst);
-     tl_tensor_free_data_too_cuda(ws);
      tl_free(data_h);
 
      tl_tensor_free(src);

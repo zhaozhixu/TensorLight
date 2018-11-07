@@ -669,18 +669,9 @@ tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
      return dst;
 }
 
-/* (optional) workspace is a int32 tensor of shape [dst->ndim * (dst->len * 2 + 2)] */
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
-                               const int *axes, tl_tensor *workspace)
+                               const int *axes)
 {
-     int *s_ids, *d_ids, *s_dims, *d_dims;
-     int thread_num;
-     int di, si;
-     int ndim;
-     int *t_s_ids;
-     int *t_d_ids;
-     size_t dsize;
-     void *s_data, *d_data;
      int i;
 
 #ifndef NDEBUG
@@ -703,51 +694,25 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                assert(src->dims[axes[i]] = dst->dims[i]);
 #endif
      } else {
-          d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
+          int *d_dims = (int *)tl_alloc(src->ndim * sizeof(int));
           for (i = 0; i < src->ndim; i++)
                d_dims[i] = src->dims[axes[i]];
           dst = tl_tensor_zeros(src->ndim, d_dims, src->dtype);
           tl_free(d_dims);
      }
 
-     thread_num = dst->len;
-     if (!workspace) {
-          s_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
-          d_ids = (int *)tl_alloc(sizeof(int) * dst->ndim * thread_num);
-          s_dims = (int *)tl_clone(src->dims, sizeof(int) * src->ndim);
-          d_dims = (int *)tl_clone(dst->dims, sizeof(int) * dst->ndim);
-     } else {
-          assert(workspace->data);
-          assert(workspace->dtype == TL_INT32);
-          assert(workspace->len == dst->ndim * (dst->len * 2 + 2));
-          s_ids = (int32_t *)workspace->data;
-          d_ids = &((int32_t *)workspace->data)[dst->ndim * dst->len];
-          s_dims = &((int32_t *)workspace->data)[dst->ndim * dst->len * 2];
-          d_dims = &((int32_t *)workspace->data)[dst->ndim * (dst->len * 2 + 1)];
-          tl_copy(src->dims, s_dims, sizeof(int) * src->ndim);
-          tl_copy(dst->dims, d_dims, sizeof(int) * dst->ndim);
-     }
+     int di, si;
+     int s_ids[TL_MAXDIM], d_ids[TL_MAXDIM];
+     size_t dsize = tl_size_of(src->dtype);
+     int ndim = dst->ndim;
 
-     dsize = tl_size_of(src->dtype);
-     s_data = src->data;
-     d_data = dst->data;
-     ndim = dst->ndim;
-     for (di = 0; di < thread_num; di++) {
-          t_s_ids = s_ids + di * ndim;
-          t_d_ids = d_ids + di * ndim;
-          get_coords(di, t_d_ids, ndim, dst->dims);
+     for (di = 0; di < dst->len; di++) {
+          get_coords(di, d_ids, ndim, dst->dims);
           for (i = 0; i < ndim; i++)
-               t_s_ids[axes[i]] = t_d_ids[i];
-          si = get_index(t_s_ids, ndim, src->dims);
+               s_ids[axes[i]] = d_ids[i];
+          si = get_index(s_ids, ndim, src->dims);
 
-          tl_passign(d_data, di, s_data, si, dsize);
-     }
-
-     if (!workspace) {
-          tl_free(s_ids);
-          tl_free(d_ids);
-          tl_free(s_dims);
-          tl_free(d_dims);
+          tl_passign(dst->data, di, src->data, si, dsize);
      }
 
      return dst;

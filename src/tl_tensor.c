@@ -33,7 +33,7 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-static inline int get_index(int *ids, int ndim, int *dims)
+static inline int get_index(const int *ids, int ndim, const int *dims)
 {
      int i, id;
      for (i = 0, id = ids[0]; i < ndim-1; i++)
@@ -41,7 +41,7 @@ static inline int get_index(int *ids, int ndim, int *dims)
      return id;
 }
 
-static inline void get_coords(int id, int *ids, int ndim, int *dims)
+static inline void get_coords(int id, int *ids, int ndim, const int *dims)
 {
      for (int i = ndim-1; i >= 0; i--) {
           ids[i] = id % dims[i];
@@ -104,6 +104,11 @@ tl_tensor *tl_tensor_create(void *data, int ndim, const int *dims,
                             tl_dtype dtype)
 {
      tl_tensor *t;
+
+     assert(ndim > 0 && ndim <= TL_MAXDIM);
+     for (int i = 0; i < ndim; i++)
+          assert(dims[i] > 0);
+     tl_check_dtype(dtype);
 
      t = (tl_tensor *)tl_alloc(sizeof(tl_tensor));
      t->len = tl_compute_length(ndim, dims);
@@ -730,10 +735,10 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
      for (di = 0; di < thread_num; di++) {
           t_s_ids = s_ids + di * ndim;
           t_d_ids = d_ids + di * ndim;
-          get_coords(di, t_d_ids, ndim, d_dims);
+          get_coords(di, t_d_ids, ndim, dst->dims);
           for (i = 0; i < ndim; i++)
                t_s_ids[axes[i]] = t_d_ids[i];
-          si = get_index(t_s_ids, ndim, s_dims);
+          si = get_index(t_s_ids, ndim, src->dims);
 
           tl_passign(d_data, di, s_data, si, dsize);
      }
@@ -799,16 +804,14 @@ tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
      return dst;
 }
 
-static void nearest_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims)
+static void nearest_resize(const tl_tensor *src, tl_tensor *dst,
+                           const int *new_dims)
 {
      int src_id, dst_id, i;
-     int *src_coords, *dst_coords;
+     int src_coords[TL_MAXDIM], dst_coords[TL_MAXDIM];
      size_t dsize = tl_size_of(src->dtype);
-     float rounded, *scales;
+     float rounded, scales[TL_MAXDIM];
 
-     src_coords = (int *)tl_alloc(sizeof(int)*src->ndim);
-     dst_coords = (int *)tl_alloc(sizeof(int)*dst->ndim);
-     scales = (float *)tl_alloc(sizeof(float)*src->ndim);
      for (i = 0; i < src->ndim; i++)
           scales[i] = (float)src->dims[i] / (float)new_dims[i];
      for (dst_id = 0; dst_id < dst->len; dst_id++) {
@@ -820,19 +823,16 @@ static void nearest_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims)
           src_id = get_index(src_coords, src->ndim, src->dims);
           tl_passign(dst->data, dst_id, src->data, src_id, dsize);
      }
-
-     tl_free(src_coords);
-     tl_free(dst_coords);
-     tl_free(scales);
 }
 
-static void linear_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims)
+static void linear_resize(const tl_tensor *src, tl_tensor *dst,
+                          const int *new_dims)
 {
      assert(0 && "not support TL_LINEAR yet");
 }
 
-tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst, int *new_dims,
-                            tl_resize_type rtype)
+tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst,
+                            const int *new_dims, tl_resize_type rtype)
 {
      assert(src && src->data);
      assert(new_dims);

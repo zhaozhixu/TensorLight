@@ -37,7 +37,7 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-static inline __device__ int get_index(int *ids, int ndim, int *dims)
+static inline __device__ int get_index(const int *ids, int ndim, const int *dims)
 {
      int i, id;
      for (i = 0, id = ids[0]; i < ndim-1; i++)
@@ -45,7 +45,7 @@ static inline __device__ int get_index(int *ids, int ndim, int *dims)
      return id;
 }
 
-static inline __device__ void get_coords(int id, int *ids, int ndim, int *dims)
+static inline __device__ void get_coords(int id, int *ids, int ndim, const int *dims)
 {
      for (int i = ndim-1; i >= 0; i--) {
           ids[i] = id % dims[i];
@@ -2522,19 +2522,24 @@ tl_tensor *tl_tensor_vtranspose_cuda(const tl_tensor *src, tl_tensor *dst,
 }
 
 template <typename T>
-static __global__ void nearest_resize_kernel(T *src, T *dst, float *scales,
-                                             int *src_coords, int *dst_coords,
-                                             int ndim, int *dims, int *new_dims,
+static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim,
+                                             const int *dims, const int *new_dims,
                                              int block_size, int total)
 {
      int di = blockIdx.x * block_size + threadIdx.x;
+     __shared__ float scales[TL_MAXDIM];
+     if (di < ndim)
+       scales[di] = (float)dims[di] / (float)new_dims[di];
+
      if (di > total)
           return;
 
-     float rounded;
      int si;
+     float rounded;
+     int src_coords[TL_MAXDIM];
+     int dst_coords[TL_MAXDIM];
      get_coords(di, dst_coords, ndim, new_dims);
-     for (int i = 0; i < ndim; i++) {printf("%d %d\n", i, dst_coords[i]);
+     for (int i = 0; i < ndim; i++) {
           rounded = roundf(((float)dst_coords[i] + 0.5) * scales[i] - 0.5);
           convert_device(&src_coords[i], TL_INT32, &rounded, TL_FLOAT);
      }
@@ -2543,7 +2548,7 @@ static __global__ void nearest_resize_kernel(T *src, T *dst, float *scales,
 }
 
 tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
-                                 int *new_dims, tl_resize_type rtype)
+                                 const int *new_dims, tl_resize_type rtype)
 {
      assert(src && src->data);
      assert(new_dims);
@@ -2557,17 +2562,10 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
      }
 
      int block_num, thread_num;
-     int *src_coords, *dst_coords, *dims_cuda, *new_dims_cuda;
-     float *scales, *scales_cuda;
+     int *dims_cuda, *new_dims_cuda;
 
-     src_coords = (int *)tl_alloc_cuda(sizeof(int)*src->ndim);
-     dst_coords = (int *)tl_alloc_cuda(sizeof(int)*dst->ndim);
      dims_cuda = (int *)tl_clone_h2d(src->dims, sizeof(int)*src->ndim);
      new_dims_cuda = (int *)tl_clone_h2d(new_dims, sizeof(int)*src->ndim);
-     scales = (float *)tl_alloc(sizeof(float)*src->ndim);
-     for (int i = 0; i < src->ndim; i++)
-          scales[i] = (float)src->dims[i] / (float)new_dims[i];
-     scales_cuda = (float *)tl_clone_h2d(scales, sizeof(float)*src->ndim);
 
      thread_num = dst->len;
      block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
@@ -2575,30 +2573,30 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
      case TL_NEAREST:
           switch (src->dtype) {
           case TL_DOUBLE:
-               nearest_resize_kernel<double><<<block_num, BLOCK_SIZE>>>((double*)src->data, (double*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<double><<<block_num, BLOCK_SIZE>>>((double*)src->data, (double*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_FLOAT:
-               nearest_resize_kernel<float><<<block_num, BLOCK_SIZE>>>((float*)src->data, (float*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<float><<<block_num, BLOCK_SIZE>>>((float*)src->data, (float*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_INT32:
-               nearest_resize_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t*)src->data, (int32_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t*)src->data, (int32_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_INT16:
-               nearest_resize_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t*)src->data, (int16_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t*)src->data, (int16_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_INT8:
-               nearest_resize_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t*)src->data, (int8_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t*)src->data, (int8_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_UINT32:
-               nearest_resize_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t*)src->data, (uint32_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t*)src->data, (uint32_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_UINT16:
-               nearest_resize_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t*)src->data, (uint16_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t*)src->data, (uint16_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
           case TL_UINT8:
-               nearest_resize_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t*)src->data, (uint8_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t*)src->data, (uint8_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           case TL_BOOL:
-               nearest_resize_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t*)src->data, (tl_bool_t*)dst->data, scales_cuda, src_coords, dst_coords, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+               nearest_resize_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t*)src->data, (tl_bool_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
                break;
           default:
                assert(0 && "unsupported tl_dtype");
@@ -2613,11 +2611,7 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
           break;
      }
 
-     tl_free_cuda(src_coords);
-     tl_free_cuda(dst_coords);
      tl_free_cuda(dims_cuda);
      tl_free_cuda(new_dims_cuda);
-     tl_free(scales);
-     tl_free_cuda(scales_cuda);
      return dst;
 }

@@ -552,13 +552,11 @@ START_TEST(test_tl_tensor_resize_cuda)
      src = tl_tensor_create(src_data_d, 2, ARR(int,2,2), TL_FLOAT);
 
      dst = tl_tensor_resize_cuda(src, NULL, ARR(int,4,4), TL_NEAREST);
-     tl_tensor_print_cuda(src, NULL);
-     tl_tensor_print_cuda(dst, NULL);
      ck_assert_int_eq(dst->ndim, 2);
      ck_assert_int_eq(dst->dtype, TL_FLOAT);
      tl_memcpy_d2h(dst_data_h, dst->data, tl_size_of(TL_FLOAT)*16);
      for (int i = 0; i < dst->len; i++)
-          ck_assert_float_eq_tol(((float *)dst_data_h)[i], true_data[i], 0);
+          ck_assert_float_eq_tol(((float *)dst_data_h)[i], true_data[i], 1e-5);
      tl_tensor_free_data_too_cuda(dst);
 
      dst_data_d = tl_clone_h2d(dst_data_h, tl_size_of(TL_FLOAT)*16);
@@ -566,7 +564,7 @@ START_TEST(test_tl_tensor_resize_cuda)
      dst = tl_tensor_resize_cuda(src, dst, ARR(int,4,4), TL_NEAREST);
      tl_memcpy_d2h(dst_data_h, dst->data, tl_size_of(TL_FLOAT)*16);
      for (int i = 0; i < dst->len; i++)
-          ck_assert_float_eq_tol(((float *)dst_data_h)[i], true_data[i], 0);
+          ck_assert_float_eq_tol(((float *)dst_data_h)[i], true_data[i], 1e-5);
      tl_tensor_free(dst);
 
      tl_tensor_free(src);

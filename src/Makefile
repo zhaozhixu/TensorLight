@@ -34,11 +34,11 @@ liba: $(OBJDIR)/$(LIBTARGET_A)
 libso: $(OBJDIR)/$(LIBTARGET_SO)
 
 $(OBJDIR)/$(LIBTARGET_A): $(OBJS)
-	$(ECHO) Packing: $^
+	$(ECHO) Packing: $@
 	$(AT)$(AR) $@ $^
 
 $(OBJDIR)/$(LIBTARGET_SO): $(OBJS)
-	$(ECHO) Linking: $^
+	$(ECHO) Linking: $@
 	$(AT)$(CC) -o $@ $^ $(LDFLAGS)
 
 $(OBJDIR)/%.o: %.c

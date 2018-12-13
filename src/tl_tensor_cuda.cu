@@ -2496,19 +2496,11 @@ static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim,
      int src_coords[TL_MAXDIM];
      int dst_coords[TL_MAXDIM];
      get_coords(di, dst_coords, ndim, new_dims);
-     // printf("dst_coords: %d %d %d %d\n", dst_coords[0], dst_coords[1], dst_coords[2], dst_coords[3]);
      for (int i = 0; i < ndim; i++) {
           rounded = roundf(((float)dst_coords[i] + 0.5) * scales[i] - 0.5);
           convert_device(&src_coords[i], TL_INT32, &rounded, TL_FLOAT);
-          // printf("rounded=%f src_coords[i]=%f\n", rounded, src_coords[i]);
-          // src_coords[i] = (int)rounded;
-          // src_coords[i] = (int)(((float)dst_coords[i] + 0.5) * scales[i] - 0.5);
-
      }
-     // printf("scales: %f %f %f %f\ndst_coords: %d %d %d %d\nsrc_coords: %d %d %d %d\n", scales[0], scales[1], scales[2], scales[3], dst_coords[0], dst_coords[1], dst_coords[2], dst_coords[3], src_coords[0], src_coords[1], src_coords[2], src_coords[3]);
-     // printf("2: di=%d\n", di);
      si = get_index(src_coords, ndim, dims);
-     // printf("3:di=%d si=%d\n", di, si);
      dst[di] = src[si];
 }
 

@@ -70,6 +70,7 @@ void *tl_repeat_h2d(void *data, size_t size, int times);
 void *tl_repeat_d2h(void *data, size_t size, int times);
 void *tl_repeat_d2d(void *data, size_t size, int times);
 void tl_cuda_device_sync(void);
+void tl_cuda_print_last_error(void);
 
 #endif  /* TL_CUDA */
 

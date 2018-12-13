@@ -2507,7 +2507,8 @@ static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim,
 tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
                                  const int *new_dims, tl_resize_type rtype)
 {
-     assert(src && src->data);
+     assert(src);
+     assert(tl_is_device_mem(src->data));
      assert(new_dims);
      tl_check_resize_type(rtype);
      if (dst) {

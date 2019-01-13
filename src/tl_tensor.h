@@ -119,6 +119,12 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                     const int *axes);
 tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
                                  const int *new_dims, tl_resize_type rtype);
+tl_tensor *tl_tensor_transform_bboxSQD_kernel(const tl_tensor *delta,
+                                              const tl_tensor *anchor,
+                                              tl_tensor *dst,
+                                              int width, int height,
+                                              int img_width, int img_height,
+                                              int x_shift, int y_shift);
 
 #endif  /* TL_CUDA */
 

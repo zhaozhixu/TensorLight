@@ -800,3 +800,32 @@ tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst,
      }
      return dst;
 }
+
+tl_tensor *tl_tensor_topk(const tl_tensor *src, tl_tensor *dst, tl_tensor *arg,
+                          int k)
+{
+     assert(src && src->data);
+     assert(axis < src->ndim && axis >= 0);
+     assert(k > 0 && k <= src->dims[axis]);
+     if (dst) {
+#ifndef NDEBUG
+          assert(dst->data);
+          assert(src->dtype == dst->dtype);
+          for (i = 0; i < dst->ndim; i++)
+               assert(i == axis ? dst->dims[i] == k :
+                      dst->dims[i] == src->dims[i]);
+#endif
+     } else {
+          dst = tl_tensor_zeros_slice(src, axis, k, src->dtype);
+     }
+     if (arg) {
+#ifndef NDEBUG
+          assert(arg->data);
+          assert(arg->dtype == TL_INT32);
+          for (i = 0; i < arg->ndim; i++)
+               assert(i == axis ? arg->dims[i] == k :
+                      arg->dims[i] == src->dims[i]);
+#endif
+     }
+
+}

@@ -708,11 +708,23 @@ tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
      size_t dsize;
 
      dsize = tl_size_of(dtype);
-     assert(start >= tl_dtype_min(dtype) && start <= tl_dtype_max(dtype));
-     assert(stop >= tl_dtype_min(dtype) && stop <= tl_dtype_max(dtype));
-     assert(step >= tl_dtype_min(dtype) && step <= tl_dtype_max(dtype));
+#ifdef TL_DEBUG
+     void *max, *min;
+     double max_d, min_d;
+     max = tl_alloc(tl_size_of(dtype));
+     min = tl_alloc(tl_size_of(dtype));
+     tl_dtype_max(dtype, max);
+     tl_dtype_min(dtype, min);
+     tl_convert(&max_d, TL_DOUBLE, max, dtype);
+     tl_convert(&min_d, TL_DOUBLE, min, dtype);
+     tl_free(max);
+     tl_free(min);
+     assert(start >= min_d && start <= max_d);
+     assert(stop >= min_d && stop <= max_d);
+     assert(step >= min_d && step <= max_d);
      assert(step != 0);
      assert(stop > start);      /* TODO: expand to all possibilities */
+#endif
 
      len = ceil((stop - start) / step);
      if (len > INT32_MAX)

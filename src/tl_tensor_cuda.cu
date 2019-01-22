@@ -2622,12 +2622,12 @@ __global__ void transform_bboxSQD_kernel(float *delta, float *anchor, float *res
     res[si+3] = max(min(cy + h * 0.5, img_height - 1), 0);
 }
 
-tl_tensor *tl_tensor_transform_bboxSQD_kernel(const tl_tensor *delta,
-                                              const tl_tensor *anchor,
-                                              tl_tensor *dst,
-                                              int width, int height,
-                                              int img_width, int img_height,
-                                              int x_shift, int y_shift)
+tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
+                                            const tl_tensor *anchor,
+                                            tl_tensor *dst,
+                                            int width, int height,
+                                            int img_width, int img_height,
+                                            int x_shift, int y_shift)
 {
     assert(delta && anchor);
     assert(tl_is_device_mem(delta->data));
@@ -2681,7 +2681,7 @@ static void thrust_sort_by_key(T *data, int32_t *index, int len, tl_sort_dir dir
                             thrust::less<T>());
 }
 
-void tl_tensor_sort1d(tl_tensor *src, tl_tensor *index, tl_sort_dir dir)
+void tl_tensor_sort1d_cuda(tl_tensor *src, tl_tensor *index, tl_sort_dir dir)
 {
     assert(src);
     assert(tl_is_device_mem(src->data));
@@ -2785,8 +2785,8 @@ __global__ void pick1d_kernel(T *src, T *dst, int *idx, int stride,
         dst[di*stride+i] = src[si*stride+i];
 }
 
-tl_tensor *tl_tensor_pick1d(const tl_tensor *src, const tl_tensor *index,
-                            tl_tensor *dst, int stride, int len)
+tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
+                                 tl_tensor *dst, int stride, int len)
 {
     assert(src);
     assert(tl_is_device_mem(src->data));

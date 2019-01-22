@@ -639,7 +639,7 @@ START_TEST(test_tl_tensor_sort1d_cuda)
     src = tl_tensor_create(d_output, 1, dims, TL_INT32);
     index = tl_tensor_create(d_output_index, 1, dims, TL_INT32);
 
-    tl_tensor_sort1d(src, index, dir);
+    tl_tensor_sort1d_cuda(src, index, dir);
 
     tl_memcpy_d2h(h_output, d_output, size);
     tl_memcpy_d2h(h_output_index, d_output_index, size);
@@ -690,7 +690,7 @@ START_TEST(test_tl_tensor_pick1d_cuda)
     index = tl_tensor_create(d_selected_index, 1, dims_M, TL_INT32);
     dst = tl_tensor_create(d_output, 1, dims_M, TL_INT32);
 
-    tl_tensor_pick1d(src, index, dst, 1, M);
+    tl_tensor_pick1d_cuda(src, index, dst, 1, M);
 
     tl_memcpy_d2h(h_output, d_output, size_M);
     check_sorted_index(h_input, h_output, h_selected_index, M);

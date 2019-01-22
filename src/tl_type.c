@@ -1474,7 +1474,6 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
     }
 }
 
-
 static const char *resize_type_name[TL_RESIZE_TYPE_SIZE] = {
     "TL_NEAREST", "TL_LINEAR"
 };
@@ -1491,5 +1490,24 @@ tl_resize_type tl_resize_type_from_str(const char *str)
         return TL_NEAREST;
     if (!strcmp(str, "TL_LINEAR"))
         return TL_LINEAR;
+    return -1;
+}
+
+static const char *sort_dir_name[TL_SORT_DIR_SIZE] = {
+    "TL_SORT_DIR_ASCENDING", "TL_SORT_DIR_DESCENDING"
+};
+
+const char *tl_sort_dir_name(tl_sort_dir dir)
+{
+    tl_check_sort_dir(dir);
+    return sort_dir_name[dir];
+}
+
+tl_sort_dir tl_sort_dir_from_str(const char *str)
+{
+    if (!strcmp(str, "TL_SORT_DIR_ASCENDING"))
+        return TL_SORT_DIR_ASCENDING;
+    if (!strcmp(str, "TL_SORT_DIR_DESCENDING"))
+        return TL_SORT_DIR_DESCENDING;
     return -1;
 }

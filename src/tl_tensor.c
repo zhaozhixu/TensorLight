@@ -49,12 +49,12 @@ static inline void get_coords(int id, int *ids, int ndim, const int *dims)
     }
 }
 
-static inline void get_strides(tl_tensor *t, int *stride)
+static inline void get_strides(tl_tensor *t, int *strides)
 {
     int i;
 
-    assert(stride);
-    strides[t->ndims-1] = 1;
+    assert(strides);
+    strides[t->ndim-1] = 1;
     if (t->ndim == 1)
         return;
     for (i = t->dims[t->ndim-2]; i >= 0; i--)
@@ -825,81 +825,81 @@ tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
-static void top1(void *src, void *dst, int32_t *arg, int len, int stride,
-                 tl_dtype dtype, int largest)
-{
-    void *tmp;
-    void *elem;
-    int32_t idx;
-    int i;
-    tl_cmp_func cmp;
-    size_t dsize;
+/* static void top1(void *src, void *dst, int32_t *arg, int len, int stride, */
+/*                  tl_dtype dtype, int largest) */
+/* { */
+/*     void *tmp; */
+/*     void *elem; */
+/*     int32_t idx; */
+/*     int i; */
+/*     tl_cmp_func cmp; */
+/*     size_t dsize; */
 
-    assert(src);
-    assert(dst);
-    dsize = tl_size_of(dtype);
-    tmp = tl_alloc(dsize);
-    cmp = tl_cmp_getfunc(dtype);
+/*     assert(src); */
+/*     assert(dst); */
+/*     dsize = tl_size_of(dtype); */
+/*     tmp = tl_alloc(dsize); */
+/*     cmp = tl_cmp_getfunc(dtype); */
 
-    if (largest) {
-        tl_dtype_min(dtype, tmp);
-        for (i = 0; i < len; i += stride) {
-            elem = tl_padd(src, i, dsize);
-            if (cmp(tmp, elem) < 0) {
-                tl_passign(tmp, 0, elem, 0, dsize);
-                idx = i;
-            }
-        }
-    } else {
-        tl_dtype_max(dtype, tmp);
-        for (i = 0; i < len; i += stride) {
-            elem = tl_padd(src, i, dsize);
-            if (cmp(tmp, elem) > 0) {
-                tl_passign(tmp, 0, elem, 0, dsize);
-                idx = i;
-            }
-        }
-    }
-    tl_passign(dst, 0, tmp, 0, dsize);
-    tl_free(tmp);
-    *arg = idx;
-}
+/*     if (largest) { */
+/*         tl_dtype_min(dtype, tmp); */
+/*         for (i = 0; i < len; i += stride) { */
+/*             elem = tl_padd(src, i, dsize); */
+/*             if (cmp(tmp, elem) < 0) { */
+/*                 tl_passign(tmp, 0, elem, 0, dsize); */
+/*                 idx = i; */
+/*             } */
+/*         } */
+/*     } else { */
+/*         tl_dtype_max(dtype, tmp); */
+/*         for (i = 0; i < len; i += stride) { */
+/*             elem = tl_padd(src, i, dsize); */
+/*             if (cmp(tmp, elem) > 0) { */
+/*                 tl_passign(tmp, 0, elem, 0, dsize); */
+/*                 idx = i; */
+/*             } */
+/*         } */
+/*     } */
+/*     tl_passign(dst, 0, tmp, 0, dsize); */
+/*     tl_free(tmp); */
+/*     *arg = idx; */
+/* } */
 
-tl_tensor *tl_tensor_topk(const tl_tensor *src, tl_tensor *dst, tl_tensor *arg,
-                          int axis, int k, int sorted, int largest)
-{
-    int i;
-    int strides[TL_MAXDIM];
-    int cmp_seq;
+/* tl_tensor *tl_tensor_topk(const tl_tensor *src, tl_tensor *dst, tl_tensor *arg, */
+/*                           int axis, int k, int sorted, int largest) */
+/* { */
+/*     int i; */
+/*     int strides[TL_MAXDIM]; */
+/*     int cmp_seq; */
 
-    assert(src && src->data);
-    assert(k > 0 && k <= src->dims[src->ndim]);
-    assert(axis < src->ndim && axis >= 0);
+/*     assert(src && src->data); */
+/*     assert(k > 0 && k <= src->dims[src->ndim]); */
+/*     assert(axis < src->ndim && axis >= 0); */
 
-    if (dst) {
-#ifndef NDEBUG
-        assert(dst->data);
-        assert(src->dtype == dst->dtype);
-        for (i = 0; i < dst->ndim; i++)
-            assert(i == axis ? dst->dims[i] == k :
-                   dst->dims[i] == src->dims[i]);
-#endif
-    } else {
-        dst = tl_tensor_zeros_slice(src, axis, k, src->dtype);
-    }
-    if (arg) {
-#ifndef NDEBUG
-        assert(arg->data);
-        assert(arg->dtype == TL_INT32);
-        for (i = 0; i < arg->ndim; i++)
-            assert(i == axis ? arg->dims[i] == k :
-                   arg->dims[i] == src->dims[i]);
-#endif
-    }
+/*     if (dst) { */
+/* #ifndef NDEBUG */
+/*         assert(dst->data); */
+/*         assert(src->dtype == dst->dtype); */
+/*         for (i = 0; i < dst->ndim; i++) */
+/*             assert(i == axis ? dst->dims[i] == k : */
+/*                    dst->dims[i] == src->dims[i]); */
+/* #endif */
+/*     } else { */
+/*         dst = tl_tensor_zeros_slice(src, axis, k, src->dtype); */
+/*     } */
+/*     if (arg) { */
+/* #ifndef NDEBUG */
+/*         assert(arg->data); */
+/*         assert(arg->dtype == TL_INT32); */
+/*         for (i = 0; i < arg->ndim; i++) */
+/*             assert(i == axis ? arg->dims[i] == k : */
+/*                    arg->dims[i] == src->dims[i]); */
+/* #endif */
+/*     } */
 
-    get_strides(src, strides);
-    if (k == 1) {
-        for (i = )
-    }
+/*     get_strides(src, strides); */
+/*     if (k == 1) { */
+/*         for (i = ) */
+/*     } */
 
-}
+/* } */

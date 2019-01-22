@@ -22,6 +22,8 @@
 
 #ifdef TL_CUDA
 
+#include <time.h>
+
 #include "test_tensorlight.h"
 #include "../src/tl_tensor.h"
 #include "../src/tl_check.h"
@@ -569,6 +571,137 @@ START_TEST(test_tl_tensor_resize_cuda)
     tl_free_cuda(dst_data_d);
 }
 END_TEST
+
+static void check_sorted_data(int *src, int *res, int N, tl_sort_dir dir)
+{
+    int *src_hist;
+    int *res_hist;
+    size_t size = sizeof(int) * N;
+
+    src_hist = (int *)tl_alloc(size);
+    res_hist = (int *)tl_alloc(size);
+    memset(src_hist, 0, size);
+    memset(res_hist, 0, size);
+
+    for (int i = 0; i < N; i++) {
+        ck_assert_int_lt(src[i], N);
+        src_hist[src[i]]++;
+        ck_assert_int_lt(res[i], N);
+        res_hist[res[i]]++;
+    }
+
+    for (int i = 0; i < N; i++)
+        ck_assert_int_eq(src_hist[i], res_hist[i]);
+
+    if (dir == TL_SORT_DIR_ASCENDING) {
+        for (int i = 0; i < N - 1; i++)
+            ck_assert_int_le(res[i], res[i+1]);
+    } else {
+        for (int i = 0; i < N - 1; i++)
+            ck_assert_int_ge(res[i], res[i+1]);
+    }
+
+    tl_free(src_hist);
+    tl_free(res_hist);
+}
+
+static void check_sorted_index(int *src, int *res, int *res_index, int N)
+{
+    for (int i = 0; i < N; i++)
+        ck_assert_int_eq(src[res_index[i]], res[i]);
+}
+
+START_TEST(test_tl_tensor_sort1d_cuda)
+{
+    const int N = 65536;
+    int h_input[N];
+    int h_input_index[N];
+    int h_output[N];
+    int h_output_index[N];
+    int *d_output;
+    int *d_output_index;
+    int dims[1] = {N};
+    size_t size = sizeof(int) * N;
+    tl_tensor *src, *index;
+    tl_sort_dir dir;
+
+    srand(time(NULL));
+    dir = rand() % 2;
+    for (int i = 0; i < N; i++) {
+        h_input[i] = rand() % N;
+        h_input_index[i] = i;
+    }
+
+    d_output = (int *)tl_alloc_cuda(size);
+    d_output_index = (int *)tl_alloc_cuda(size);
+    tl_memcpy_h2d(d_output, h_input, size);
+    tl_memcpy_h2d(d_output_index, h_input_index, size);
+    src = tl_tensor_create(d_output, 1, dims, TL_INT32);
+    index = tl_tensor_create(d_output_index, 1, dims, TL_INT32);
+
+    tl_tensor_sort1d(src, index, dir);
+
+    tl_memcpy_d2h(h_output, d_output, size);
+    tl_memcpy_d2h(h_output_index, d_output_index, size);
+    check_sorted_data(h_input, h_output, N, dir);
+    check_sorted_index(h_input, h_output, h_output_index, N);
+
+    tl_tensor_free_data_too_cuda(src);
+    tl_tensor_free_data_too_cuda(index);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_pick1d_cuda)
+{
+    const int N = 65536;
+    int M;
+    int h_input[N];
+    int *h_selected_index;
+    int *h_output;
+    int *d_input;
+    int *d_selected_index;
+    int *d_output;
+    int dims_N[1];
+    int dims_M[1];
+    size_t size_N, size_M;
+    tl_tensor *src, *index, *dst;
+
+    srand(time(NULL));
+    M = rand() % N;
+    dims_N[0] = N;
+    dims_M[0] = M;
+    size_N = sizeof(int) * N;
+    size_M = sizeof(int) * M;
+    h_selected_index = (int *)tl_alloc(size_M);
+    h_output = (int *)tl_alloc(size_M);
+    for (int i = 0; i < N; i++) {
+        h_input[i] = rand() % N;
+    }
+    for (int i = 0; i < M; i++) {
+        h_selected_index[i] = rand() % N;
+    }
+
+    d_input = (int *)tl_alloc_cuda(size_N);
+    d_selected_index = (int *)tl_alloc_cuda(size_M);
+    d_output = (int *)tl_alloc_cuda(size_M);
+    tl_memcpy_h2d(d_input, h_input, size_N);
+    tl_memcpy_h2d(d_selected_index, h_selected_index, size_M);
+    src = tl_tensor_create(d_input, 1, dims_N, TL_INT32);
+    index = tl_tensor_create(d_selected_index, 1, dims_M, TL_INT32);
+    dst = tl_tensor_create(d_output, 1, dims_M, TL_INT32);
+
+    tl_tensor_pick1d(src, index, dst, 1, M);
+
+    tl_memcpy_d2h(h_output, d_output, size_M);
+    check_sorted_index(h_input, h_output, h_selected_index, M);
+
+    tl_tensor_free_data_too_cuda(src);
+    tl_tensor_free_data_too_cuda(index);
+    tl_tensor_free_data_too_cuda(dst);
+    tl_free(h_selected_index);
+    tl_free(h_output);
+}
+END_TEST
 /* end of tests */
 
 Suite *make_tensor_cuda_suite(void)
@@ -595,6 +728,8 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_convert_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_pick1d_cuda);
     /* end of adding tests */
 
     suite_add_tcase(s, tc_tensor_cuda);

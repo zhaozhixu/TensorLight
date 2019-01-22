@@ -72,6 +72,12 @@ enum tl_resize_type {
 };
 typedef enum tl_resize_type tl_resize_type;
 
+enum tl_sort_dir {
+     TL_SORT_DIR_ASCENDING = 0,
+     TL_SORT_DIR_DESCENDING
+};
+typedef enum tl_sort_dir tl_sort_dir;
+
 #define tl_check_resize_type(rtype)                     \
      assert(rtype >= 0 && rtype < TL_RESIZE_TYPE_SIZE)
 

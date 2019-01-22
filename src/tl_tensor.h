@@ -125,6 +125,9 @@ tl_tensor *tl_tensor_transform_bboxSQD_kernel(const tl_tensor *delta,
                                               int width, int height,
                                               int img_width, int img_height,
                                               int x_shift, int y_shift);
+void tl_tensor_sort1d(tl_tensor *src, tl_tensor *index, tl_sort_dir dir);
+tl_tensor *tl_tensor_pick1d(const tl_tensor *src, const tl_tensor *index,
+                            tl_tensor *dst, int stride, int len);
 
 #endif  /* TL_CUDA */
 

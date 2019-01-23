@@ -135,6 +135,8 @@ const char *tl_dtype_name(tl_dtype dtype);
 tl_dtype tl_dtype_from_str(const char *str);
 void tl_dtype_max(tl_dtype dtype, void *ret);
 void tl_dtype_min(tl_dtype dtype, void *ret);
+double tl_dtype_max_double(tl_dtype dtype);
+double tl_dtype_min_double(tl_dtype dtype);
 void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s);
 
 int tl_fprintf(FILE *fp, const char *fmt,void *p, tl_dtype dtype);

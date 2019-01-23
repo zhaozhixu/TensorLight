@@ -126,6 +126,30 @@ void tl_dtype_min(tl_dtype dtype, void *ret)
     }
 }
 
+double tl_dtype_max_double(tl_dtype dtype)
+{
+    void *max;
+    double max_d;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    tl_convert(&max_d, TL_DOUBLE, max, dtype);
+    tl_free(max);
+
+    return max_d;
+}
+
+double tl_dtype_min_double(tl_dtype dtype)
+{
+    void *min;
+    double min_d;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    tl_convert(&min_d, TL_DOUBLE, min, dtype);
+    tl_free(min);
+
+    return min_d;
+}
+
 size_t tl_size_of(tl_dtype dtype)
 {
     tl_check_dtype(dtype);

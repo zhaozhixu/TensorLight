@@ -26,6 +26,18 @@
 #include <check.h>
 #include <math.h>
 
+#ifndef ck_assert_double_eq_tol
+#define ck_assert_double_eq_tol(X, Y, T)                                \
+     do {								\
+	  double _ck_x = (X);						\
+	  double _ck_y = (Y);						\
+	  double _ck_t = (T);						\
+	  ck_assert_msg(fabs(_ck_x - _ck_y) < _ck_t,			\
+			"Assertion '%s' failed: %s ~= %f, %s == %f, %s == %f", \
+			#X" == "#Y, #X, _ck_x, #Y, _ck_y, #T, _ck_t);	\
+     } while(0)
+#endif
+
 #ifndef ck_assert_float_eq_tol
 #define ck_assert_float_eq_tol(X, Y, T)					\
      do {								\
@@ -67,6 +79,22 @@
 		    ck_assert_msg(0,					\
 				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %u, "#AY"[%d] == %u", \
 				  i, _ck_x, i, _ck_y);			\
+	  }								\
+     } while(0)
+#endif
+
+#ifndef ck_assert_array_double_eq_tol
+#define ck_assert_array_double_eq_tol(AX, AY, N, T)			\
+     do {								\
+	  int _ck_n = (N);						\
+	  double _ck_t = (T);						\
+	  for (int i = 0; i < _ck_n; i++) {				\
+	       double _ck_x = (AX)[i];                                  \
+	       double _ck_y = (AY)[i];                                  \
+	       if (fabs(_ck_x - _ck_y) > _ck_t)                         \
+		    ck_assert_msg(0,					\
+				  "Assertion array '"#AX" ~= "#AY"' failed: "#AX"[%d] == %f, "#AY"[%d] == %f, "#T" == %f", \
+				  i, _ck_x, i, _ck_y, _ck_t);		\
 	  }								\
      } while(0)
 #endif

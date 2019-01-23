@@ -24,6 +24,7 @@
 #include "test_tensorlight.h"
 #include "../src/tl_type.h"
 #include "../src/tl_util.h"
+#include "../src/tl_check.h"
 
 static void setup(void)
 {
@@ -218,6 +219,214 @@ START_TEST(test_tl_dtype_fmt)
 
     fmt = tl_dtype_fmt(TL_BOOL);
     ck_assert_str_eq(fmt, "%d");
+}
+END_TEST
+
+START_TEST(test_tl_dtype_max)
+{
+    void *max;
+    tl_dtype dtype;
+
+    dtype = TL_DOUBLE;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_double_eq_tol(*(double *)max, DBL_MAX, 1e-6);
+    tl_free(max);
+
+    dtype = TL_FLOAT;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_double_eq_tol(*(float *)max, FLT_MAX, 1e-6);
+    tl_free(max);
+
+    dtype = TL_INT32;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_int_eq(*(int32_t *)max, INT32_MAX);
+    tl_free(max);
+
+    dtype = TL_INT16;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_int_eq(*(int16_t *)max, INT16_MAX);
+    tl_free(max);
+
+    dtype = TL_INT8;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_int_eq(*(int8_t *)max, INT8_MAX);
+    tl_free(max);
+
+    dtype = TL_UINT32;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_uint_eq(*(uint32_t *)max, UINT32_MAX);
+    tl_free(max);
+
+    dtype = TL_UINT16;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_uint_eq(*(uint16_t *)max, UINT16_MAX);
+    tl_free(max);
+
+    dtype = TL_UINT8;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_uint_eq(*(uint8_t *)max, UINT8_MAX);
+    tl_free(max);
+
+    dtype = TL_BOOL;
+    max = tl_alloc(tl_size_of(dtype));
+    tl_dtype_max(dtype, max);
+    ck_assert_int_eq(*(tl_bool_t *)max, TL_TRUE);
+    tl_free(max);
+}
+END_TEST
+
+START_TEST(test_tl_dtype_min)
+{
+    void *min;
+    tl_dtype dtype;
+
+    dtype = TL_DOUBLE;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_double_eq_tol(*(double *)min, -DBL_MAX, 1e-6);
+    tl_free(min);
+
+    dtype = TL_FLOAT;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_double_eq_tol(*(float *)min, -FLT_MAX, 1e-6);
+    tl_free(min);
+
+    dtype = TL_INT32;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_int_eq(*(int32_t *)min, INT32_MIN);
+    tl_free(min);
+
+    dtype = TL_INT16;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_int_eq(*(int16_t *)min, INT16_MIN);
+    tl_free(min);
+
+    dtype = TL_INT8;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_int_eq(*(int8_t *)min, INT8_MIN);
+    tl_free(min);
+
+    dtype = TL_UINT32;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_uint_eq(*(uint32_t *)min, 0);
+    tl_free(min);
+
+    dtype = TL_UINT16;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_uint_eq(*(uint16_t *)min, 0);
+    tl_free(min);
+
+    dtype = TL_UINT8;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_uint_eq(*(uint8_t *)min, 0);
+    tl_free(min);
+
+    dtype = TL_BOOL;
+    min = tl_alloc(tl_size_of(dtype));
+    tl_dtype_min(dtype, min);
+    ck_assert_int_eq(*(tl_bool_t *)min, TL_FALSE);
+    tl_free(min);
+}
+END_TEST
+
+START_TEST(test_tl_dtype_max_double)
+{
+    tl_dtype dtype;
+    double max;
+
+    dtype = TL_DOUBLE;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)DBL_MAX, 1e-6);
+
+    dtype = TL_FLOAT;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)FLT_MAX, 1e-6);
+
+    dtype = TL_INT32;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)INT32_MAX, 1e-6);
+
+    dtype = TL_INT16;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)INT16_MAX, 1e-6);
+
+    dtype = TL_INT8;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)INT8_MAX, 1e-6);
+
+    dtype = TL_UINT32;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)UINT32_MAX, 1e-6);
+
+    dtype = TL_UINT16;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)UINT16_MAX, 1e-6);
+
+    dtype = TL_UINT8;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)UINT8_MAX, 1e-6);
+
+    dtype = TL_BOOL;
+    max = tl_dtype_max_double(dtype);
+    ck_assert_double_eq_tol(max, (double)TL_TRUE, 1e-6);
+}
+END_TEST
+
+START_TEST(test_tl_dtype_min_double)
+{
+    tl_dtype dtype;
+    double min;
+
+    dtype = TL_DOUBLE;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)-DBL_MAX, 1e-6);
+
+    dtype = TL_FLOAT;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)-FLT_MAX, 1e-6);
+
+    dtype = TL_INT32;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)INT32_MIN, 1e-6);
+
+    dtype = TL_INT16;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)INT16_MIN, 1e-6);
+
+    dtype = TL_INT8;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)INT8_MIN, 1e-6);
+
+    dtype = TL_UINT32;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)0, 1e-6);
+
+    dtype = TL_UINT16;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)0, 1e-6);
+
+    dtype = TL_UINT8;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)0, 1e-6);
+
+    dtype = TL_BOOL;
+    min = tl_dtype_min_double(dtype);
+    ck_assert_double_eq_tol(min, (double)TL_FALSE, 1e-6);
 }
 END_TEST
 
@@ -1460,6 +1669,10 @@ Suite *make_type_suite(void)
     tcase_add_test(tc_type, test_tl_padd);
     tcase_add_test(tc_type, test_tl_passign);
     tcase_add_test(tc_type, test_tl_dtype_fmt);
+    tcase_add_test(tc_type, test_tl_dtype_max);
+    tcase_add_test(tc_type, test_tl_dtype_min);
+    tcase_add_test(tc_type, test_tl_dtype_max_double);
+    tcase_add_test(tc_type, test_tl_dtype_min_double);
     tcase_add_test(tc_type, test_tl_pointer_sub);
     tcase_add_test(tc_type, test_tl_pointer_add);
     tcase_add_test(tc_type, test_tl_pointer_assign);

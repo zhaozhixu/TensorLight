@@ -834,6 +834,36 @@ START_TEST(test_tl_tensor_sort1d_cuda)
 {
     const int N = 65536;
     int h_input[N];
+    int h_output[N];
+    int *d_output;
+    int dims[1] = {N};
+    size_t size = sizeof(int) * N;
+    tl_tensor *src;
+    tl_sort_dir dir;
+
+    srand(time(NULL));
+    dir = rand() % 2;
+    for (int i = 0; i < N; i++) {
+        h_input[i] = rand() % N;
+    }
+
+    d_output = (int *)tl_alloc_cuda(size);
+    tl_memcpy_h2d(d_output, h_input, size);
+    src = tl_tensor_create(d_output, 1, dims, TL_INT32);
+
+    tl_tensor_sort1d_cuda(src, dir);
+
+    tl_memcpy_d2h(h_output, d_output, size);
+    check_sorted_data(h_input, h_output, N, dir);
+
+    tl_tensor_free_data_too_cuda(src);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_sort1d_by_key_cuda)
+{
+    const int N = 65536;
+    int h_input[N];
     int h_input_index[N];
     int h_output[N];
     int h_output_index[N];
@@ -858,7 +888,7 @@ START_TEST(test_tl_tensor_sort1d_cuda)
     src = tl_tensor_create(d_output, 1, dims, TL_INT32);
     index = tl_tensor_create(d_output_index, 1, dims, TL_INT32);
 
-    tl_tensor_sort1d_cuda(src, index, dir);
+    tl_tensor_sort1d_by_key_cuda(src, index, dir);
 
     tl_memcpy_d2h(h_output, d_output, size);
     tl_memcpy_d2h(h_output_index, d_output_index, size);
@@ -953,6 +983,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transform_bboxSQD_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_by_key_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_pick1d_cuda);
     /* end of adding tests */
 

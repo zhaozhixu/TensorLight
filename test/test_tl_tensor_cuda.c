@@ -176,6 +176,151 @@ START_TEST(test_tl_tensor_clone_d2d)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_repeat_h2d)
+{
+     int dims[] = {2, 3};
+     float data[] = {1, 2, 3, 4, 5, 6};
+     int dims1[] = {1, 2, 3};
+     float data1[] = {1, 2, 3, 4, 5, 6};
+     int dims2[] = {2, 2, 3};
+     float data2[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     int dims3[] = {3, 2, 3};
+     float data3[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     tl_tensor *t, *t1_h, *t2_h, *t3_h, *t1_d, *t2_d, *t3_d;
+
+     t = tl_tensor_create(data, 2, dims, TL_FLOAT);
+
+     t1_d = tl_tensor_repeat_h2d(t, 1);
+     ck_assert_array_int_eq(t1_d->dims, dims1, 3);
+     t1_h = tl_tensor_clone_d2h(t1_d);
+     ck_assert_array_float_eq_tol((float*)t1_h->data, data1, t1_h->len, 0);
+     tl_tensor_free_data_too(t1_h);
+     tl_tensor_free_data_too_cuda(t1_d);
+
+     t2_d = tl_tensor_repeat_h2d(t, 2);
+     ck_assert_array_int_eq(t2_d->dims, dims2, 3);
+     t2_h = tl_tensor_clone_d2h(t2_d);
+     ck_assert_array_float_eq_tol((float*)t2_h->data, data2, t2_h->len, 0);
+     tl_tensor_free_data_too(t2_h);
+     tl_tensor_free_data_too_cuda(t2_d);
+
+     t3_d = tl_tensor_repeat_h2d(t, 3);
+     ck_assert_array_int_eq(t3_d->dims, dims3, 3);
+     t3_h = tl_tensor_clone_d2h(t3_d);
+     ck_assert_array_float_eq_tol((float*)t3_h->data, data3, t3_h->len, 0);
+     tl_tensor_free_data_too(t3_h);
+     tl_tensor_free_data_too_cuda(t3_d);
+
+     tl_tensor_free(t);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_repeat_d2d)
+{
+     int dims[] = {2, 3};
+     float data[] = {1, 2, 3, 4, 5, 6};
+     int dims1[] = {1, 2, 3};
+     float data1[] = {1, 2, 3, 4, 5, 6};
+     int dims2[] = {2, 2, 3};
+     float data2[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     int dims3[] = {3, 2, 3};
+     float data3[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     tl_tensor *t_h, *t_d, *t1_h, *t2_h, *t3_h, *t1_d, *t2_d, *t3_d;
+
+     t_h = tl_tensor_create(data, 2, dims, TL_FLOAT);
+     t_d = tl_tensor_clone_h2d(t_h);
+
+     t1_d = tl_tensor_repeat_d2d(t_d, 1);
+     ck_assert_array_int_eq(t1_d->dims, dims1, 3);
+     t1_h = tl_tensor_clone_d2h(t1_d);
+     ck_assert_array_float_eq_tol((float*)t1_h->data, data1, t1_h->len, 0);
+     tl_tensor_free_data_too(t1_h);
+     tl_tensor_free_data_too_cuda(t1_d);
+
+     t2_d = tl_tensor_repeat_d2d(t_d, 2);
+     ck_assert_array_int_eq(t2_d->dims, dims2, 3);
+     t2_h = tl_tensor_clone_d2h(t2_d);
+     ck_assert_array_float_eq_tol((float*)t2_h->data, data2, t2_h->len, 0);
+     tl_tensor_free_data_too(t2_h);
+     tl_tensor_free_data_too_cuda(t2_d);
+
+     t3_d = tl_tensor_repeat_d2d(t_d, 3);
+     ck_assert_array_int_eq(t3_d->dims, dims3, 3);
+     t3_h = tl_tensor_clone_d2h(t3_d);
+     ck_assert_array_float_eq_tol((float*)t3_h->data, data3, t3_h->len, 0);
+     tl_tensor_free_data_too(t3_h);
+     tl_tensor_free_data_too_cuda(t3_d);
+
+     tl_tensor_free(t_h);
+     tl_tensor_free_data_too_cuda(t_d);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_repeat_d2h)
+{
+     int dims[] = {2, 3};
+     float data[] = {1, 2, 3, 4, 5, 6};
+     int dims1[] = {1, 2, 3};
+     float data1[] = {1, 2, 3, 4, 5, 6};
+     int dims2[] = {2, 2, 3};
+     float data2[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     int dims3[] = {3, 2, 3};
+     float data3[] = {1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6};
+     tl_tensor *t_h, *t_d, *t1, *t2, *t3;
+
+     t_h = tl_tensor_create(data, 2, dims, TL_FLOAT);
+     t_d = tl_tensor_clone_h2d(t_h);
+
+     t1 = tl_tensor_repeat_d2h(t_d, 1);
+     ck_assert_array_int_eq(t1->dims, dims1, 3);
+     ck_assert_array_float_eq_tol((float*)t1->data, data1, t1->len, 0);
+     tl_tensor_free_data_too(t1);
+
+     t2 = tl_tensor_repeat_d2h(t_d, 2);
+     ck_assert_array_int_eq(t2->dims, dims2, 3);
+     ck_assert_array_float_eq_tol((float*)t2->data, data2, t2->len, 0);
+     tl_tensor_free_data_too(t2);
+
+     t3 = tl_tensor_repeat_d2h(t_d, 3);
+     ck_assert_array_int_eq(t3->dims, dims3, 3);
+     ck_assert_array_float_eq_tol((float*)t3->data, data3, t3->len, 0);
+     tl_tensor_free_data_too(t3);
+
+     tl_tensor_free(t_h);
+     tl_tensor_free_data_too_cuda(t_d);
+}
+END_TEST
+
+START_TEST(test_tl_tensor_arange_cuda)
+{
+    tl_tensor *dst_d, *dst_h, *t;
+
+    t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16);
+    dst_d = tl_tensor_arange_cuda(0, 3, 1, TL_INT16);
+    dst_h = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst_h, t);
+    tl_tensor_free(t);
+    tl_tensor_free_data_too(dst_h);
+    tl_tensor_free_data_too_cuda(dst_d);
+
+    t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT);
+    dst_d = tl_tensor_arange_cuda(0.1, 3.2, 1.5, TL_FLOAT);
+    dst_h = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst_h, t);
+    tl_tensor_free(t);
+    tl_tensor_free_data_too(dst_h);
+    tl_tensor_free_data_too_cuda(dst_d);
+
+    t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT);
+    dst_d = tl_tensor_arange_cuda(0.1, 3.1, 1.5, TL_FLOAT);
+    dst_h = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst_h, t);
+    tl_tensor_free(t);
+    tl_tensor_free_data_too(dst_h);
+    tl_tensor_free_data_too_cuda(dst_d);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_fprint_cuda)
 {
     tl_tensor *t;
@@ -792,6 +937,10 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_h2d);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_d2h);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_d2d);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_h2d);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_d2d);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_d2h);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_arange_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_fprint_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_print_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_save_cuda);

@@ -739,7 +739,7 @@ tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
         elem = start + step * i;
         tl_convert(tl_padd(data, i, dsize), dtype, &elem, TL_DOUBLE);
     }
-    tl_memcpy_h2d(dst->data, data, tl_size_of(dst->dtype));
+    tl_memcpy_h2d(dst->data, data, tl_size_of(dst->dtype) * dst->len);
 
     return dst;
 }

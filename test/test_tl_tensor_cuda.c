@@ -572,6 +572,80 @@ START_TEST(test_tl_tensor_resize_cuda)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_transform_bboxSQD_cuda)
+{
+    int width = 1248;
+    int height = 384;
+    int img_width = 1242;
+    int img_height = 375;
+    int x_shift = 0;
+    int y_shift = 0;
+    const int N = 36;
+    float h_dst_data_true[] = {
+        1.228140e+03,    3.483211e+02,    1.241000e+03,    3.740000e+02,
+        1.067210e+03,    2.356478e+02,    1.241000e+03,    3.740000e+02,
+        1.188710e+03,    3.301930e+02,    1.241000e+03,    3.740000e+02,
+        1.160467e+03,    3.155269e+02,    1.241000e+03,    3.740000e+02,
+        1.220873e+03,    2.927379e+02,    1.241000e+03,    3.740000e+02,
+        1.178875e+03,    2.479402e+02,    1.241000e+03,    3.740000e+02,
+        1.146917e+03,    3.051918e+02,    1.241000e+03,    3.740000e+02,
+        1.206713e+03,    2.496181e+02,    1.241000e+03,    3.740000e+02,
+        1.195503e+03,    3.455338e+02,    1.241000e+03,    3.740000e+02,
+    };
+    float h_anchor_data[] = {
+        1.232203e+03,    3.686400e+02,    3.600000e+01,    3.700000e+01,
+        1.232203e+03,    3.686400e+02,    3.660000e+02,    1.740000e+02,
+        1.232203e+03,    3.686400e+02,    1.150000e+02,    5.900000e+01,
+        1.232203e+03,    3.686400e+02,    1.620000e+02,    8.700000e+01,
+        1.232203e+03,    3.686400e+02,    3.800000e+01,    9.000000e+01,
+        1.232203e+03,    3.686400e+02,    2.580000e+02,    1.730000e+02,
+        1.232203e+03,    3.686400e+02,    2.240000e+02,    1.080000e+02,
+        1.232203e+03,    3.686400e+02,    7.800000e+01,    1.700000e+02,
+        1.232203e+03,    3.686400e+02,    7.200000e+01,    4.300000e+01,
+    };
+    float h_delta_data[] = {
+        2.700084e-01,    2.615839e-01,   -8.299431e-01,    1.566731e-01,
+        6.803536e-02,    2.853769e-03,    9.450632e-03,    3.848182e-01,
+        1.548163e-01,    9.279537e-02,   -3.444237e-02,    1.990532e-01,
+        7.056128e-02,    7.749645e-02,   -4.338923e-02,    1.839040e-01,
+        1.729851e-01,   -5.256999e-04,   -4.591562e-01,    4.249639e-01,
+        1.180988e-01,   -2.344110e-02,   -5.017939e-01,    2.466247e-01,
+        7.285635e-02,    6.465448e-02,   -1.534719e-01,    1.558371e-01,
+        1.453436e-01,   -1.644313e-02,   -2.296714e-01,    2.599697e-01,
+        6.938356e-02,    1.221377e-01,   -2.235517e-03,   -6.906012e-02,
+    };
+    float h_dst_data[N];
+    float *d_delta_data;
+    float *d_anchor_data;
+    float *d_dst_data;
+    int ndim = 5;
+    int dims[5] = {1, 1, 3, 3, 4};
+    tl_tensor *delta, *anchor, *dst;
+    size_t size = sizeof(float) * N;
+
+    d_delta_data = (float *)tl_alloc_cuda(size);
+    d_anchor_data = (float *)tl_alloc_cuda(size);
+    d_dst_data = (float *)tl_alloc_cuda(size);
+    tl_memcpy_h2d(d_delta_data, h_delta_data, size);
+    tl_memcpy_h2d(d_anchor_data, h_anchor_data, size);
+    delta = tl_tensor_create(d_delta_data, ndim, dims, TL_FLOAT);
+    anchor = tl_tensor_create(d_anchor_data, ndim, dims, TL_FLOAT);
+    dst = tl_tensor_create(d_dst_data, ndim, dims, TL_FLOAT);
+
+    tl_tensor_transform_bboxSQD_cuda(delta, anchor, dst, width, height,
+                                     img_width, img_height, x_shift, y_shift);
+
+    tl_memcpy_d2h(h_dst_data, d_dst_data, size);
+
+    for (int i = 0; i < N; i++)
+        ck_assert_float_eq_tol(h_dst_data_true[i], h_dst_data[i], 1e-3);
+
+    tl_tensor_free_data_too_cuda(delta);
+    tl_tensor_free_data_too_cuda(anchor);
+    tl_tensor_free_data_too_cuda(dst);
+}
+END_TEST
+
 static void check_sorted_data(int *src, int *res, int N, tl_sort_dir dir)
 {
     int *src_hist;
@@ -727,6 +801,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_elew_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_convert_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_transform_bboxSQD_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_pick1d_cuda);

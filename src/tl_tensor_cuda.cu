@@ -3316,11 +3316,13 @@ tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
     assert(index->dtype == TL_INT32);
     assert(index->ndim == 1);
     assert(index->len >= len);
+    assert(stride >= 1);
     if (dst) {
         assert(dst);
         assert(tl_is_device_mem(dst->data));
         assert(dst->ndim == 1);
         assert(dst->len == len);
+        assert(dst->dtype == src->dtype);
     } else {
         int dims[1];
         dims[0] = len;

@@ -165,6 +165,33 @@ START_TEST(test_tl_tensor_arange)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_rearange)
+{
+     tl_tensor *src, *t;
+
+     t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16);
+     src = tl_tensor_zeros(1, ARR(int, 3), TL_INT16);
+     tl_tensor_rearange(src, 0, 3, 1);
+     tl_assert_tensor_eq(src, t);
+     tl_tensor_free(t);
+     tl_tensor_free_data_too(src);
+
+     t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT);
+     src = tl_tensor_zeros(1, ARR(int, 3), TL_FLOAT);
+     tl_tensor_rearange(src, 0.1, 3.2, 1.5);
+     tl_assert_tensor_eq(src, t);
+     tl_tensor_free(t);
+     tl_tensor_free_data_too(src);
+
+     t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT);
+     src = tl_tensor_zeros(1, ARR(int, 2), TL_FLOAT);
+     tl_tensor_rearange(src, 0.1, 3.1, 1.5);
+     tl_assert_tensor_eq(src, t);
+     tl_tensor_free(t);
+     tl_tensor_free_data_too(src);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_issameshape)
 {
      tl_tensor *t1;
@@ -663,6 +690,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_clone);
      tcase_add_test(tc_tensor, test_tl_tensor_repeat);
      tcase_add_test(tc_tensor, test_tl_tensor_arange);
+     tcase_add_test(tc_tensor, test_tl_tensor_rearange);
      tcase_add_test(tc_tensor, test_tl_tensor_issameshape);
      tcase_add_test(tc_tensor, test_tl_tensor_fprint);
      tcase_add_test(tc_tensor, test_tl_tensor_print);

@@ -207,16 +207,9 @@ tl_tensor *tl_tensor_arange(double start, double stop, double step,
 
     dsize = tl_size_of(dtype);
 #ifdef TL_DEBUG
-    void *max, *min;
     double max_d, min_d;
-    max = tl_alloc(tl_size_of(dtype));
-    min = tl_alloc(tl_size_of(dtype));
-    tl_dtype_max(dtype, max);
-    tl_dtype_min(dtype, min);
-    tl_convert(&max_d, TL_DOUBLE, max, dtype);
-    tl_convert(&min_d, TL_DOUBLE, min, dtype);
-    tl_free(max);
-    tl_free(min);
+    max_d = tl_dtype_max_double(dtype);
+    min_d = tl_dtype_min_double(dtype);
     assert(start >= min_d && start <= max_d);
     assert(stop >= min_d && stop <= max_d);
     assert(step >= min_d && step <= max_d);
@@ -236,6 +229,37 @@ tl_tensor *tl_tensor_arange(double start, double stop, double step,
     }
 
     return dst;
+}
+
+void tl_tensor_rearange(tl_tensor *src, double start, double stop,
+                        double step)
+{
+    double len, elem;
+    size_t dsize;
+
+#ifdef TL_DEBUG
+    double max_d, min_d;
+    max_d = tl_dtype_max_double(dtype);
+    min_d = tl_dtype_min_double(dtype);
+    assert(start >= min_d && start <= max_d);
+    assert(stop >= min_d && stop <= max_d);
+    assert(step >= min_d && step <= max_d);
+    assert(step != 0);
+    assert(stop > start);      /* TODO: expand to all possibilities */
+#endif
+
+    len = ceil((stop - start) / step);
+    dsize = tl_size_of(src->dtype);
+
+    assert(len <= INT32_MAX);
+    assert(src->ndim == 1);
+    assert(src->len == (int)len);
+    assert(src->data);
+
+    for (int i = 0; i < src->len; i++) {
+        elem = start + step * i;
+        tl_convert(tl_padd(src->data, i, dsize), src->dtype, &elem, TL_DOUBLE);
+    }
 }
 
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt)

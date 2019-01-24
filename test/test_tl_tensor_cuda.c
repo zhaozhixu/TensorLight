@@ -321,6 +321,39 @@ START_TEST(test_tl_tensor_arange_cuda)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_rearange_cuda)
+{
+    tl_tensor *dst_d, *dst_h, *t;
+
+    t = tl_tensor_create(ARR(int16_t,0,1,2), 1, ARR(int,3), TL_INT16);
+    dst_d = tl_tensor_zeros_cuda(1, ARR(int, 3), TL_INT16);
+    tl_tensor_rearange_cuda(dst_d, 0, 3, 1);
+    dst_h = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst_h, t);
+    tl_tensor_free(t);
+    tl_tensor_free_data_too(dst_h);
+    tl_tensor_free_data_too_cuda(dst_d);
+
+    t = tl_tensor_create(ARR(float,0.1,1.6,3.1), 1, ARR(int,3), TL_FLOAT);
+    dst_d = tl_tensor_zeros_cuda(1, ARR(int, 3), TL_FLOAT);
+    tl_tensor_rearange_cuda(dst_d, 0.1, 3.2, 1.5);
+    dst_h = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst_h, t);
+    tl_tensor_free(t);
+    tl_tensor_free_data_too(dst_h);
+    tl_tensor_free_data_too_cuda(dst_d);
+
+    t = tl_tensor_create(ARR(float,0.1,1.6), 1, ARR(int,2), TL_FLOAT);
+    dst_d = tl_tensor_zeros_cuda(1, ARR(int, 2), TL_FLOAT);
+    tl_tensor_rearange_cuda(dst_d, 0.1, 3.1, 1.5);
+    dst_h = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst_h, t);
+    tl_tensor_free(t);
+    tl_tensor_free_data_too(dst_h);
+    tl_tensor_free_data_too_cuda(dst_d);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_fprint_cuda)
 {
     tl_tensor *t;
@@ -971,6 +1004,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_d2d);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_d2h);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_arange_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_rearange_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_fprint_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_print_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_save_cuda);

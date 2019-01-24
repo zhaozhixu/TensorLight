@@ -61,6 +61,8 @@ tl_tensor *tl_tensor_clone(const tl_tensor *src);
 tl_tensor *tl_tensor_repeat(const tl_tensor *src, int times);
 tl_tensor *tl_tensor_arange(double start, double stop, double step,
                             tl_dtype dtype);
+void tl_tensor_rearange(tl_tensor *src, double start, double stop,
+                        double step);
 void tl_tensor_fprint(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print(const tl_tensor *t, const char *fmt);
 int tl_tensor_save(const char *file_name, const tl_tensor *t, const char *fmt);
@@ -101,6 +103,8 @@ tl_tensor *tl_tensor_repeat_d2h(const tl_tensor *src, int times);
 tl_tensor *tl_tensor_repeat_d2d(const tl_tensor *src, int times);
 tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
                                  tl_dtype dtype);
+void tl_tensor_rearange_cuda(tl_tensor *src, double start, double stop,
+                             double step);
 void tl_tensor_fprint_cuda(FILE *stream, const tl_tensor *t, const char *fmt);
 void tl_tensor_print_cuda(const tl_tensor *t, const char *fmt);
 int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t,

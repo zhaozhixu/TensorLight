@@ -711,16 +711,9 @@ tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
 
     dsize = tl_size_of(dtype);
 #ifdef TL_DEBUG
-    void *max, *min;
     double max_d, min_d;
-    max = tl_alloc(tl_size_of(dtype));
-    min = tl_alloc(tl_size_of(dtype));
-    tl_dtype_max(dtype, max);
-    tl_dtype_min(dtype, min);
-    tl_convert(&max_d, TL_DOUBLE, max, dtype);
-    tl_convert(&min_d, TL_DOUBLE, min, dtype);
-    tl_free(max);
-    tl_free(min);
+    max_d = tl_dtype_max_double(dtype);
+    min_d = tl_dtype_min_double(dtype);
     assert(start >= min_d && start <= max_d);
     assert(stop >= min_d && stop <= max_d);
     assert(step >= min_d && step <= max_d);
@@ -742,6 +735,97 @@ tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
     tl_memcpy_h2d(dst->data, data, tl_size_of(dst->dtype) * dst->len);
 
     return dst;
+}
+
+template<typename T>
+__global__ void rearange_kernel(T *dst, int len, double start, double step,
+                                int block_size, int total)
+{
+    int di = blockIdx.x * block_size + threadIdx.x;
+    if (di >= total)
+        return;
+
+    dst[di] = (T)(start + step * di);
+}
+
+void tl_tensor_rearange_cuda(tl_tensor *src, double start, double stop,
+                             double step)
+{
+    double len;
+
+#ifdef TL_DEBUG
+    double max_d, min_d;
+    max_d = tl_dtype_max_double(dtype);
+    min_d = tl_dtype_min_double(dtype);
+    assert(start >= min_d && start <= max_d);
+    assert(stop >= min_d && stop <= max_d);
+    assert(step >= min_d && step <= max_d);
+    assert(step != 0);
+    assert(stop > start);      /* TODO: expand to all possibilities */
+#endif
+
+    len = ceil((stop - start) / step);
+
+    assert(len <= INT32_MAX);
+    assert(src->ndim == 1);
+    assert(src->len == (int)len);
+    assert(src->data);
+
+    int thread_num, block_num;
+    thread_num = src->len;
+    block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
+
+    switch (src->dtype) {
+    case TL_DOUBLE:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((double *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_FLOAT:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((float *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_INT32:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_INT16:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_INT8:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_UINT32:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_UINT16:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_UINT8:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    case TL_BOOL:
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int *)src->data,
+                                                   src->len, start, step,
+                                                   BLOCK_SIZE, thread_num);
+        break;
+    default:
+        assert(0 && "unsupported tl_dtype");
+        break;
+    }
+    tl_cuda_device_sync();
 }
 
 void tl_tensor_fprint_cuda(FILE *stream, const tl_tensor *t, const char *fmt)

@@ -239,8 +239,8 @@ void tl_tensor_rearange(tl_tensor *src, double start, double stop,
 
 #ifdef TL_DEBUG
     double max_d, min_d;
-    max_d = tl_dtype_max_double(dtype);
-    min_d = tl_dtype_min_double(dtype);
+    max_d = tl_dtype_max_double(src->dtype);
+    min_d = tl_dtype_min_double(src->dtype);
     assert(start >= min_d && start <= max_d);
     assert(stop >= min_d && stop <= max_d);
     assert(step >= min_d && step <= max_d);

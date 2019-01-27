@@ -994,6 +994,7 @@ Suite *make_tensor_cuda_suite(void)
     s = suite_create("tensor_cuda");
     tc_tensor_cuda = tcase_create("tensor_cuda");
     tcase_add_checked_fixture(tc_tensor_cuda, setup, teardown);
+    tcase_set_timeout(tc_tensor_cuda, 30);
 
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_zeros_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_free_data_too_cuda);

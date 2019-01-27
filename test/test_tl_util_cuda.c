@@ -191,6 +191,7 @@ Suite *make_util_cuda_suite(void)
      s = suite_create("util_cuda");
      tc_util_cuda = tcase_create("util_cuda");
      tcase_add_checked_fixture(tc_util_cuda, setup, teardown);
+     tcase_set_timeout(tc_util_cuda, 30);
 
      tcase_add_test(tc_util_cuda, test_tl_is_device_mem);
      tcase_add_test(tc_util_cuda, test_tl_alloc_cuda);

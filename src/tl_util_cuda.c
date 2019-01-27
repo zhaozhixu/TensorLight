@@ -33,9 +33,10 @@
 
 #define TL_CUDA_CK(status)                                              \
     do {                                                                \
-        if (status != cudaSuccess)                                      \
-            tl_err_bt("CUDA_ERROR(%d) %s: %s", status,                  \
-                      cudaGetErrorName(status), cudaGetErrorString(status)); \
+        cudaError_t _status = (status);                                 \
+        if (_status != cudaSuccess)                                     \
+            tl_err_bt("CUDA_ERROR(%d) %s: %s", _status,                 \
+                      cudaGetErrorName(_status), cudaGetErrorString(_status)); \
     } while(0)
 
 void tl_cuda_set_device(int n)

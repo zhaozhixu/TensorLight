@@ -3321,7 +3321,7 @@ tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
         assert(dst);
         assert(tl_is_device_mem(dst->data));
         assert(dst->ndim == 1);
-        assert(dst->len == len);
+        assert(dst->len == len * stride);
         assert(dst->dtype == src->dtype);
     } else {
         int dims[1];

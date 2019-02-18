@@ -2573,6 +2573,81 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
+template<typename T>
+static __global__ void lrelu_kernel(const T *src, T *dst, float negslope,
+                                    int block_size, int total)
+{
+    int di = blockIdx.x * block_size + threadIdx.x;
+    if (di > total)
+        return;
+
+    T s = src[di];
+    dst[di] = s >= 0 ? s : s * (T)negslope;
+}
+
+#define LRELU_CUDA(ps, pd, ns, bn, bs, tn, type)                        \
+    lrelu_kernel<type><<<(bn), (bs)>>>((type *)(ps), (type *)(pd),      \
+                                       (ns), (bs), (tn))
+
+tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst,
+                                float negslope)
+{
+    assert(src && tl_is_device_mem(src->data));
+    if (dst) {
+        assert(dst && tl_is_device_mem(dst->data));
+        assert(tl_tensor_issameshape(dst, src));
+        assert(dst->dtype == src->dtype);
+    } else {
+        dst = tl_tensor_zeros_cuda(src->ndim, src->dims, src->dtype);
+    }
+
+    int thread_num, block_num;
+
+    thread_num = dst->len;
+    block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
+    switch (src->dtype) {
+    case TL_DOUBLE:
+        LRELU_CUDA(src->data, dst->data, negslope,
+                   block_num, BLOCK_SIZE, thread_num, double);
+        break;
+    case TL_FLOAT:
+        LRELU_CUDA(src->data, dst->data, negslope,
+                   block_num, BLOCK_SIZE, thread_num, float);
+        break;
+    case TL_INT32:
+        LRELU_CUDA(src->data, dst->data, negslope,
+                   block_num, BLOCK_SIZE, thread_num, int32_t);
+        break;
+    case TL_INT16:
+        LRELU_CUDA(src->data, dst->data, negslope,
+                   block_num, BLOCK_SIZE, thread_num, int16_t);
+        break;
+    case TL_INT8:
+        LRELU_CUDA(src->data, dst->data, negslope,
+                   block_num, BLOCK_SIZE, thread_num, int8_t);
+        break;
+    case TL_UINT32:
+        tl_memcpy_d2d(dst->data, src->data, tl_tensor_size(dst));
+        break;
+    case TL_UINT16:
+        tl_memcpy_d2d(dst->data, src->data, tl_tensor_size(dst));
+        break;
+    case TL_UINT8:
+        tl_memcpy_d2d(dst->data, src->data, tl_tensor_size(dst));
+        break;
+    case TL_BOOL:
+        LRELU_CUDA(src->data, dst->data, negslope,
+                   block_num, BLOCK_SIZE, thread_num, int);
+        break;
+    default:
+        assert(0 && "unsupported tl_dtype");
+        break;
+    }
+
+    return dst;
+}
+#undef LRELU_CUDA
+
 template <typename T>
 static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim,
                                              const int *dims, const int *new_dims,

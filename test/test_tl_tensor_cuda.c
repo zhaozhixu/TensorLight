@@ -703,6 +703,38 @@ START_TEST(test_tl_tensor_transpose_cuda)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_lrelu_cuda)
+{
+    float data_f[5] = {-1, 0, 1, 255, -256};
+    float *data_f_d;
+    float data_lrelu_f[5] = {-0.1, 0, 1, 255, -25.6};
+    float *data_lrelu_f_h;
+    float negslope = 0.1;
+    tl_tensor *t1, *t2;
+
+    data_f_d = tl_clone_h2d(data_f, sizeof(float) * 5);
+    t1 = tl_tensor_create(data_f_d, 1, (int[]){5}, TL_FLOAT);
+
+    t2 = tl_tensor_lrelu_cuda(t1, NULL, negslope);
+    data_lrelu_f_h = tl_clone_d2h(t2->data, sizeof(float) * 5);
+    ck_assert(tl_tensor_issameshape(t1, t2));
+    ck_assert(t1->dtype == t2->dtype);
+    ck_assert_array_float_eq_tol((float *)data_lrelu_f_h, data_lrelu_f, t2->len, 0);
+    tl_tensor_free_data_too_cuda(t2);
+    tl_free(data_lrelu_f_h);
+
+    t2 = tl_tensor_zeros_cuda(1, (int[]){5}, TL_FLOAT);
+    t2 = tl_tensor_lrelu_cuda(t1, t2, negslope);
+    data_lrelu_f_h = tl_clone_d2h(t2->data, sizeof(float) * 5);
+    ck_assert_array_float_eq_tol((float *)data_lrelu_f_h, data_lrelu_f, t2->len, 0);
+    tl_tensor_free_data_too_cuda(t2);
+    tl_free(data_lrelu_f_h);
+
+    tl_free_cuda(data_f_d);
+    tl_tensor_free(t1);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_resize_cuda)
 {
     float src_data_h[] = {1, 2, 3,
@@ -1015,6 +1047,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_elew_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_convert_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_lrelu_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transform_bboxSQD_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);

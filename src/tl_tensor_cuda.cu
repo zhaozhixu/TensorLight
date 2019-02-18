@@ -2820,9 +2820,76 @@ tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
     return dst;
 }
 
-tl_tensor *tl_tensor_detection_yolov3_cuda(const tl_tensor *feature, const tl_tensor *anchors,
-                                           )
+#define MAX_ANCHOR_NUM 64
+__global__ void detection_yolov3_kernel(const float *feature,
+                                        const float *anchors,
+                                        float *boxes_centers,
+                                        float *boxes_sizes, float *confs,
+                                        float *probs, int grid_h, int grid_w,
+                                        int img_h, int img_w,
+                                        int class_num, int anchor_num,
+                                        int block_size, int feature_len)
 {
+
+    assert(anchor_num <= MAX_ANCHOR_NUM);
+
+    float ratio_h = (float)img_h / (float)grid_h;
+    float ratio_w = (float)img_w / (float)grid_w;
+    __shared__ float scaled_anchors[MAX_ANCHOR_NUM * 2];
+
+    if (threadIdx.x < anchor_num * 2) {
+        scaled_anchors[threadIdx.x] = anchors[threadIdx.x];
+        scaled_anchors[threadIdx.x] = threadIdx.x % 2 == 0 ? /* necessary? */
+            scaled_anchors[threadIdx.x] / ratio_w :
+            scaled_anchors[threadIdx.x] / ratio_h;
+    }
+
+    int fi = blockIdx.x * block_size + threadIdx.x; /* index in a feature map */
+    if (fi >= feature_len)
+        return;
+
+    int hw = grid_h * grid_w;
+    int anchor_volumn = feature_len / anchor_num;
+    int ai = fi % anchor_volumn;
+    float f = feature[fi];
+    float sigmoided = 1 / (1 + expf(-f));
+
+    if (ai < hw * 2) {                  /* box_centers */
+        float center;
+        if (ai < hw)            /* x */
+            center = (sigmoided + ai % grid_w) * ratio_w;
+        else                    /* y */
+            center = (sigmoided + ai / grid_w) * ratio_h;
+        boxes_centers[ai + hw * 2 * fi / anchor_volumn] = center;
+    }
+    if (ai >= hw * 2 && ai < hw * 4) { /* box_sizes */
+        float size;
+        if (ai < hw * 3)
+            size = scaled_anchors[fi / anchor_volumn * 2] * min(max(f, 50), 1e-9)
+                * ratio_w;
+        else
+            size = scaled_anchors[fi / anchor_volumn * 2 - 1] *
+                min(max(f, 50), 1e-9) * ratio_h;
+        boxes_sizes[ai % (hw * 2) + hw * 2 * fi / anchor_volumn] = size;
+
+    }
+
+    if (ai >= hw * 4 && ai < hw * 5)   /* conf */
+        confs[ai % hw + hw * fi / anchor_volumn] = sigmoided;
+    if (ai >= hw * 5)                  /* probs */
+        probs[ai - hw * 5 + hw * class_num * fi / anchor_volumn] = sigmoided;
+
+}
+
+tl_tensor *tl_tensor_detection_yolov3_cuda(const tl_tensor *feature,
+                                           const tl_tensor *anchors,
+                                           tl_tensor *boxes, tl_tensor *confs,
+                                           tl_tensor *probs)
+{
+    assert(feature && tl_is_device_mem(feature->data));
+    assert(anchors && tl_is_device_mem(anchors->data));
+    assert(feature->dtype == TL_FLOAT);
+    assert(anchors->dtype == TL_FLOAT);
 }
 
 template<typename T>

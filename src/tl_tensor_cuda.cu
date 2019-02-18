@@ -2820,6 +2820,11 @@ tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
     return dst;
 }
 
+tl_tensor *tl_tensor_detection_yolov3_cuda(const tl_tensor *feature, const tl_tensor *anchors,
+                                           )
+{
+}
+
 template<typename T>
 static void thrust_sort(T *data, int len, tl_sort_dir dir)
 {

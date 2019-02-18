@@ -763,6 +763,26 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
+tl_tensor *tl_tensor_lrelu(const tl_tensor *src, tl_tensor *dst, float negslope)
+{
+    assert(src && src->data);
+    if (dst) {
+        assert(dst && dst->data);
+        assert(tl_tensor_issameshape(dst, src));
+        assert(dst->dtype == src->dtype);
+    } else {
+        dst = tl_tensor_zeros(src->ndim, src->dims, src->dtype);
+    }
+
+    tl_dtype dtype = src->dtype;
+    size_t dsize = tl_size_of(dtype);
+    for (int i = 0; i < src->len; i++)
+        tl_lrelu(tl_padd(dst->data, i, dsize),
+                 tl_padd(src->data, i, dsize), negslope, dtype);
+
+    return dst;
+}
+
 tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
                              tl_dtype dtype_d)
 {

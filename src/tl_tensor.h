@@ -121,6 +121,7 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
                                   tl_dtype dtype_d);
 tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
                                     const int *axes);
+tl_tensor *tl_tensor_lrelu(const tl_tensor *src, tl_tensor *dst, float negslope);
 tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
                                  const int *new_dims, tl_resize_type rtype);
 tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,

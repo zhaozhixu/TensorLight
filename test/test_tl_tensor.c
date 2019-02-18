@@ -621,6 +621,29 @@ START_TEST(test_tl_tensor_transpose)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_lrelu)
+{
+    float data_f[5] = {-1, 0, 1, 255, -256};
+    float data_lrelu_f[5] = {-0.1, 0, 1, 255, -25.6};
+    float negslope = 0.1;
+    tl_tensor *t1, *t2;
+
+    t1 = tl_tensor_create(data_f, 1, (int[]){5}, TL_FLOAT);
+    t2 = tl_tensor_lrelu(t1, NULL, negslope);
+    ck_assert(tl_tensor_issameshape(t1, t2));
+    ck_assert(t1->dtype == t2->dtype);
+    ck_assert_array_float_eq_tol((float *)t2->data, data_lrelu_f, t2->len, 0);
+    tl_tensor_free_data_too(t2);
+
+    t2 = tl_tensor_zeros(1, (int[]){5}, TL_FLOAT);
+    t2 = tl_tensor_lrelu(t1, t2, negslope);
+    ck_assert_array_float_eq_tol((float *)t2->data, data_lrelu_f, t2->len, 0);
+    tl_tensor_free_data_too(t2);
+
+    tl_tensor_free(t1);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_convert)
 {
      float data_f[5] = {-1, 0, 1, 255, 256};
@@ -704,6 +727,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_elew);
      tcase_add_test(tc_tensor, test_tl_tensor_elew_param);
      tcase_add_test(tc_tensor, test_tl_tensor_transpose);
+     tcase_add_test(tc_tensor, test_tl_tensor_lrelu);
      tcase_add_test(tc_tensor, test_tl_tensor_convert);
      tcase_add_test(tc_tensor, test_tl_tensor_resize);
      /* end of adding tests */

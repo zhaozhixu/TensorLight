@@ -108,6 +108,7 @@ static inline ptrdiff_t tl_psub(void *p1, void *p2, size_t dsize)
 {
     return (((uint8_t *)(p1) - (uint8_t *)(p2)) / ((ptrdiff_t)dsize));
 }
+
 static inline void *tl_padd(void *p, ptrdiff_t offset, size_t dsize)
 {
     return ((uint8_t *)(p) + (offset) * (dsize));
@@ -137,6 +138,7 @@ void tl_dtype_max(tl_dtype dtype, void *ret);
 void tl_dtype_min(tl_dtype dtype, void *ret);
 double tl_dtype_max_double(tl_dtype dtype);
 double tl_dtype_min_double(tl_dtype dtype);
+void tl_lrelu(void *pd, const void *ps, float negslope, tl_dtype dtype);
 void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s);
 
 int tl_fprintf(FILE *fp, const char *fmt,void *p, tl_dtype dtype);

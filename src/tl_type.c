@@ -962,6 +962,52 @@ tl_elew_func tl_elew_getfunc(tl_dtype dtype)
     return elew_func[dtype];
 }
 
+/* tl_lrelu */
+#define LRELU(pd, ps, ns, type)                         \
+    do {                                                \
+        type _s = *(type *)(ps);                        \
+        *(type *)(pd) = _s >= 0 ? _s : _s * (type)(ns); \
+    } while (0)
+
+void tl_lrelu(void *pd, const void *ps, float negslope, tl_dtype dtype)
+{
+    tl_check_dtype(dtype);
+
+    switch (dtype) {
+    case TL_DOUBLE:
+        LRELU(pd, ps, negslope, double);
+        break;
+    case TL_FLOAT:
+        LRELU(pd, ps, negslope, float);
+        break;
+    case TL_INT32:
+        LRELU(pd, ps, negslope, int32_t);
+        break;
+    case TL_INT16:
+        LRELU(pd, ps, negslope, int16_t);
+        break;
+    case TL_INT8:
+        LRELU(pd, ps, negslope, int8_t);
+        break;
+    case TL_UINT32:
+        LRELU(pd, ps, negslope, uint32_t);
+        break;
+    case TL_UINT16:
+        LRELU(pd, ps, negslope, uint16_t);
+        break;
+    case TL_UINT8:
+        LRELU(pd, ps, negslope, uint8_t);
+        break;
+    case TL_BOOL:
+        LRELU(pd, ps, negslope, tl_bool_t);
+        break;
+    default:
+        assert(0 && "unsupported tl_dtype");
+        break;
+    }
+}
+#undef LRELU
+
 /* tl_convert */
 void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
 {

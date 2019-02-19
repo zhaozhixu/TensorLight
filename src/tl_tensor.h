@@ -138,6 +138,12 @@ void tl_tensor_sort1d_by_key_cuda(tl_tensor *key, tl_tensor *val,
                                   tl_sort_dir dir);
 tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
                                  tl_tensor *dst, int stride, int len);
+void tl_tensor_detection_yolov3_cuda(const tl_tensor *feature,
+                                     const tl_tensor *anchors,
+                                     tl_tensor *box_centers,
+                                     tl_tensor *box_sizes,
+                                     tl_tensor *confs, tl_tensor *probs,
+                                     int img_h, int img_w);
 
 #endif  /* TL_CUDA */
 

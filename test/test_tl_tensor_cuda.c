@@ -856,6 +856,73 @@ START_TEST(test_tl_tensor_transform_bboxSQD_cuda)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_detection_yolov3_cuda)
+{
+    tl_tensor *feature;
+    tl_tensor *anchors;
+    tl_tensor *box_centers;
+    tl_tensor *box_sizes;
+    tl_tensor *boxes;
+    tl_tensor *confs;
+    tl_tensor *probs;
+    tl_tensor *feature_d;
+    tl_tensor *anchors_d;
+    tl_tensor *box_centers_d;
+    tl_tensor *box_sizes_d;
+    tl_tensor *boxes_d;
+    tl_tensor *confs_d;
+    tl_tensor *probs_d;
+    tl_tensor *box_centers_true;
+    tl_tensor *box_sizes_true;
+    tl_tensor *boxes_true;
+    tl_tensor *confs_true;
+    tl_tensor *probs_true;
+
+    int class_num = 3;
+    int anchor_num = 3;
+    int H = 5;
+    int W = 5;
+    int C = anchor_num * (5 + class_num);
+    int img_h = H * 32;
+    int img_w = W * 32;
+    int count;
+
+    feature = tl_tensor_zeros(4, ARR(int, 1, C, H, W), TL_FLOAT);
+    anchors = tl_tensor_zeros(2, ARR(int, anchor_num, 2), TL_FLOAT);
+    count = tl_read_floats("feature.txt", feature->len, feature->data);
+    ck_assert_int_eq(count, feature->len);
+    count = tl_read_floats("anchors.txt", anchors->len, anchors->data);
+    ck_assert_int_eq(count, anchors->len);
+    tl_tensor_print(feature, "%f");
+    tl_tensor_print(anchors, "%f");
+
+    feature_d = tl_tensor_clone_h2d(feature);
+    anchors_d = tl_tensor_clone_h2d(anchors);
+    box_centers_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W), TL_FLOAT);
+    box_sizes_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W), TL_FLOAT);
+    confs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 1, H, W), TL_FLOAT);
+    probs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, class_num, H, W), TL_FLOAT);
+
+    tl_tensor_detection_yolov3_cuda(feature_d, anchors_d, box_centers_d, box_sizes_d,
+                                    confs_d, probs_d, img_h, img_w);
+
+    box_centers = tl_tensor_clone_d2h(box_centers_d);
+    box_sizes = tl_tensor_clone_d2h(box_sizes_d);
+    confs = tl_tensor_clone_d2h(confs_d);
+    probs = tl_tensor_clone_d2h(probs_d);
+
+    confs_true = tl_tensor_zeros(confs->ndim, confs->dims, confs->dtype);
+    probs_true = tl_tensor_zeros(probs->ndim, probs->dims, probs->dtype);
+    tl_read_floats("confs.txt", confs_true->len, confs_true->data);
+    ck_assert_int_eq(count, confs->len);
+    tl_read_floats("probs.txt", probs_true->len, probs_true->data);
+    ck_assert_int_eq(count, probs->len);
+
+    tl_assert_tensor_eq_tol(confs_true, confs, 1e-2);
+    tl_assert_tensor_eq_tol(probs_true, probs, 1e-2);
+}
+END_TEST
+
 static void check_sorted_data(int *src, int *res, int N, tl_sort_dir dir)
 {
     int *src_hist;
@@ -1049,6 +1116,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_lrelu_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transform_bboxSQD_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_detection_yolov3_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_by_key_cuda);

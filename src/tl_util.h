@@ -41,6 +41,7 @@ void *tl_clone(const void *src, size_t size);
 void tl_copy(const void *src, void *dst, size_t size);
 void *tl_repeat(void *data, size_t size, int times);
 int tl_compute_length(int ndim, const int *dims);
+int tl_read_floats(const char *filename, int num, float *buf);
 void tl_warn_msg(const char *fmt, ...);
 void tl_warn_cont(int error, const char *fmt, ...);
 void tl_warn_ret(const char *fmt, ...);

@@ -21,6 +21,7 @@
  */
 
 #include "test_tensorlight.h"
+#include "../src/tl_check.h"
 #include "../src/tl_util.h"
 
 static int *data;
@@ -81,6 +82,18 @@ START_TEST(test_tl_repeat)
      tl_free(data_repeat);
 }
 END_TEST
+
+START_TEST(test_tl_read_floats)
+{
+    int count;
+    float data[3];
+    float data_true[3] = {1.2, 3.4, 5.6};
+
+    count = tl_read_floats("test_floats.txt", 3, data);
+    ck_assert_int_eq(count, 3);
+    ck_assert_array_float_eq_tol(data, data_true, 3, 0);
+}
+END_TEST
 /* end of tests */
 
 Suite *make_util_suite(void)
@@ -96,6 +109,7 @@ Suite *make_util_suite(void)
      tcase_add_test(tc_util, test_tl_memcpy);
      tcase_add_test(tc_util, test_tl_clone);
      tcase_add_test(tc_util, test_tl_repeat);
+     tcase_add_test(tc_util, test_tl_read_floats);
      /* end of adding tests */
 
      suite_add_tcase(s, tc_util);

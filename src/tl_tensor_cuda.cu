@@ -2823,9 +2823,9 @@ tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
 #define MAX_ANCHOR_NUM 64
 __global__ void detection_yolov3_kernel(const float *feature,
                                         const float *anchors,
-                                        float *boxes_centers,
-                                        float *boxes_sizes, float *confs,
-                                        float *probs, int grid_h, int grid_w,
+                                        float *box_centers, float *box_sizes,
+                                        float *confs, float *probs,
+                                        int grid_h, int grid_w,
                                         int img_h, int img_w,
                                         int class_num, int anchor_num,
                                         int block_size, int feature_len)
@@ -2860,18 +2860,17 @@ __global__ void detection_yolov3_kernel(const float *feature,
             center = (sigmoided + ai % grid_w) * ratio_w;
         else                    /* y */
             center = (sigmoided + ai / grid_w) * ratio_h;
-        boxes_centers[ai + hw * 2 * fi / anchor_volumn] = center;
+        box_centers[ai + hw * 2 * fi / anchor_volumn] = center;
     }
     if (ai >= hw * 2 && ai < hw * 4) { /* box_sizes */
         float size;
-        if (ai < hw * 3)
-            size = scaled_anchors[fi / anchor_volumn * 2] * min(max(f, 50), 1e-9)
-                * ratio_w;
-        else
-            size = scaled_anchors[fi / anchor_volumn * 2 - 1] *
-                min(max(f, 50), 1e-9) * ratio_h;
-        boxes_sizes[ai % (hw * 2) + hw * 2 * fi / anchor_volumn] = size;
-
+        if (ai < hw * 3)        /* w */
+            size = scaled_anchors[fi / anchor_volumn * 2]
+                * min(max(f, 50), 1e-9) * ratio_w;
+        else                    /* h */
+            size = scaled_anchors[fi / anchor_volumn * 2 - 1]
+                * min(max(f, 50), 1e-9) * ratio_h;
+        box_sizes[ai % (hw * 2) + hw * 2 * fi / anchor_volumn] = size;
     }
 
     if (ai >= hw * 4 && ai < hw * 5)   /* conf */
@@ -2881,15 +2880,102 @@ __global__ void detection_yolov3_kernel(const float *feature,
 
 }
 
-tl_tensor *tl_tensor_detection_yolov3_cuda(const tl_tensor *feature,
-                                           const tl_tensor *anchors,
-                                           tl_tensor *boxes, tl_tensor *confs,
-                                           tl_tensor *probs)
+// feature in [N, C, H, W] order, where N = 1, C = anchor_num * (5 + class_num)
+// anchors in [anchor_num, 2] order, where the 2nd dim is (w, h)
+// box_centers in [N, anchor_num, 2, H, W] order, the 3rd dim is (x, y)
+// box_sizes in [N, anchor_num, 2, H, W] order, the 3rd dim is (w, h)
+// confs in [N, anchor_num, 1, H, W] order
+// probs in [N, anchor_num, class_num, H, W] order
+void tl_tensor_detection_yolov3_cuda(const tl_tensor *feature,
+                                     const tl_tensor *anchors,
+                                     tl_tensor *box_centers,
+                                     tl_tensor *box_sizes,
+                                     tl_tensor *confs, tl_tensor *probs,
+                                     int img_h, int img_w)
 {
     assert(feature && tl_is_device_mem(feature->data));
-    assert(anchors && tl_is_device_mem(anchors->data));
     assert(feature->dtype == TL_FLOAT);
+    assert(feature->ndim == 4);
+    assert(feature->dims[0] == 1);
+    assert(anchors && tl_is_device_mem(anchors->data));
     assert(anchors->dtype == TL_FLOAT);
+    assert(anchors->ndim == 2);
+
+    int anchor_num = anchors->dims[0];
+    int class_num = feature->dims[1] / anchor_num - 5;
+
+    if (box_centers) {
+        assert(tl_is_device_mem(box_centers->data));
+        assert(box_centers->dtype == TL_FLOAT);
+        assert(box_centers->ndim == 5);
+        assert(box_centers->dims[0] == 1);
+        assert(box_centers->dims[1] == anchors->dims[0]);
+        assert(box_centers->dims[2] == 2);
+        assert(box_centers->dims[3] == feature->dims[2]);
+        assert(box_centers->dims[4] == feature->dims[3]);
+    } else {
+        int dims[5] = {1, anchors->dims[0], 2,
+                       feature->dims[2], feature->dims[3]};
+        box_centers = tl_tensor_zeros_cuda(5, dims, TL_FLOAT);
+    }
+
+    if (box_sizes) {
+        assert(tl_is_device_mem(box_sizes->data));
+        assert(box_sizes->dtype == TL_FLOAT);
+        assert(box_sizes->ndim == 5);
+        assert(box_sizes->dims[0] == 1);
+        assert(box_sizes->dims[1] == anchors->dims[0]);
+        assert(box_sizes->dims[2] == 2);
+        assert(box_sizes->dims[3] == feature->dims[2]);
+        assert(box_sizes->dims[4] == feature->dims[3]);
+    } else {
+        int dims[5] = {1, anchors->dims[0], 2,
+                       feature->dims[2], feature->dims[3]};
+        box_sizes = tl_tensor_zeros_cuda(5, dims, TL_FLOAT);
+    }
+
+    if (confs) {
+        assert(tl_is_device_mem(confs->data));
+        assert(confs->dtype == TL_FLOAT);
+        assert(confs->ndim == 5);
+        assert(confs->dims[0] == 1);
+        assert(confs->dims[1] == anchors->dims[0]);
+        assert(confs->dims[2] == 1);
+        assert(confs->dims[3] == feature->dims[2]);
+        assert(confs->dims[4] == feature->dims[3]);
+    } else {
+        int dims[5] = {1, anchors->dims[0], 1,
+                       feature->dims[2], feature->dims[3]};
+        confs = tl_tensor_zeros_cuda(5, dims, TL_FLOAT);
+    }
+
+    if (probs) {
+        assert(tl_is_device_mem(confs->data));
+        assert(confs->dtype == TL_FLOAT);
+        assert(confs->ndim == 5);
+        assert(confs->dims[0] == 1);
+        assert(confs->dims[1] == anchors->dims[0]);
+        assert(confs->dims[2] == class_num);
+        assert(confs->dims[3] == feature->dims[2]);
+        assert(confs->dims[4] == feature->dims[3]);
+    } else {
+        int dims[5] = {1, anchors->dims[0], class_num,
+                       feature->dims[2], feature->dims[3]};
+        confs = tl_tensor_zeros_cuda(5, dims, TL_FLOAT);
+    }
+
+    int block_num = BLOCK_NUM(BLOCK_SIZE, feature->len);
+    detection_yolov3_kernel<<<block_num, BLOCK_SIZE>>>((float *)feature->data,
+                                                       (float *)anchors->data,
+                                                       (float *)box_centers->data,
+                                                       (float *)box_sizes->data,
+                                                       (float *)confs->data,
+                                                       (float *)probs->data,
+                                                       feature->dims[2],
+                                                       feature->dims[3], img_h,
+                                                       img_w, class_num,
+                                                       anchor_num, BLOCK_SIZE,
+                                                       feature->len);
 }
 
 template<typename T>

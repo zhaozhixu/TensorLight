@@ -35,7 +35,7 @@ void *tl_alloc(size_t size)
      assert(size > 0);
      p = malloc(size);
      if (p == NULL)
-          tl_err_dump("malloc(%luz) failed", size);
+          tl_err_dump("malloc(%lu) failed", size);
 
      return p;
 }
@@ -84,6 +84,21 @@ int tl_compute_length(int ndim, const int *dims)
           len *= dims[i];
      }
      return len;
+}
+
+int tl_read_floats(const char *filename, int num, float *buf)
+{
+    FILE *fp;
+    int count = 0;
+
+    if (!(fp = fopen(filename, "r")))
+        tl_err_dump("fopen(%s) failed", filename);
+
+    for (int i = 0; i < num; i++) {
+        count += fscanf(fp, "%f", buf++);
+    }
+    fclose(fp);
+    return count;
 }
 
 /* The following functions are taken from APUE, the 3rd version. */

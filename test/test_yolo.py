@@ -115,6 +115,11 @@ img_w = W * 32
 feature_map = tf.reshape(tf.range(6.00, delta=0.01), [1, H, W, C])
 boxes, confs, probs = predict(feature_map, anchors, np.array([img_h, img_w]), class_num)
 
+feature_map = tf.transpose(feature_map, [0, 3, 1, 2])
+boxes = tf.transpose(tf.reshape(boxes, [1, H, W, anchor_num, 4]), [0, 3, 4, 1, 2])
+confs = tf.transpose(tf.reshape(confs, [1, H, W, anchor_num, 1]), [0, 3, 4, 1, 2])
+probs = tf.transpose(tf.reshape(probs, [1, H, W, anchor_num, class_num]), [0, 3, 4, 1, 2])
+
 np.set_printoptions(threshold=sys.maxsize)
 with tf.Session() as sess:
     with open("anchors.txt", 'w') as f:

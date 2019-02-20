@@ -913,15 +913,26 @@ START_TEST(test_tl_tensor_detection_yolov3_cuda)
     confs = tl_tensor_clone_d2h(confs_d);
     probs = tl_tensor_clone_d2h(probs_d);
 
+    /* FILE *fp; */
+    /* fp = fopen("confs_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, confs, "%.8f"); */
+    /* fclose(fp); */
+    /* fp = fopen("probs_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, probs, "%.8f"); */
+    /* fclose(fp); */
+    /* fp = fopen("feature_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, feature, "%.8f"); */
+    /* fclose(fp); */
+
     confs_true = tl_tensor_zeros(confs->ndim, confs->dims, confs->dtype);
     probs_true = tl_tensor_zeros(probs->ndim, probs->dims, probs->dtype);
-    tl_read_floats("confs.txt", confs_true->len, confs_true->data);
+    count = tl_read_floats("confs.txt", confs_true->len, confs_true->data);
     ck_assert_int_eq(count, confs->len);
-    tl_read_floats("probs.txt", probs_true->len, probs_true->data);
+    count = tl_read_floats("probs.txt", probs_true->len, probs_true->data);
     ck_assert_int_eq(count, probs->len);
 
-    tl_assert_tensor_eq_tol(confs_true, confs, 1e-2);
-    tl_assert_tensor_eq_tol(probs_true, probs, 1e-2);
+    tl_assert_tensor_eq_tol(confs_true, confs, 1e-6);
+    tl_assert_tensor_eq_tol(probs_true, probs, 1e-6);
 }
 END_TEST
 

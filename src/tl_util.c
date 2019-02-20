@@ -95,7 +95,7 @@ int tl_read_floats(const char *filename, int num, float *buf)
         tl_err_dump("fopen(%s) failed", filename);
 
     for (int i = 0; i < num; i++) {
-        count += fscanf(fp, "%f", buf++);
+        count += fscanf(fp, "%*[^0-9eE.+-]%f", buf++);
     }
     fclose(fp);
     return count;

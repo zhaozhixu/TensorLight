@@ -893,18 +893,20 @@ START_TEST(test_tl_tensor_detection_yolov3_cuda)
     ck_assert_int_eq(count, feature->len);
     count = tl_read_floats("anchors.txt", anchors->len, anchors->data);
     ck_assert_int_eq(count, anchors->len);
-    tl_tensor_print(feature, "%f");
-    tl_tensor_print(anchors, "%f");
 
     feature_d = tl_tensor_clone_h2d(feature);
     anchors_d = tl_tensor_clone_h2d(anchors);
-    box_centers_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W), TL_FLOAT);
-    box_sizes_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W), TL_FLOAT);
-    confs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 1, H, W), TL_FLOAT);
-    probs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, class_num, H, W), TL_FLOAT);
+    box_centers_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W),
+                                         TL_FLOAT);
+    box_sizes_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W),
+                                       TL_FLOAT);
+    confs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 1, H, W),
+                                   TL_FLOAT);
+    probs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, class_num, H, W),
+                                   TL_FLOAT);
 
-    tl_tensor_detection_yolov3_cuda(feature_d, anchors_d, box_centers_d, box_sizes_d,
-                                    confs_d, probs_d, img_h, img_w);
+    tl_tensor_detection_yolov3_cuda(feature_d, anchors_d, box_centers_d,
+                                    box_sizes_d, confs_d, probs_d, img_h, img_w);
 
     box_centers = tl_tensor_clone_d2h(box_centers_d);
     box_sizes = tl_tensor_clone_d2h(box_sizes_d);
@@ -1093,7 +1095,7 @@ Suite *make_tensor_cuda_suite(void)
     s = suite_create("tensor_cuda");
     tc_tensor_cuda = tcase_create("tensor_cuda");
     tcase_add_checked_fixture(tc_tensor_cuda, setup, teardown);
-    tcase_set_timeout(tc_tensor_cuda, 30);
+    tcase_set_timeout(tc_tensor_cuda, 3000);
 
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_zeros_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_free_data_too_cuda);

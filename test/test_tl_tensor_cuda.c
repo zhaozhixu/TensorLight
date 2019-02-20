@@ -856,7 +856,7 @@ START_TEST(test_tl_tensor_transform_bboxSQD_cuda)
 }
 END_TEST
 
-START_TEST(test_tl_tensor_detection_yolov3_cuda)
+START_TEST(test_tl_tensor_detect_yolov3_cuda)
 {
     tl_tensor *feature;
     tl_tensor *anchors;
@@ -900,39 +900,65 @@ START_TEST(test_tl_tensor_detection_yolov3_cuda)
                                          TL_FLOAT);
     box_sizes_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 2, H, W),
                                        TL_FLOAT);
+    boxes_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 4, H, W),
+                                   TL_FLOAT);
     confs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, 1, H, W),
                                    TL_FLOAT);
     probs_d = tl_tensor_zeros_cuda(5, ARR(int, 1, anchor_num, class_num, H, W),
                                    TL_FLOAT);
 
-    tl_tensor_detection_yolov3_cuda(feature_d, anchors_d, box_centers_d,
-                                    box_sizes_d, confs_d, probs_d, img_h, img_w);
+    tl_tensor_detect_yolov3_cuda(feature_d, anchors_d, box_centers_d,
+                                 box_sizes_d, boxes_d, confs_d, probs_d,
+                                 img_h, img_w);
 
     box_centers = tl_tensor_clone_d2h(box_centers_d);
     box_sizes = tl_tensor_clone_d2h(box_sizes_d);
+    boxes = tl_tensor_clone_d2h(boxes_d);
     confs = tl_tensor_clone_d2h(confs_d);
     probs = tl_tensor_clone_d2h(probs_d);
 
-    /* FILE *fp; */
-    /* fp = fopen("confs_out.txt", "w"); */
-    /* tl_tensor_fprint(fp, confs, "%.8f"); */
-    /* fclose(fp); */
-    /* fp = fopen("probs_out.txt", "w"); */
-    /* tl_tensor_fprint(fp, probs, "%.8f"); */
-    /* fclose(fp); */
-    /* fp = fopen("feature_out.txt", "w"); */
-    /* tl_tensor_fprint(fp, feature, "%.8f"); */
-    /* fclose(fp); */
+    FILE *fp;
+    fp = fopen("confs_out.txt", "w");
+    tl_tensor_fprint(fp, confs, "%.8f");
+    fclose(fp);
+    fp = fopen("probs_out.txt", "w");
+    tl_tensor_fprint(fp, probs, "%.8f");
+    fclose(fp);
+    fp = fopen("boxes_out.txt", "w");
+    tl_tensor_fprint(fp, boxes, "%.8f");
+    fclose(fp);
+    fp = fopen("box_centers_out.txt", "w");
+    tl_tensor_fprint(fp, box_centers, "%.8f");
+    fclose(fp);
+    fp = fopen("box_sizes_out.txt", "w");
+    tl_tensor_fprint(fp, box_sizes, "%.8f");
+    fclose(fp);
 
     confs_true = tl_tensor_zeros(confs->ndim, confs->dims, confs->dtype);
     probs_true = tl_tensor_zeros(probs->ndim, probs->dims, probs->dtype);
+    boxes_true = tl_tensor_zeros(boxes->ndim, boxes->dims, boxes->dtype);
+    box_centers_true = tl_tensor_zeros(box_centers->ndim, box_centers->dims,
+                                       box_centers->dtype);
+    box_sizes_true = tl_tensor_zeros(box_sizes->ndim, box_sizes->dims,
+                                       box_sizes->dtype);
     count = tl_read_floats("confs.txt", confs_true->len, confs_true->data);
     ck_assert_int_eq(count, confs->len);
     count = tl_read_floats("probs.txt", probs_true->len, probs_true->data);
     ck_assert_int_eq(count, probs->len);
+    count = tl_read_floats("boxes.txt", boxes_true->len, boxes_true->data);
+    ck_assert_int_eq(count, boxes->len);
+    count = tl_read_floats("box_centers.txt", box_centers_true->len,
+                           box_centers_true->data);
+    ck_assert_int_eq(count, box_centers->len);
+    count = tl_read_floats("box_sizes.txt", box_sizes_true->len,
+                           box_sizes_true->data);
+    ck_assert_int_eq(count, box_sizes->len);
 
-    tl_assert_tensor_eq_tol(confs_true, confs, 1e-6);
-    tl_assert_tensor_eq_tol(probs_true, probs, 1e-6);
+    tl_assert_tensor_eq_tol(confs_true, confs, 1e-2);
+    tl_assert_tensor_eq_tol(probs_true, probs, 1e-2);
+    tl_assert_tensor_eq_tol(box_centers_true, box_centers, 1e-2);
+    tl_assert_tensor_eq_tol(box_sizes_true, box_sizes, 1e-2);
+    tl_assert_tensor_eq_tol(boxes_true, boxes, 1e-2);
 }
 END_TEST
 
@@ -1129,7 +1155,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_lrelu_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transform_bboxSQD_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_detection_yolov3_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_detect_yolov3_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_by_key_cuda);

@@ -56,11 +56,13 @@ def reorg_layer(feature_map, anchors, img_size, class_num):
     # boxes: [N, 13, 13, 3, 4], rescaled to the original image scale
     # conf_logits: [N, 13, 13, 3, 1]
     # prob_logits: [N, 13, 13, 3, class_num]
-    return x_y_offset, boxes, conf_logits, prob_logits
+    return x_y_offset, box_centers, box_sizes, boxes, conf_logits, prob_logits
 
 def reshape(result, class_num):
-    x_y_offset, boxes, conf_logits, prob_logits = result
+    x_y_offset, box_centers, box_sizes, boxes, conf_logits, prob_logits = result
     grid_size = x_y_offset.shape.as_list()[:2]
+    box_centers = tf.reshape(box_centers, [-1, grid_size[0] * grid_size[1] * 3, 2])
+    box_sizes = tf.reshape(box_sizes, [-1, grid_size[0] * grid_size[1] * 3, 2])
     boxes = tf.reshape(boxes, [-1, grid_size[0] * grid_size[1] * 3, 4])
     conf_logits = tf.reshape(conf_logits, [-1, grid_size[0] * grid_size[1] * 3, 1])
     prob_logits = tf.reshape(prob_logits, [-1, grid_size[0] * grid_size[1] * 3, class_num])
@@ -68,7 +70,7 @@ def reshape(result, class_num):
     # boxes: [N, 13*13*3, 4]
     # conf_logits: [N, 13*13*3, 1]
     # prob_logits: [N, 13*13*3, class_num]
-    return boxes, conf_logits, prob_logits
+    return box_centers, box_sizes, boxes, conf_logits, prob_logits
 
 def predict(feature_map, anchors, img_size, class_num):
     '''
@@ -77,16 +79,22 @@ def predict(feature_map, anchors, img_size, class_num):
     '''
     reorg_results = reorg_layer(feature_map, anchors, img_size, class_num)
 
-    boxes_list, confs_list, probs_list = [], [], []
-    boxes, conf_logits, prob_logits = reshape(reorg_results, class_num)
+    box_centers_list, box_sizes_list, boxes_list, confs_list, probs_list = [], [], [], [], []
+    box_centers, box_sizes, boxes, conf_logits, prob_logits = reshape(reorg_results, class_num)
     confs = tf.sigmoid(conf_logits)
     probs = tf.sigmoid(prob_logits)
+    box_centers_list.append(box_centers)
+    box_sizes_list.append(box_sizes)
     boxes_list.append(boxes)
     confs_list.append(confs)
     probs_list.append(probs)
 
     # collect results on three scales
     # take 416*416 input image for example:
+    # shape: [N, (13*13+26*26+52*52)*3, 2]
+    box_centers = tf.concat(box_centers_list, axis=1)
+    # shape: [N, (13*13+26*26+52*52)*3, 2]
+    box_sizes = tf.concat(box_sizes_list, axis=1)
     # shape: [N, (13*13+26*26+52*52)*3, 4]
     boxes = tf.concat(boxes_list, axis=1)
     # shape: [N, (13*13+26*26+52*52)*3, 1]
@@ -94,15 +102,15 @@ def predict(feature_map, anchors, img_size, class_num):
     # shape: [N, (13*13+26*26+52*52)*3, class_num]
     probs = tf.concat(probs_list, axis=1)
 
-    # center_x, center_y, width, height = tf.split(boxes, [1, 1, 1, 1], axis=-1)
-    # x_min = center_x - width / 2
-    # y_min = center_y - height / 2
-    # x_max = center_x + width / 2
-    # y_max = center_y + height / 2
+    center_x, center_y, width, height = tf.split(boxes, [1, 1, 1, 1], axis=-1)
+    x_min = center_x - width / 2
+    y_min = center_y - height / 2
+    x_max = center_x + width / 2
+    y_max = center_y + height / 2
 
-    # boxes = tf.concat([x_min, y_min, x_max, y_max], axis=-1)
+    boxes = tf.concat([x_min, y_min, x_max, y_max], axis=-1)
 
-    return boxes, confs, probs
+    return box_centers, box_sizes, boxes, confs, probs
 
 anchors = np.array([[11, 22], [33, 44], [55, 66]])
 class_num = 3
@@ -113,9 +121,11 @@ C = anchor_num * (5 + class_num)
 img_h = H * 32
 img_w = W * 32
 feature_map = tf.reshape(tf.range(6.00, delta=0.01), [1, H, W, C])
-boxes, confs, probs = predict(feature_map, anchors, np.array([img_h, img_w]), class_num)
+box_centers, box_sizes, boxes, confs, probs = predict(feature_map, anchors, np.array([img_h, img_w]), class_num)
 
 feature_map = tf.transpose(feature_map, [0, 3, 1, 2])
+box_centers = tf.transpose(tf.reshape(box_centers, [1, H, W, anchor_num, 2]), [0, 3, 4, 1, 2])
+box_sizes = tf.transpose(tf.reshape(box_sizes, [1, H, W, anchor_num, 2]), [0, 3, 4, 1, 2])
 boxes = tf.transpose(tf.reshape(boxes, [1, H, W, anchor_num, 4]), [0, 3, 4, 1, 2])
 confs = tf.transpose(tf.reshape(confs, [1, H, W, anchor_num, 1]), [0, 3, 4, 1, 2])
 probs = tf.transpose(tf.reshape(probs, [1, H, W, anchor_num, class_num]), [0, 3, 4, 1, 2])
@@ -126,6 +136,10 @@ with tf.Session() as sess:
         f.write(str(anchors))
     with open("feature.txt", 'w') as f:
         f.write(str(feature_map.eval(session=sess)))
+    with open("box_centers.txt", 'w') as f:
+        f.write(str(box_centers.eval(session=sess)))
+    with open("box_sizes.txt", 'w') as f:
+        f.write(str(box_sizes.eval(session=sess)))
     with open("boxes.txt", 'w') as f:
         f.write(str(boxes.eval(session=sess)))
     with open("confs.txt", 'w') as f:

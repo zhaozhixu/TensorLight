@@ -89,7 +89,7 @@ START_TEST(test_tl_read_floats)
     float data[3];
     float data_true[3] = {1.2, 3.4, 5.6};
 
-    count = tl_read_floats("test_floats.txt", 3, data);
+    count = tl_read_floats("data/test_floats.txt", 3, data);
     ck_assert_int_eq(count, 3);
     ck_assert_array_float_eq_tol(data, data_true, 3, 0);
 }

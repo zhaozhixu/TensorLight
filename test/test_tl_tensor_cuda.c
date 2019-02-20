@@ -889,9 +889,9 @@ START_TEST(test_tl_tensor_detect_yolov3_cuda)
 
     feature = tl_tensor_zeros(4, ARR(int, 1, C, H, W), TL_FLOAT);
     anchors = tl_tensor_zeros(2, ARR(int, anchor_num, 2), TL_FLOAT);
-    count = tl_read_floats("feature.txt", feature->len, feature->data);
+    count = tl_read_floats("data/feature.txt", feature->len, feature->data);
     ck_assert_int_eq(count, feature->len);
-    count = tl_read_floats("anchors.txt", anchors->len, anchors->data);
+    count = tl_read_floats("data/anchors.txt", anchors->len, anchors->data);
     ck_assert_int_eq(count, anchors->len);
 
     feature_d = tl_tensor_clone_h2d(feature);
@@ -917,22 +917,22 @@ START_TEST(test_tl_tensor_detect_yolov3_cuda)
     confs = tl_tensor_clone_d2h(confs_d);
     probs = tl_tensor_clone_d2h(probs_d);
 
-    FILE *fp;
-    fp = fopen("confs_out.txt", "w");
-    tl_tensor_fprint(fp, confs, "%.8f");
-    fclose(fp);
-    fp = fopen("probs_out.txt", "w");
-    tl_tensor_fprint(fp, probs, "%.8f");
-    fclose(fp);
-    fp = fopen("boxes_out.txt", "w");
-    tl_tensor_fprint(fp, boxes, "%.8f");
-    fclose(fp);
-    fp = fopen("box_centers_out.txt", "w");
-    tl_tensor_fprint(fp, box_centers, "%.8f");
-    fclose(fp);
-    fp = fopen("box_sizes_out.txt", "w");
-    tl_tensor_fprint(fp, box_sizes, "%.8f");
-    fclose(fp);
+    /* FILE *fp; */
+    /* fp = fopen("confs_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, confs, "%.8f"); */
+    /* fclose(fp); */
+    /* fp = fopen("probs_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, probs, "%.8f"); */
+    /* fclose(fp); */
+    /* fp = fopen("boxes_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, boxes, "%.8f"); */
+    /* fclose(fp); */
+    /* fp = fopen("box_centers_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, box_centers, "%.8f"); */
+    /* fclose(fp); */
+    /* fp = fopen("box_sizes_out.txt", "w"); */
+    /* tl_tensor_fprint(fp, box_sizes, "%.8f"); */
+    /* fclose(fp); */
 
     confs_true = tl_tensor_zeros(confs->ndim, confs->dims, confs->dtype);
     probs_true = tl_tensor_zeros(probs->ndim, probs->dims, probs->dtype);
@@ -941,16 +941,16 @@ START_TEST(test_tl_tensor_detect_yolov3_cuda)
                                        box_centers->dtype);
     box_sizes_true = tl_tensor_zeros(box_sizes->ndim, box_sizes->dims,
                                        box_sizes->dtype);
-    count = tl_read_floats("confs.txt", confs_true->len, confs_true->data);
+    count = tl_read_floats("data/confs.txt", confs_true->len, confs_true->data);
     ck_assert_int_eq(count, confs->len);
-    count = tl_read_floats("probs.txt", probs_true->len, probs_true->data);
+    count = tl_read_floats("data/probs.txt", probs_true->len, probs_true->data);
     ck_assert_int_eq(count, probs->len);
-    count = tl_read_floats("boxes.txt", boxes_true->len, boxes_true->data);
+    count = tl_read_floats("data/boxes.txt", boxes_true->len, boxes_true->data);
     ck_assert_int_eq(count, boxes->len);
-    count = tl_read_floats("box_centers.txt", box_centers_true->len,
+    count = tl_read_floats("data/box_centers.txt", box_centers_true->len,
                            box_centers_true->data);
     ck_assert_int_eq(count, box_centers->len);
-    count = tl_read_floats("box_sizes.txt", box_sizes_true->len,
+    count = tl_read_floats("data/box_sizes.txt", box_sizes_true->len,
                            box_sizes_true->data);
     ck_assert_int_eq(count, box_sizes->len);
 

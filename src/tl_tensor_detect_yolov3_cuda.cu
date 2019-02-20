@@ -32,13 +32,10 @@ __global__ void detect_yolov3_kernel(const float *feature,
 
     float ratio_h = (float)img_h / (float)grid_h;
     float ratio_w = (float)img_w / (float)grid_w;
-    __shared__ float scaled_anchors[MAX_ANCHOR_NUM * 2];
+    __shared__ float anchors_cache[MAX_ANCHOR_NUM * 2];
 
     if (threadIdx.x < anchor_num * 2) {
-        scaled_anchors[threadIdx.x] = anchors[threadIdx.x];
-        /* scaled_anchors[threadIdx.x] = threadIdx.x % 2 == 0 ? /\* necessary? *\/ */
-        /*     scaled_anchors[threadIdx.x] / ratio_w : */
-        /*     scaled_anchors[threadIdx.x] / ratio_h; */
+        anchors_cache[threadIdx.x] = anchors[threadIdx.x];
     }
     __syncthreads();
 
@@ -64,21 +61,12 @@ __global__ void detect_yolov3_kernel(const float *feature,
     if (ai >= hw * 2 && ai < hw * 4) { /* box_sizes */
         float size;
         if (ai < hw * 3)        /* w */
-            size = scaled_anchors[ti / anchor_volumn * 2]
+            size = anchors_cache[ti / anchor_volumn * 2]
                 * max(min(expf(f), 50), 1e-9);
         else                    /* h */
-            size = scaled_anchors[ti / anchor_volumn * 2 + 1]
+            size = anchors_cache[ti / anchor_volumn * 2 + 1]
                 * max(min(expf(f), 50), 1e-9);
-        /* if (ai < hw * 3)        /\* w *\/ */
-        /*     size = scaled_anchors[ti / anchor_volumn * 2] */
-        /*         * max(min(expf(f), 50), 1e-9) * ratio_w; */
-        /* else                    /\* h *\/ */
-        /*     size = scaled_anchors[ti / anchor_volumn * 2 + 1] */
-        /*         * max(min(expf(f), 50), 1e-9) * ratio_h; */
-        /* printf("size_index = %d, %f\n", ai - hw * 2 + ti / anchor_volumn * hw * 2, size); */
         box_sizes[ai - hw * 2 + ti / anchor_volumn * hw * 2] = size;
-        /* int i = ai - hw * 2 + ti / anchor_volumn * hw * 2; */
-        /* printf("size_index = %d, %f\n", i, box_sizes[i]); */
     }
 
     if (ai >= hw * 4 && ai < hw * 5)   /* conf */
@@ -86,25 +74,17 @@ __global__ void detect_yolov3_kernel(const float *feature,
     if (ai >= hw * 5)                  /* probs */
         probs[ai - hw * 5 + ti / anchor_volumn * hw * class_num] = sigmoided;
 
+    __syncthreads();
+
     if (ti >= anchor_num * grid_h * grid_w * 2)
         return;
 
-    __shared__ float centers[BLOCK_SIZE];
-    __shared__ float sizes[BLOCK_SIZE];
-    centers[threadIdx.x] = box_centers[ti];
-    sizes[threadIdx.x] = box_sizes[ti];
-    /* float center = box_centers[ti]; */
-    /* float size = box_sizes[ti]; */
+    float center = box_centers[ti];
+    float size = box_sizes[ti];
     int outer_index = ti / (hw * 2) * hw * 4;
     int inner_index = ti % (hw * 2);
-    boxes[outer_index + inner_index] = center - box_sizes[ti] / 2;
-    /* printf("x_index = %d, data = %f, center = %f, size = %f\n", outer_index + inner_index, center - box_sizes[ti] / 2, center, box_sizes[ti]); */
-    boxes[outer_index + hw * 2 + inner_index] = center + box_sizes[ti] / 2;
-    /* printf("y_index = %d, data = %f, center = %f, size = %f\n", outer_index + hw * 2 + inner_index, center + box_sizes[ti] / 2, center, box_sizes[ti]); */
-    /* boxes[outer_index + inner_index] = center - size / 2; */
-    /* printf("x_index = %d, data = %f, center = %f, size = %f\n", outer_index + inner_index, center - size / 2, center, size); */
-    /* boxes[outer_index + hw * 2 + inner_index] = center + size / 2; */
-    /* printf("y_index = %d, data = %f, center = %f, size = %f\n", outer_index + hw * 2 + inner_index, center + size / 2, center, size); */
+    boxes[outer_index + inner_index] = center - size / 2;
+    boxes[outer_index + hw * 2 + inner_index] = center + size / 2;
 }
 
 // feature in [N, C, H, W] order, where N = 1, C = anchor_num * (5 + class_num)
@@ -180,7 +160,7 @@ void tl_tensor_detect_yolov3_cuda(const tl_tensor *feature,
     assert(probs->dims[2] == class_num);
     assert(probs->dims[3] == H);
     assert(probs->dims[4] == W);
-    printf("boxes->len = %d\n", boxes->len);
+
     int block_num = BLOCK_NUM(BLOCK_SIZE, feature->len);
     detect_yolov3_kernel<<<block_num, BLOCK_SIZE>>>((float *)feature->data,
                                                     (float *)anchors->data,

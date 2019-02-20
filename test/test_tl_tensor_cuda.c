@@ -959,6 +959,26 @@ START_TEST(test_tl_tensor_detect_yolov3_cuda)
     tl_assert_tensor_eq_tol(box_centers_true, box_centers, 1e-2);
     tl_assert_tensor_eq_tol(box_sizes_true, box_sizes, 1e-2);
     tl_assert_tensor_eq_tol(boxes_true, boxes, 1e-2);
+
+    tl_tensor_free_data_too(feature);
+    tl_tensor_free_data_too(anchors);
+    tl_tensor_free_data_too(box_centers);
+    tl_tensor_free_data_too(box_sizes);
+    tl_tensor_free_data_too(boxes);
+    tl_tensor_free_data_too(confs);
+    tl_tensor_free_data_too(probs);
+    tl_tensor_free_data_too_cuda(feature_d);
+    tl_tensor_free_data_too_cuda(anchors_d);
+    tl_tensor_free_data_too_cuda(box_centers_d);
+    tl_tensor_free_data_too_cuda(box_sizes_d);
+    tl_tensor_free_data_too_cuda(boxes_d);
+    tl_tensor_free_data_too_cuda(confs_d);
+    tl_tensor_free_data_too_cuda(probs_d);
+    tl_tensor_free_data_too(box_centers_true);
+    tl_tensor_free_data_too(box_sizes_true);
+    tl_tensor_free_data_too(boxes_true);
+    tl_tensor_free_data_too(confs_true);
+    tl_tensor_free_data_too(probs_true);
 }
 END_TEST
 

@@ -14,8 +14,8 @@ SRC = $(wildcard *.c)
 SRC += $(wildcard *.cpp)
 SRC += $(wildcard *.cc)
 SRC += $(wildcard *.cu)
-NORMAL_SRC = $(filter-out %cuda.c %cuda.cu,$(SRC))
-CUDA_SRC = $(filter %cuda.c %cuda.cu,$(SRC))
+NORMAL_SRC = $(filter-out %cuda.c %.cu,$(SRC))
+CUDA_SRC = $(filter %cuda.c %.cu,$(SRC))
 
 OBJDIR = obj
 OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(NORMAL_SRC)))

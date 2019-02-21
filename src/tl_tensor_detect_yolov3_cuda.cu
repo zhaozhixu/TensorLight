@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2018 Zhao Zhixu
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -17,7 +39,8 @@
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-#define MAX_ANCHOR_NUM 64
+#define YOLO_MAX_ANCHOR_NUM 64
+
 __global__ void detect_yolov3_kernel(const float *feature,
                                      const float *anchors,
                                      float *box_centers, float *box_sizes,
@@ -28,11 +51,9 @@ __global__ void detect_yolov3_kernel(const float *feature,
                                      int block_size, int feature_len)
 {
 
-    assert(anchor_num <= MAX_ANCHOR_NUM);
+    assert(anchor_num <= YOLO_MAX_ANCHOR_NUM);
 
-    float ratio_h = (float)img_h / (float)grid_h;
-    float ratio_w = (float)img_w / (float)grid_w;
-    __shared__ float anchors_cache[MAX_ANCHOR_NUM * 2];
+    __shared__ float anchors_cache[YOLO_MAX_ANCHOR_NUM * 2];
 
     if (threadIdx.x < anchor_num * 2) {
         anchors_cache[threadIdx.x] = anchors[threadIdx.x];
@@ -40,21 +61,21 @@ __global__ void detect_yolov3_kernel(const float *feature,
     __syncthreads();
 
     int ti = blockIdx.x * block_size + threadIdx.x;
-    if (ti >= feature_len)  /* ti is now index in a feature map */
+    if (ti >= feature_len)  /* ti is now the output index in a feature map */
         return;
 
     int hw = grid_h * grid_w;
     int anchor_volumn = feature_len / anchor_num;
     int ai = ti % anchor_volumn;
-    float f = feature[ti];
-    float sigmoided = 1 / (1 + expf(-f));
+    float exp_f = expf(feature[ti]);
+    float sigmoided = 1 / (1 + 1 / exp_f);
 
     if (ai < hw * 2) {                  /* box_centers */
         float center;
         if (ai < hw)            /* x */
-            center = (sigmoided + ai % grid_w) * ratio_w;
+            center = (sigmoided + ai % grid_w) * ((float)img_w / grid_w);
         else                    /* y */
-            center = (sigmoided + (ai - hw) / grid_w) * ratio_h;
+            center = (sigmoided + (ai - hw) / grid_w) * ((float)img_h / grid_h);
         box_centers[ai + ti / anchor_volumn * hw * 2] = center;
     }
 
@@ -62,15 +83,16 @@ __global__ void detect_yolov3_kernel(const float *feature,
         float size;
         if (ai < hw * 3)        /* w */
             size = anchors_cache[ti / anchor_volumn * 2]
-                * max(min(expf(f), 50), 1e-9);
+                * max(min(exp_f, 50), 1e-9);
         else                    /* h */
             size = anchors_cache[ti / anchor_volumn * 2 + 1]
-                * max(min(expf(f), 50), 1e-9);
+                * max(min(exp_f, 50), 1e-9);
         box_sizes[ai - hw * 2 + ti / anchor_volumn * hw * 2] = size;
     }
 
     if (ai >= hw * 4 && ai < hw * 5)   /* conf */
         confs[ai - hw * 4 + ti / anchor_volumn * hw] = sigmoided;
+
     if (ai >= hw * 5)                  /* probs */
         probs[ai - hw * 5 + ti / anchor_volumn * hw * class_num] = sigmoided;
 

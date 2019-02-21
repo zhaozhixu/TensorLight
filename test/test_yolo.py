@@ -132,17 +132,17 @@ probs = tf.transpose(tf.reshape(probs, [1, H, W, anchor_num, class_num]), [0, 3,
 
 np.set_printoptions(threshold=sys.maxsize)
 with tf.Session() as sess:
-    with open("anchors.txt", 'w') as f:
+    with open("data/anchors.txt", 'w') as f:
         f.write(str(anchors))
-    with open("feature.txt", 'w') as f:
+    with open("data/feature.txt", 'w') as f:
         f.write(str(feature_map.eval(session=sess)))
-    with open("box_centers.txt", 'w') as f:
+    with open("data/box_centers.txt", 'w') as f:
         f.write(str(box_centers.eval(session=sess)))
-    with open("box_sizes.txt", 'w') as f:
+    with open("data/box_sizes.txt", 'w') as f:
         f.write(str(box_sizes.eval(session=sess)))
-    with open("boxes.txt", 'w') as f:
+    with open("data/boxes.txt", 'w') as f:
         f.write(str(boxes.eval(session=sess)))
-    with open("confs.txt", 'w') as f:
+    with open("data/confs.txt", 'w') as f:
         f.write(str(confs.eval(session=sess)))
-    with open("probs.txt", 'w') as f:
+    with open("data/probs.txt", 'w') as f:
         f.write(str(probs.eval(session=sess)))

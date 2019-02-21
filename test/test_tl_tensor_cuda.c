@@ -18,7 +18,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- c */
+ */
 
 #ifdef TL_CUDA
 
@@ -917,20 +917,20 @@ START_TEST(test_tl_tensor_detect_yolov3_cuda)
     confs = tl_tensor_clone_d2h(confs_d);
     probs = tl_tensor_clone_d2h(probs_d);
 
-    /* FILE *fp; */
-    /* fp = fopen("confs_out.txt", "w"); */
+    FILE *fp;
+    /* fp = fopen("data/confs_out.txt", "w"); */
     /* tl_tensor_fprint(fp, confs, "%.8f"); */
     /* fclose(fp); */
-    /* fp = fopen("probs_out.txt", "w"); */
+    /* fp = fopen("data/probs_out.txt", "w"); */
     /* tl_tensor_fprint(fp, probs, "%.8f"); */
     /* fclose(fp); */
-    /* fp = fopen("boxes_out.txt", "w"); */
+    /* fp = fopen("data/boxes_out.txt", "w"); */
     /* tl_tensor_fprint(fp, boxes, "%.8f"); */
     /* fclose(fp); */
-    /* fp = fopen("box_centers_out.txt", "w"); */
-    /* tl_tensor_fprint(fp, box_centers, "%.8f"); */
-    /* fclose(fp); */
-    /* fp = fopen("box_sizes_out.txt", "w"); */
+    fp = fopen("data/box_centers_out.txt", "w");
+    tl_tensor_fprint(fp, box_centers, "%.8f");
+    fclose(fp);
+    /* fp = fopen("data/box_sizes_out.txt", "w"); */
     /* tl_tensor_fprint(fp, box_sizes, "%.8f"); */
     /* fclose(fp); */
 

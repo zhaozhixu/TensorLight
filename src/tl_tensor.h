@@ -33,6 +33,21 @@
 
 #define TL_MAXDIM 8
 
+#define TL_TENSOR_DATA(tensor, index)                           \
+    tl_pointer_add((tensor)->data, (index), (tensor)->dtype)
+
+#define TL_TENSOR_DATA_TO(tensor, index, var, var_dtype)                \
+    tl_convert(&(var), (var_dtype), TL_TENSOR_DATA((tensor), (index)),  \
+               (tensor)->dtype)
+
+#define TL_TENSOR_DATA_FROM(tensor, index, var, var_dtype)              \
+    tl_convert(TL_TENSOR_DATA((tensor), (index)), (tensor)->dtype,      \
+               &(var), (var_dtype))
+
+#define TL_TENSOR_DATA_ASSIGN(dst, di, src, si)                 \
+    tl_convert(TL_TENSOR_DATA((dst), (di)), (dst)->dtype,       \
+               TL_TENSOR_DATA((src), (si)), (src)->dtype)
+
 struct tl_tensor {
      tl_dtype          dtype;
      int               len;
@@ -92,6 +107,8 @@ tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst,
                              tl_dtype dtype_d);
 tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst,
                             const int *new_dims, tl_resize_type rtype);
+tl_tensor *tl_tensor_submean(const tl_tensor *src, tl_tensor *dst,
+                             const double *mean);
 
 #ifdef TL_CUDA
 

@@ -869,6 +869,38 @@ tl_tensor *tl_tensor_resize(const tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
+/* src: H*W*C, dst: C*H*W */
+tl_tensor *tl_tensor_submean(const tl_tensor *src, tl_tensor *dst,
+                             const double *mean)
+{
+    assert(src && src->data);
+    assert(mean);
+    assert(src->ndim == 3);
+    int new_dims[] = {src->dims[2], src->dims[0], src->dims[1]};
+    int c, i, H, W, C;
+    double data;
+
+    if (dst) {
+        assert(dst->data);
+        assert(dst->ndim == src->ndim);
+    } else {
+        dst = tl_tensor_zeros(src->ndim, new_dims, TL_UINT8);
+    }
+
+    H = src->dims[0];
+    W = src->dims[1];
+    C = src->dims[2];
+    for (c = 0; c < C; c++) {
+        for (i = 0; i < H * W; i++) {
+            TL_TENSOR_DATA_TO(src, i*C+c, data, TL_DOUBLE);
+            data = data - mean[c];
+            TL_TENSOR_DATA_FROM(dst, c*H*W+i, data, TL_DOUBLE);
+        }
+    }
+
+    return dst;
+}
+
 /* static void top1(void *src, void *dst, int32_t *arg, int len, int stride, */
 /*                  tl_dtype dtype, int largest) */
 /* { */

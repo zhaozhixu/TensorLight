@@ -697,6 +697,32 @@ START_TEST(test_tl_tensor_resize)
      tl_tensor_free(true_tensor);
 }
 END_TEST
+
+START_TEST(test_tl_tensor_submean)
+{
+    uint8_t src_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    uint8_t dst_data[12];
+    uint8_t true_data[] = {0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9};
+    double mean[] = {1, 2, 3};
+    tl_tensor *src, *dst, *true_tensor;
+
+    true_tensor = tl_tensor_create(true_data, 3, ARR(int,3,2,2), TL_UINT8);
+    src = tl_tensor_create(src_data, 3, ARR(int,2,2,3), TL_UINT8);
+    dst = tl_tensor_submean(src, NULL, mean);
+    ck_assert_int_eq(dst->ndim, 3);
+    ck_assert_array_int_eq(dst->dims, ARR(int,3,2,2), 3);
+    tl_assert_tensor_eq(dst, true_tensor);
+    tl_tensor_free_data_too(dst);
+
+    dst = tl_tensor_create(dst_data, 3, ARR(int,3,2,2), TL_UINT8);
+    tl_tensor_submean(src, dst, mean);
+    tl_assert_tensor_eq(dst, true_tensor);
+    tl_tensor_free(dst);
+
+    tl_tensor_free(src);
+    tl_tensor_free(true_tensor);
+}
+END_TEST
 /* end of tests */
 
 Suite *make_tensor_suite(void)
@@ -730,6 +756,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_lrelu);
      tcase_add_test(tc_tensor, test_tl_tensor_convert);
      tcase_add_test(tc_tensor, test_tl_tensor_resize);
+     tcase_add_test(tc_tensor, test_tl_tensor_submean);
      /* end of adding tests */
 
      suite_add_tcase(s, tc_tensor);

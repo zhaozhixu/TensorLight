@@ -144,6 +144,8 @@ tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst,
                                 float negslope);
 tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
                                  const int *new_dims, tl_resize_type rtype);
+tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
+                                  const double *mean);
 tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
                                             const tl_tensor *anchor,
                                             tl_tensor *dst,

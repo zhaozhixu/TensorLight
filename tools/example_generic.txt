@@ -1,0 +1,8 @@
+$enum2type(TL_FLOAT, float)
+$enum2type(TL_DOUBLE, double)
+$enum2type(TL_INT8, int8_t)
+$switchtype(src->dtype, T1)
+$switchtype(dst->dtype, T2)
+$typeset(T1, TL_FLOAT, TL_INT8)
+$typenoset(T2, TL_FLOAT)
+foo((T1 *)src->data, (T2 *)dst->data);

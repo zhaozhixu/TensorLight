@@ -1142,6 +1142,44 @@ START_TEST(test_tl_tensor_pick1d_cuda)
     tl_free(h_output);
 }
 END_TEST
+
+START_TEST(test_tl_tensor_submean_cuda)
+{
+    uint8_t src_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    uint8_t *src_data_d;
+    float *dst_data_d;
+    float true_data[] = {0, 3, 6, 9, 0, 3, 6, 9, 0, 3, 6, 9};
+    double mean[] = {1, 2, 3};
+    tl_tensor *dst, *true_tensor;
+    tl_tensor *src_d, *dst_d;
+
+    src_data_d = tl_clone_h2d(src_data, sizeof(uint8_t) * 12);
+    dst_data_d = tl_alloc_cuda(sizeof(float) * 12);
+
+    true_tensor = tl_tensor_create(true_data, 3, ARR(int,3,2,2), TL_FLOAT);
+    src_d = tl_tensor_create(src_data_d, 3, ARR(int,2,2,3), TL_UINT8);
+    dst_d = tl_tensor_submean_cuda(src_d, NULL, mean);
+    dst = tl_tensor_clone_d2h(dst_d);
+    ck_assert_int_eq(dst->dtype, TL_FLOAT);
+    ck_assert_int_eq(dst->ndim, 3);
+    ck_assert_array_int_eq(dst->dims, ARR(int,3,2,2), 3);
+    tl_assert_tensor_eq(dst, true_tensor);
+    tl_tensor_free_data_too_cuda(dst_d);
+    tl_tensor_free_data_too(dst);
+
+    dst_d = tl_tensor_create(dst_data_d, 3, ARR(int,3,2,2), TL_FLOAT);
+    tl_tensor_submean_cuda(src_d, dst_d, mean);
+    dst = tl_tensor_clone_d2h(dst_d);
+    tl_assert_tensor_eq(dst, true_tensor);
+    tl_tensor_free(dst_d);
+    tl_tensor_free_data_too(dst);
+
+    tl_free_cuda(src_data_d);
+    tl_free_cuda(dst_data_d);
+    tl_tensor_free(src_d);
+    tl_tensor_free(true_tensor);
+}
+END_TEST
 /* end of tests */
 
 Suite *make_tensor_cuda_suite(void)
@@ -1180,6 +1218,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_by_key_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_pick1d_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_submean_cuda);
     /* end of adding tests */
 
     suite_add_tcase(s, tc_tensor_cuda);

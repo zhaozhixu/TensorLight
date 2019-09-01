@@ -876,6 +876,7 @@ tl_tensor *tl_tensor_submean(const tl_tensor *src, tl_tensor *dst,
     assert(src && src->data);
     assert(mean);
     assert(src->ndim == 3);
+    assert(src->dims[2] == 3);
     int new_dims[] = {src->dims[2], src->dims[0], src->dims[1]};
     int c, i, H, W, C;
     double data;
@@ -883,8 +884,9 @@ tl_tensor *tl_tensor_submean(const tl_tensor *src, tl_tensor *dst,
     if (dst) {
         assert(dst->data);
         assert(dst->ndim == src->ndim);
+        assert(dst->dims[0] == 3);
     } else {
-        dst = tl_tensor_zeros(src->ndim, new_dims, TL_UINT8);
+        dst = tl_tensor_zeros(src->ndim, new_dims, TL_FLOAT);
     }
 
     H = src->dims[0];

@@ -26,17 +26,8 @@
 #include "tl_tensor.h"
 #include "tl_util.h"
 
-template<typename T>
-static void thrust_sort(T *data, int len, tl_sort_dir dir)
-{
-    if (dir == TL_SORT_DIR_DESCENDING)
-        thrust::sort(thrust::device, data, data + len, thrust::greater<T>());
-    else
-        thrust::sort(thrust::device, data, data + len, thrust::less<T>());
-}
-
 template<typename T1, typename T2>
-    static void thrust_sort_by_key(T1 *data, T2 *index, int len, tl_sort_dir dir)
+static void thrust_sort_by_key(T1 *data, T2 *index, int len, tl_sort_dir dir)
 {
     if (dir == TL_SORT_DIR_DESCENDING)
         thrust::sort_by_key(thrust::device, data, data + len, index,
@@ -44,47 +35,6 @@ template<typename T1, typename T2>
     else
         thrust::sort_by_key(thrust::device, data, data + len, index,
                             thrust::less<T1>());
-}
-
-void tl_tensor_sort1d_cuda(tl_tensor *key, tl_sort_dir dir)
-{
-    assert(key);
-    assert(tl_is_device_mem(key->data));
-    assert(key->ndim == 1);
-
-    switch (key->dtype) {
-    case TL_DOUBLE:
-        thrust_sort<double>((double *)key->data, key->len, dir);
-        break;
-    case TL_FLOAT:
-        thrust_sort<float>((float *)key->data, key->len, dir);
-        break;
-    case TL_INT32:
-        thrust_sort<int32_t>((int32_t *)key->data, key->len, dir);
-        break;
-    case TL_INT16:
-        thrust_sort<int16_t>((int16_t *)key->data, key->len, dir);
-        break;
-    case TL_INT8:
-        thrust_sort<int8_t>((int8_t *)key->data, key->len, dir);
-        break;
-    case TL_UINT32:
-        thrust_sort<uint32_t>((uint32_t *)key->data, key->len, dir);
-        break;
-    case TL_UINT16:
-        thrust_sort<uint16_t>((uint16_t *)key->data, key->len, dir);
-        break;
-    case TL_UINT8:
-        thrust_sort<uint8_t>((uint8_t *)key->data, key->len, dir);
-        break;
-    case TL_BOOL:
-        thrust_sort<int>((int *)key->data, key->len, dir);
-        break;
-    default:
-        assert(0 && "unsupported tl_dtype");
-        break;
-    }
-    tl_cuda_device_sync();
 }
 
 void tl_tensor_sort1d_by_key_cuda(tl_tensor *key, tl_tensor *val,

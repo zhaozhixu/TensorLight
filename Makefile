@@ -75,13 +75,13 @@ all: lib test
 
 install:
 	$(call make-install-dir)
-	$(AT)perl tools/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
+	perl tools/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
 
 test: lib
-	$(AT)(cd $(TEST_DIR) && make)
+	$(AT)+(cd $(TEST_DIR) && make)
 
 lib:
-	$(AT)(cd $(SRC_DIR) && make)
+	$(AT)+(cd $(SRC_DIR) && make)
 	$(call make-build-dir)
 	$(call add-config-defines)
 

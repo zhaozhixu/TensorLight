@@ -580,6 +580,40 @@ START_TEST(test_tl_tensor_elew_param)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_dot_product)
+{
+     tl_tensor *src1, *src2, *dst;
+     int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
+     int8_t src2_data[6] = {1, 2, 3, 4, 5, 6};
+     int8_t dst_data[1] = {50};
+     int dims[2] = {2, 3};
+
+     src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8);
+     src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8);
+     dst = tl_tensor_dot_product(src1, src2, NULL);
+     ck_assert_int_eq(dst->ndim, 1);
+     ck_assert_int_eq(dst->dtype, TL_INT8);
+     ck_assert_int_eq(dst->len, 1);
+     ck_assert(dst->dims[0] == 1);
+     ck_assert_array_int_eq((int8_t*)dst->data, dst_data, dst->len);
+     tl_tensor_free_data_too(dst);
+
+     src1 = tl_tensor_create(src1_data, 2, dims, TL_INT8);
+     src2 = tl_tensor_create(src2_data, 2, dims, TL_INT8);
+     dst = tl_tensor_zeros(1, ARR(int,1), TL_INT8);
+     dst = tl_tensor_dot_product(src1, src2, dst);
+     ck_assert_int_eq(dst->ndim, 1);
+     ck_assert_int_eq(dst->dtype, TL_INT8);
+     ck_assert_int_eq(dst->len, 1);
+     ck_assert(dst->dims[0] == 1);
+     ck_assert_array_int_eq((int8_t *)dst->data, dst_data, dst->len);
+     tl_tensor_free_data_too(dst);
+
+     tl_tensor_free(src1);
+     tl_tensor_free(src2);
+}
+END_TEST
+
 START_TEST(test_tl_tensor_transpose)
 {
      tl_tensor *src, *dst;
@@ -753,6 +787,7 @@ Suite *make_tensor_suite(void)
      tcase_add_test(tc_tensor, test_tl_tensor_maxreduce);
      tcase_add_test(tc_tensor, test_tl_tensor_elew);
      tcase_add_test(tc_tensor, test_tl_tensor_elew_param);
+     tcase_add_test(tc_tensor, test_tl_tensor_dot_product);
      tcase_add_test(tc_tensor, test_tl_tensor_transpose);
      tcase_add_test(tc_tensor, test_tl_tensor_lrelu);
      tcase_add_test(tc_tensor, test_tl_tensor_convert);

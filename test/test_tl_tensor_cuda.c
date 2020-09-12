@@ -618,6 +618,53 @@ START_TEST(test_tl_tensor_elew_cuda)
 }
 END_TEST
 
+START_TEST(test_tl_tensor_dot_product_cuda)
+{
+    tl_tensor *src1, *src2, *dst;
+    int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
+    int8_t src2_data[6] = {1, 2, 3, 4, 5, 6};
+    int8_t dst_data[1] = {50};
+    void *data_d1, *data_d2, *data_h;
+    int dims[2] = {2, 3};
+
+    data_d1 = tl_clone_h2d(src1_data, sizeof(int8_t)*6);
+    data_d2 = tl_clone_h2d(src2_data, sizeof(int8_t)*6);
+
+    src1 = tl_tensor_create(data_d1, 2, dims, TL_INT8);
+    src2 = tl_tensor_create(data_d2, 2, dims, TL_INT8);
+    dst = tl_tensor_dot_product_cuda(src1, src2, NULL, NULL, NULL);
+    data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len);
+    ck_assert_int_eq(dst->len, tl_tensor_dot_product_cuda_ws_len(src1));
+    ck_assert_int_eq(dst->ndim, 1);
+    ck_assert_int_eq(dst->dtype, TL_INT8);
+    ck_assert_int_eq(dst->len, 1);
+    ck_assert(dst->dims[0] == 1);
+    ck_assert_array_int_eq((int8_t *)data_h, dst_data, dst->len);
+    tl_tensor_free_data_too_cuda(dst);
+    tl_free(data_h);
+
+    /* src1 = tl_tensor_create(data_d1, 2, dims, TL_INT8); */
+    /* src2 = tl_tensor_create(data_d2, 2, dims, TL_INT8); */
+    /* dst = tl_tensor_zeros_cuda(2, dims, TL_INT8); */
+    /* dst = tl_tensor_elew_cuda(src1, src2, dst, TL_MUL); */
+    /* data_h = tl_clone_d2h(dst->data, tl_size_of(dst->dtype)*dst->len); */
+    /* ck_assert_int_eq(dst->ndim, 2); */
+    /* ck_assert_int_eq(dst->dtype, TL_INT8); */
+    /* ck_assert_int_eq(dst->len, 6); */
+    /* ck_assert(dst->dims[0] == 2); */
+    /* ck_assert(dst->dims[1] == 3); */
+    /* for (i = 0; i < dst->len; i++) */
+    /*     ck_assert(((int8_t *)data_h)[i] == dst_data[i]); */
+    /* tl_tensor_free_data_too_cuda(dst); */
+    /* tl_free(data_h); */
+
+    /* tl_tensor_free(src1); */
+    /* tl_tensor_free(src2); */
+    /* tl_free_cuda(data_d1); */
+    /* tl_free_cuda(data_d2); */
+}
+END_TEST
+
 START_TEST(test_tl_tensor_convert_cuda)
 {
     float data_f[5] = {-1, 0, 1, 255, 256};
@@ -1209,6 +1256,7 @@ Suite *make_tensor_cuda_suite(void)
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_slice_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_maxreduce_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_elew_cuda);
+    tcase_add_test(tc_tensor_cuda, test_tl_tensor_dot_product_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_convert_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
     tcase_add_test(tc_tensor_cuda, test_tl_tensor_lrelu_cuda);

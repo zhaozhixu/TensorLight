@@ -62,7 +62,7 @@
 	       intmax_t _ck_y = (AY)[i];				\
 	       if (_ck_x != _ck_y)					\
 		    ck_assert_msg(0,					\
-				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %d, "#AY"[%d] == %d", \
+				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %ld, "#AY"[%d] == %ld", \
 				  i, _ck_x, i, _ck_y);			\
 	  }								\
      } while(0)
@@ -77,7 +77,7 @@
 	       uintmax_t _ck_y = (AY)[i];                               \
 	       if (_ck_x != _ck_y)					\
 		    ck_assert_msg(0,					\
-				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %u, "#AY"[%d] == %u", \
+				  "Assertion array '"#AX" == "#AY"' failed: "#AX"[%d] == %lu, "#AY"[%d] == %lu", \
 				  i, _ck_x, i, _ck_y);			\
 	  }								\
      } while(0)

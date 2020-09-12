@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <math.h>
 
+#include "tl_type.h"
 #include "tl_tensor.h"
 #include "tl_util.h"
 
@@ -713,6 +714,43 @@ tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
     }
     tl_free(elew_res);
     tl_free(param_data);
+
+    return dst;
+}
+
+tl_tensor *tl_tensor_dot_product(const tl_tensor *src1, const tl_tensor *src2,
+                                 tl_tensor *dst)
+{
+    int di;
+    size_t dsize;
+    tl_dtype dtype;
+    void *s1_data, *s2_data, *d_data;
+    char elew_prod[TL_DTYPE_MAX_SIZE];
+    tl_elew_func elew;
+
+    assert(tl_tensor_issameshape(src1, src2));
+    assert(src1->data && src2->data);
+    assert(src1->dtype == src2->dtype);
+    if (dst) {
+        assert(dst->data);
+        assert(dst->ndim == 1);
+        assert(dst->dims[0] == 1);
+        assert(src1->dtype == dst->dtype);
+    } else {
+        dst = tl_tensor_zeros(1, (int[]){1}, src1->dtype);
+    }
+
+    s1_data = src1->data;
+    s2_data = src2->data;
+    d_data = dst->data;
+    dtype = src1->dtype;
+    dsize = tl_size_of(dtype);
+    elew = tl_elew_getfunc(dtype);
+    memset(dst->data, 0, tl_tensor_size(dst));
+    for (di = 0; di < src1->len; di++) {
+        elew(tl_padd(s1_data, di, dsize), tl_padd(s2_data, di, dsize), elew_prod, TL_MUL);
+        elew(elew_prod, d_data, d_data, TL_SUM);
+    }
 
     return dst;
 }

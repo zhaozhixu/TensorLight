@@ -97,8 +97,10 @@ tl_tensor *tl_tensor_maxreduce(const tl_tensor *src, tl_tensor *dst,
                                tl_tensor *arg, int axis);
 tl_tensor *tl_tensor_elew(const tl_tensor *src1, const tl_tensor *src2,
                           tl_tensor *dst, tl_elew_op elew_op);
-tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param,
-                                tl_tensor *dst, tl_elew_op elew_op);
+tl_tensor *tl_tensor_elew_param(const tl_tensor *src, double param, tl_tensor *dst,
+                                tl_elew_op elew_op);
+tl_tensor *tl_tensor_dot_product(const tl_tensor *src1, const tl_tensor *src2,
+                                 tl_tensor *dst);
 tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
                                const int *axes);
 tl_tensor *tl_tensor_lrelu(const tl_tensor *src, tl_tensor *dst,
@@ -136,6 +138,9 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
                                     tl_tensor *arg, int axis);
 tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
                                tl_tensor *dst, tl_elew_op elew_op);
+int tl_tensor_dot_product_cuda_ws_len(const tl_tensor *src);
+tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *src2,
+                                      tl_tensor *ws1, tl_tensor *ws2, tl_tensor *dst);
 tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
                                   tl_dtype dtype_d);
 tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,

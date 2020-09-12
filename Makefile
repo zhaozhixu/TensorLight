@@ -71,7 +71,7 @@ endef
 
 .PHONY: all lib test clean info install uninstall
 
-all: lib test
+all: lib
 
 install:
 	$(call make-install-dir)

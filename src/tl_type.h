@@ -51,6 +51,7 @@ enum tl_dtype {
     TL_DTYPE_SIZE
 };
 typedef enum tl_dtype tl_dtype;
+#define TL_DTYPE_MAX_SIZE sizeof(double)
 
 /* keep the size and the enum order in sync with tl_type.c */
 enum tl_elew_op {
@@ -120,7 +121,6 @@ static inline void tl_passign(void *pd, ptrdiff_t offd,
 {
     memmove(tl_padd((pd), (offd), (dsize)),
             tl_padd((ps), (offs), (dsize)), (dsize));
-
 }
 
 static inline void tl_pmove(void *pd, ptrdiff_t offd,

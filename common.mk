@@ -39,7 +39,7 @@ CXXFLAGS += -DTL_CUDA
 CUFLAGS += -DTL_CUDA
 CUDA_INSTALL_DIR ?= /usr/local/cuda
 INCPATHS += -I$(CUDA_INSTALL_DIR)/include
-LDFLAGS += -L$(CUDA_INSTALL_DIR)/lib64 -lcuda -lcudart -lcublas -lcurand -lstdc++
+LDFLAGS += -L$(CUDA_INSTALL_DIR)/lib64 -lcudart -lcublas -lcurand -lstdc++
 endif
 
 CFLAGS += $(INCPATHS)

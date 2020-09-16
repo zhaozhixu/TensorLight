@@ -60,7 +60,5 @@ define make-depend-cxx
 endef
 
 define make-depend-cu
-  $(AT)$(CUCC) -M $(CUFLAGS) $1 > $3.$$$$; \
-  sed 's,.*\.o[ :]*,$2 : ,g' < $3.$$$$ > $3; \
-  rm -f $3.$$$$
+  $(AT)$(CUCC) -MM -MF $3 -MT $2 $(CUFLAGS) $1
 endef

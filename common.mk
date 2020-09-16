@@ -1,6 +1,6 @@
-CC = gcc
-CXX = g++
-CUCC = nvcc
+CC ?= gcc
+CXX ?= g++
+CUCC ?= nvcc
 AR = ar cr
 ECHO = @echo
 SHELL = /bin/sh
@@ -60,5 +60,7 @@ define make-depend-cxx
 endef
 
 define make-depend-cu
-  $(AT)$(CUCC) -MM -MF $3 -MT $2 $(CUFLAGS) $1
+  $(AT)$(CUCC) -M $(CUFLAGS) $1 > $3.$$$$; \
+  sed 's,.*\.o[ :]*,$2 : ,g' < $3.$$$$ > $3; \
+  rm -f $3.$$$$
 endef

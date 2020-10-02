@@ -27,7 +27,7 @@ OBJS  += $(patsubst %.cu,$(OBJDIR)/%.o,$(filter %.cu,$(CUDA_SRC)))
 OBJS  += $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(CUDA_SRC)))
 endif
 
-SRCOBJS = ../src/obj/lib$(TARGET).so
+SRCOBJS = ../src/obj/lib$(TARGET).a
 
 .PHONY: all clean
 all: $(TARGET_TEST)

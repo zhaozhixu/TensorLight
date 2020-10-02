@@ -7,8 +7,16 @@ LIBTARGET_SO = lib$(TARGET).so
 
 CFLAGS += -fPIC
 CXXFLAGS += -fPIC
-CUFLAGS += --compiler-options '-fPIC' --linker-options '-Wl,--no-undefined -shared' -shared
-LDFLAGS += -shared -Wl,--no-undefined
+
+LDFLAGS += -shared
+CUFLAGS += --compiler-options '-fPIC' -shared
+ifeq ($(UNAME_S),Linux)
+LDFLAGS += -Wl,--no-undefined
+CUFLAGS += --linker-options '-Wl,--no-undefined -shared'
+else ifeq ($(UNAME_S),Darwin)
+LDFLAGS += -Wl,-undefined,error
+CUFLAGS += --linker-options '-Wl,-undefined,error'
+endif
 
 SRC = $(wildcard *.c)
 SRC += $(wildcard *.cpp)

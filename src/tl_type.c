@@ -34,9 +34,11 @@
 static const size_t dtype_size[TL_DTYPE_SIZE] = {
     sizeof(double),
     sizeof(float),
+    sizeof(int64_t),
     sizeof(int32_t),
     sizeof(int16_t),
     sizeof(int8_t),
+    sizeof(uint64_t),
     sizeof(uint32_t),
     sizeof(uint16_t),
     sizeof(uint8_t),
@@ -44,12 +46,12 @@ static const size_t dtype_size[TL_DTYPE_SIZE] = {
 };
 
 static const char *dtype_fmt[TL_DTYPE_SIZE] = {
-    "%.3f", "%.3f", "%d", "%d", "%d", "%u", "%u", "%u", "%d"
+    "%.3f", "%.3f", "%ld", "%d", "%d", "%d", "%lu", "%u", "%u", "%u", "%d"
 };
 
 static const char *dtype_name[TL_DTYPE_SIZE] = {
-    "TL_DOUBLE", "TL_FLOAT", "TL_INT32", "TL_INT16", "TL_INT8",
-    "TL_UINT32", "TL_UINT16", "TL_UINT8", "TL_BOOL"
+    "TL_DOUBLE", "TL_FLOAT", "TL_INT64", "TL_INT32", "TL_INT16", "TL_INT8",
+    "TL_UINT64", "TL_UINT32", "TL_UINT16", "TL_UINT8", "TL_BOOL"
 };
 
 void tl_dtype_max(tl_dtype dtype, void *ret)
@@ -62,6 +64,9 @@ void tl_dtype_max(tl_dtype dtype, void *ret)
     case TL_FLOAT:
         *(float *)ret = FLT_MAX;
         break;
+    case TL_INT64:
+        *(int64_t *)ret = INT64_MAX;
+        break;
     case TL_INT32:
         *(int32_t *)ret = INT32_MAX;
         break;
@@ -70,6 +75,9 @@ void tl_dtype_max(tl_dtype dtype, void *ret)
         break;
     case TL_INT8:
         *(int8_t *)ret = INT8_MAX;
+        break;
+    case TL_UINT64:
+        *(uint64_t *)ret = UINT64_MAX;
         break;
     case TL_UINT32:
         *(uint32_t *)ret = UINT32_MAX;
@@ -99,6 +107,9 @@ void tl_dtype_min(tl_dtype dtype, void *ret)
     case TL_FLOAT:
         *(float *)ret = -FLT_MAX;
         break;
+    case TL_INT64:
+        *(int64_t *)ret = INT64_MIN;
+        break;
     case TL_INT32:
         *(int32_t *)ret = INT32_MIN;
         break;
@@ -107,6 +118,9 @@ void tl_dtype_min(tl_dtype dtype, void *ret)
         break;
     case TL_INT8:
         *(int8_t *)ret = INT8_MIN;
+        break;
+    case TL_UINT64:
+        *(uint64_t *)ret = 0;
         break;
     case TL_UINT32:
         *(uint32_t *)ret = 0;
@@ -174,12 +188,16 @@ tl_dtype tl_dtype_from_str(const char *str)
         return TL_DOUBLE;
     if (!strcmp(str, "TL_FLOAT"))
         return TL_FLOAT;
+    if (!strcmp(str, "TL_INT64"))
+      return TL_INT64;
     if (!strcmp(str, "TL_INT32"))
         return TL_INT32;
     if (!strcmp(str, "TL_INT16"))
         return TL_INT16;
     if (!strcmp(str, "TL_INT8"))
         return TL_INT8;
+    if (!strcmp(str, "TL_UINT64"))
+      return TL_UINT64;
     if (!strcmp(str, "TL_UINT32"))
         return TL_UINT32;
     if (!strcmp(str, "TL_UINT16"))
@@ -208,6 +226,13 @@ static int fprintf_float(FILE *fp, const char *fmt, void *p)
         return fprintf(fp, fmt, *(float *)p);
 }
 
+static int fprintf_int64(FILE *fp, const char *fmt, void *p) {
+  if (!fmt)
+    return fprintf(fp, dtype_fmt[TL_INT64], *(int64_t *)p);
+  else
+    return fprintf(fp, fmt, *(int64_t *)p);
+}
+
 static int fprintf_int32(FILE *fp, const char *fmt, void *p)
 {
     if (!fmt)
@@ -230,6 +255,13 @@ static int fprintf_int8(FILE *fp, const char *fmt, void *p)
         return fprintf(fp, dtype_fmt[TL_INT8], *(int8_t *)p);
     else
         return fprintf(fp, fmt, *(int8_t *)p);
+}
+
+static int fprintf_uint64(FILE *fp, const char *fmt, void *p) {
+  if (!fmt)
+    return fprintf(fp, dtype_fmt[TL_UINT64], *(uint64_t *)p);
+  else
+    return fprintf(fp, fmt, *(uint16_t *)p);
 }
 
 static int fprintf_uint32(FILE *fp, const char *fmt, void *p)
@@ -267,9 +299,11 @@ static int fprintf_bool(FILE *fp, const char *fmt, void *p)
 static tl_fprintf_func fprintf_func[TL_DTYPE_SIZE] = {
     fprintf_double,
     fprintf_float,
+    fprintf_int64,
     fprintf_int32,
     fprintf_int16,
     fprintf_int8,
+    fprintf_uint64,
     fprintf_uint32,
     fprintf_uint16,
     fprintf_uint8,
@@ -299,6 +333,10 @@ static int cmp_float(void *p1, void *p2)
     return *(float *)p1 - *(float *)p2;
 }
 
+static int cmp_int64(void *p1, void *p2) {
+  return *(int64_t *)p1 - *(int64_t *)p2;
+}
+
 static int cmp_int32(void *p1, void *p2)
 {
     return *(int32_t *)p1 - *(int32_t *)p2;
@@ -312,6 +350,10 @@ static int cmp_int16(void *p1, void *p2)
 static int cmp_int8(void *p1, void *p2)
 {
     return *(int8_t *)p1 - *(int8_t *)p2;
+}
+
+static int cmp_uint64(void *p1, void *p2) {
+  return *(uint64_t *)p1 - *(uint64_t *)p2;
 }
 
 static int cmp_uint32(void *p1, void *p2)
@@ -337,9 +379,11 @@ static int cmp_bool(void *p1, void *p2)
 static tl_cmp_func cmp_func[TL_DTYPE_SIZE] = {
     cmp_double,
     cmp_float,
+    cmp_int64,
     cmp_int32,
     cmp_int16,
     cmp_int8,
+    cmp_uint64,
     cmp_uint32,
     cmp_uint16,
     cmp_uint8,
@@ -493,6 +537,68 @@ static void elew_float(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
     tl_check_elew_op(elew_op);
     elew_op_float[elew_op](p1, p2, res);
+}
+
+static void mul_int64(void *p1, void *p2, void *res)
+{
+    *(int64_t *)res = *(int64_t *)p1 * *(int64_t *)p2;
+}
+
+static void div_int64(void *p1, void *p2, void *res)
+{
+    assert(*(int64_t *)p2);
+    *(int64_t *)res = *(int64_t *)p1 / *(int64_t *)p2;
+}
+
+static void sum_int64(void *p1, void *p2, void *res)
+{
+    *(int64_t *)res = *(int64_t *)p1 + *(int64_t *)p2;
+}
+
+static void sub_int64(void *p1, void *p2, void *res)
+{
+    *(int64_t *)res = *(int64_t *)p1 - *(int64_t *)p2;
+}
+
+static void max_int64(void *p1, void *p2, void *res)
+{
+    *(int64_t *)res = max(*(int64_t *)p1, *(int64_t *)p2);
+}
+
+static void min_int64(void *p1, void *p2, void *res)
+{
+    *(int64_t *)res = min(*(int64_t *)p1, *(int64_t *)p2);
+}
+
+static void pow_int64(void *p1, void *p2, void *res)
+{
+    double d1, d2, dr;
+
+    d1 = (double)*(int64_t *)p1;
+    d2 = (double)*(int64_t *)p2;
+    dr = pow(d1, d2);
+    if (dr >= INT64_MAX)
+        *(int64_t *)res = INT64_MAX;
+    else if (dr <= INT64_MIN)
+        *(int64_t *)res = INT64_MIN;
+    else
+        *(int64_t *)res = (int64_t)dr;
+}
+
+static elew_op_func elew_op_int64[TL_ELEW_OP_SIZE] = {
+    mul_int64,
+    div_int64,
+    sum_int64,
+    sub_int64,
+    max_int64,
+    min_int64,
+    pow_int64
+};
+
+static void elew_int64(void *p1, void *p2, void *res, tl_elew_op elew_op)
+{
+    tl_check_elew_op(elew_op);
+    elew_op_int64[elew_op](p1, p2, res);
 }
 
 static void mul_int32(void *p1, void *p2, void *res)
@@ -679,6 +785,66 @@ static void elew_int8(void *p1, void *p2, void *res, tl_elew_op elew_op)
 {
     tl_check_elew_op(elew_op);
     elew_op_int8[elew_op](p1, p2, res);
+}
+
+static void mul_uint64(void *p1, void *p2, void *res)
+{
+    *(uint64_t *)res = *(uint64_t *)p1 * *(uint64_t *)p2;
+}
+
+static void div_uint64(void *p1, void *p2, void *res)
+{
+    assert(*(uint64_t *)p2);
+    *(uint64_t *)res = *(uint64_t *)p1 / *(uint64_t *)p2;
+}
+
+static void sum_uint64(void *p1, void *p2, void *res)
+{
+    *(uint64_t *)res = *(uint64_t *)p1 + *(uint64_t *)p2;
+}
+
+static void sub_uint64(void *p1, void *p2, void *res)
+{
+    *(uint64_t *)res = *(uint64_t *)p1 - *(uint64_t *)p2;
+}
+
+static void max_uint64(void *p1, void *p2, void *res)
+{
+    *(uint64_t *)res = max(*(uint64_t *)p1, *(uint64_t *)p2);
+}
+
+static void min_uint64(void *p1, void *p2, void *res)
+{
+    *(uint64_t *)res = min(*(uint64_t *)p1, *(uint64_t *)p2);
+}
+
+static void pow_uint64(void *p1, void *p2, void *res)
+{
+    double d1, d2, dr;
+
+    d1 = (double)*(uint64_t *)p1;
+    d2 = (double)*(uint64_t *)p2;
+    dr = pow(d1, d2);
+    if (dr >= UINT64_MAX)
+        *(uint64_t *)res = UINT64_MAX;
+    else
+        *(uint64_t *)res = (uint64_t)dr;
+}
+
+static elew_op_func elew_op_uint64[TL_ELEW_OP_SIZE] = {
+    mul_uint64,
+    div_uint64,
+    sum_uint64,
+    sub_uint64,
+    max_uint64,
+    min_uint64,
+    pow_uint64
+};
+
+static void elew_uint64(void *p1, void *p2, void *res, tl_elew_op elew_op)
+{
+    tl_check_elew_op(elew_op);
+    elew_op_uint64[elew_op](p1, p2, res);
 }
 
 static void mul_uint32(void *p1, void *p2, void *res)
@@ -941,9 +1107,11 @@ static void elew_bool(void *p1, void *p2, void *res, tl_elew_op elew_op)
 static tl_elew_func elew_func[TL_DTYPE_SIZE] = {
     elew_double,
     elew_float,
+    elew_int64,
     elew_int32,
     elew_int16,
     elew_int8,
+    elew_uint64,
     elew_uint32,
     elew_uint16,
     elew_uint8,
@@ -1016,6 +1184,8 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
 
     double val_d;
     float val_f;
+    int64_t val_i64;
+    uint64_t val_u64;
     int32_t val_i32;
     uint32_t val_u32;
     int16_t val_i16;
@@ -1032,6 +1202,9 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
         case TL_FLOAT:
             *(double *)pd = (double)*(float *)ps;
             break;
+        case TL_INT64:
+            *(double *)pd = (double)*(int64_t *)ps;
+            break;
         case TL_INT32:
             *(double *)pd = (double)*(int32_t *)ps;
             break;
@@ -1040,6 +1213,9 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             break;
         case TL_INT8:
             *(double *)pd = (double)*(int8_t *)ps;
+            break;
+        case TL_UINT64:
+            *(double *)pd = (double)*(uint64_t *)ps;
             break;
         case TL_UINT32:
             *(double *)pd = (double)*(uint32_t *)ps;
@@ -1072,6 +1248,9 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
         case TL_FLOAT:
             *(float *)pd = *(float *)ps;
             break;
+        case TL_INT64:
+            *(float *)pd = (float)*(int64_t *)ps;
+            break;
         case TL_INT32:
             *(float *)pd = (float)*(int32_t *)ps;
             break;
@@ -1080,6 +1259,9 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             break;
         case TL_INT8:
             *(float *)pd = (float)*(int8_t *)ps;
+            break;
+        case TL_UINT64:
+            *(float *)pd = (float)*(uint64_t *)ps;
             break;
         case TL_UINT32:
             *(float *)pd = (float)*(uint32_t *)ps;
@@ -1092,6 +1274,62 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             break;
         case TL_BOOL:
             *(float *)pd = (float)*(tl_bool_t *)ps;
+            break;
+        default:
+            assert(0 && "unsupported tl_dtype");
+            break;
+        }
+        break;
+    case TL_INT64:
+        switch (dtype_s) {
+        case TL_DOUBLE:
+            val_d = *(double *)ps;
+            if (val_d >= INT64_MAX)
+                *(int64_t *)pd = INT64_MAX;
+            else if (val_d <= INT64_MIN)
+                *(int64_t *)pd = INT64_MIN;
+            else
+                *(int64_t *)pd = (int64_t)val_d;
+            break;
+        case TL_FLOAT:
+            val_f = *(float *)ps;
+            if (val_f >= INT64_MAX)
+                *(int64_t *)pd = INT64_MAX;
+            else if (val_f <= INT64_MIN)
+                *(int64_t *)pd = INT64_MIN;
+            else
+                *(int64_t *)pd = (int64_t)val_f;
+            break;
+        case TL_INT64:
+            *(int64_t *)pd = *(int64_t *)ps;
+            break;
+        case TL_INT32:
+            *(int64_t *)pd = (int64_t)*(int32_t *)ps;
+            break;
+        case TL_INT16:
+            *(int64_t *)pd = (int64_t)*(int16_t *)ps;
+            break;
+        case TL_INT8:
+            *(int64_t *)pd = (int64_t)*(int8_t *)ps;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= INT64_MAX)
+                *(int64_t *)pd = INT64_MAX;
+            else
+                *(int64_t *)pd = (int64_t)val_u64;
+            break;
+        case TL_UINT32:
+            *(int64_t *)pd = (int64_t)*(uint32_t *)ps;
+            break;
+        case TL_UINT16:
+            *(int64_t *)pd = (int64_t)*(uint16_t *)ps;
+            break;
+        case TL_UINT8:
+            *(int64_t *)pd = (int64_t)*(uint8_t *)ps;
+            break;
+        case TL_BOOL:
+            *(int64_t *)pd = (int64_t)*(tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -1118,6 +1356,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(int32_t *)pd = (int32_t)val_f;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= INT32_MAX)
+                *(int32_t *)pd = INT32_MAX;
+            else
+                *(int32_t *)pd = (int32_t)val_i64;
+            break;
         case TL_INT32:
             *(int32_t *)pd = *(int32_t *)ps;
             break;
@@ -1126,6 +1371,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             break;
         case TL_INT8:
             *(int32_t *)pd = (int32_t)*(int8_t *)ps;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= INT32_MAX)
+                *(int32_t *)pd = INT32_MAX;
+            else
+                *(int32_t *)pd = (int32_t)val_u64;
             break;
         case TL_UINT32:
             val_u32 = *(uint32_t *)ps;
@@ -1170,6 +1422,15 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(int16_t *)pd = (int16_t)val_f;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= INT16_MAX)
+                *(int16_t *)pd = INT16_MAX;
+            else if (val_i64 <= INT16_MIN)
+                *(int16_t *)pd = INT16_MIN;
+            else
+                *(int16_t *)pd = (int16_t)val_i64;
+            break;
         case TL_INT32:
             val_i32 = *(int32_t *)ps;
             if (val_i32 >= INT16_MAX)
@@ -1184,6 +1445,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             break;
         case TL_INT8:
             *(int16_t *)pd = (int16_t)*(int8_t *)ps;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= INT16_MAX)
+                *(int16_t *)pd = INT16_MAX;
+            else
+                *(int16_t *)pd = (int16_t)val_u64;
             break;
         case TL_UINT32:
             val_u32 = *(uint32_t *)ps;
@@ -1230,6 +1498,15 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(int8_t *)pd = (int8_t)val_f;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= INT8_MAX)
+                *(int8_t *)pd = INT8_MAX;
+            else if (val_i64 <= INT8_MIN)
+                *(int8_t *)pd = INT8_MIN;
+            else
+                *(int8_t *)pd = (int8_t)val_i64;
+            break;
         case TL_INT32:
             val_i32 = *(int32_t *)ps;
             if (val_i32 >= INT8_MAX)
@@ -1258,6 +1535,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(int8_t *)pd = (int8_t)val_u32;
             break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= INT8_MAX)
+                *(int8_t *)pd = INT8_MAX;
+            else
+                *(int8_t *)pd = (int8_t)val_u64;
+            break;
         case TL_UINT16:
             val_u16 = *(uint16_t *)ps;
             if (val_u16 >= INT8_MAX)
@@ -1274,6 +1558,74 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             break;
         case TL_BOOL:
             *(int8_t *)pd = (int8_t)*(tl_bool_t *)ps;
+            break;
+        default:
+            assert(0 && "unsupported tl_dtype");
+            break;
+        }
+        break;
+    case TL_UINT64:
+        switch (dtype_s) {
+        case TL_DOUBLE:
+            val_d = *(double *)ps;
+            if (val_d >= UINT64_MAX)
+                *(uint64_t *)pd = UINT64_MAX;
+            else if (val_d < 0)
+                *(uint64_t *)pd = 0;
+            else
+                *(uint64_t *)pd = (uint64_t)val_d;
+            break;
+        case TL_FLOAT:
+            val_f = *(float *)ps;
+            if (val_f >= UINT64_MAX)
+                *(uint64_t *)pd = UINT64_MAX;
+            else if (val_f < 0)
+                *(uint64_t *)pd = 0;
+            else
+                *(uint64_t *)pd = (uint64_t)val_f;
+            break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= 0)
+                *(uint64_t *)pd = (uint64_t)val_i64;
+            else
+                *(uint64_t *)pd = 0;
+            break;
+        case TL_INT32:
+            val_i32 = *(int32_t *)ps;
+            if (val_i32 >= 0)
+                *(uint64_t *)pd = (uint64_t)val_i32;
+            else
+                *(uint64_t *)pd = 0;
+            break;
+        case TL_INT16:
+            val_i16 = *(int16_t *)ps;
+            if (val_i16 >= 0)
+                *(uint64_t *)pd = (uint64_t)val_i16;
+            else
+                *(uint64_t *)pd = 0;
+            break;
+        case TL_INT8:
+            val_i8 = *(int8_t *)ps;
+            if (val_i8 >= 0)
+                *(uint64_t *)pd = (uint64_t)val_i8;
+            else
+                *(uint64_t *)pd = 0;
+            break;
+        case TL_UINT64:
+            *(uint64_t *)pd = *(uint64_t *)ps;
+            break;
+        case TL_UINT32:
+            *(uint64_t *)pd = *(uint32_t *)ps;
+            break;
+        case TL_UINT16:
+            *(uint64_t *)pd = (uint64_t)*(uint16_t *)ps;
+            break;
+        case TL_UINT8:
+            *(uint64_t *)pd = (uint64_t)*(uint8_t *)ps;
+            break;
+        case TL_BOOL:
+            *(uint64_t *)pd = (uint64_t)*(tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -1300,6 +1652,15 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(uint32_t *)pd = (uint32_t)val_f;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= UINT32_MAX)
+              *(uint32_t *)pd = UINT32_MAX;
+            else if (val_i64 >= 0)
+              *(uint32_t *)pd = (uint32_t)val_i64;
+            else
+                *(uint32_t *)pd = 0;
+            break;
         case TL_INT32:
             val_i32 = *(int32_t *)ps;
             if (val_i32 >= 0)
@@ -1320,6 +1681,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
                 *(uint32_t *)pd = (uint32_t)val_i8;
             else
                 *(uint32_t *)pd = 0;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= UINT32_MAX)
+                *(uint32_t *)pd = UINT32_MAX;
+            else
+                *(uint32_t *)pd = (uint32_t)val_u64;
             break;
         case TL_UINT32:
             *(uint32_t *)pd = *(uint32_t *)ps;
@@ -1358,6 +1726,15 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(uint16_t *)pd = (uint16_t)val_f;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= UINT16_MAX)
+                *(uint16_t *)pd = UINT16_MAX;
+            else if (val_i64 < 0)
+                *(uint16_t *)pd = 0;
+            else
+                *(uint16_t *)pd = (uint16_t)val_i64;
+            break;
         case TL_INT32:
             val_i32 = *(int32_t *)ps;
             if (val_i32 >= UINT16_MAX)
@@ -1380,6 +1757,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
                 *(uint16_t *)pd = (uint16_t)val_i8;
             else
                 *(uint16_t *)pd = 0;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= UINT16_MAX)
+                *(uint16_t *)pd = UINT16_MAX;
+            else
+                *(uint16_t *)pd = (uint16_t)val_u64;
             break;
         case TL_UINT32:
             val_u32 = *(uint32_t *)ps;
@@ -1422,6 +1806,15 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(uint8_t *)pd = (uint8_t)val_f;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64 >= UINT8_MAX)
+                *(uint8_t *)pd = UINT8_MAX;
+            else if (val_i64 < 0)
+                *(uint8_t *)pd = 0;
+            else
+                *(uint8_t *)pd = (uint8_t)val_i64;
+            break;
         case TL_INT32:
             val_i32 = *(int32_t *)ps;
             if (val_i32 >= UINT8_MAX)
@@ -1446,6 +1839,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
                 *(uint8_t *)pd = (uint8_t)val_i8;
             else
                 *(uint8_t *)pd = 0;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64 >= UINT8_MAX)
+                *(uint8_t *)pd = UINT8_MAX;
+            else
+                *(uint8_t *)pd = (uint8_t)val_u64;
             break;
         case TL_UINT32:
             val_u32 = *(uint32_t *)ps;
@@ -1488,6 +1888,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
             else
                 *(tl_bool_t *)pd = TL_FALSE;
             break;
+        case TL_INT64:
+            val_i64 = *(int64_t *)ps;
+            if (val_i64)
+                *(tl_bool_t *)pd = TL_TRUE;
+            else
+                *(tl_bool_t *)pd = TL_FALSE;
+            break;
         case TL_INT32:
             val_i32 = *(int32_t *)ps;
             if (val_i32)
@@ -1505,6 +1912,13 @@ void tl_convert(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
         case TL_INT8:
             val_i8 = *(int8_t *)ps;
             if (val_i8)
+                *(tl_bool_t *)pd = TL_TRUE;
+            else
+                *(tl_bool_t *)pd = TL_FALSE;
+            break;
+        case TL_UINT64:
+            val_u64 = *(uint64_t *)ps;
+            if (val_u64)
                 *(tl_bool_t *)pd = TL_TRUE;
             else
                 *(tl_bool_t *)pd = TL_FALSE;

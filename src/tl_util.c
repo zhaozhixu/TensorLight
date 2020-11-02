@@ -28,65 +28,65 @@
 
 #include "tl_util.h"
 
-void *tl_alloc(size_t size)
+TL_EXPORT void *tl_alloc(size_t size)
 {
-     void *p;
+    void *p;
 
-     assert(size > 0);
-     p = malloc(size);
-     if (p == NULL)
-          tl_err_dump("malloc(%lu) failed", size);
+    assert(size > 0);
+    p = malloc(size);
+    if (p == NULL)
+        tl_err_dump("malloc(%lu) failed", size);
 
-     return p;
+    return p;
 }
 
-void tl_memcpy(void *dst, void *src, size_t size)
+TL_EXPORT void tl_memcpy(void *dst, void *src, size_t size)
 {
-     memmove(dst, src, size);
+    memmove(dst, src, size);
 }
 
-void *tl_clone(const void *src, size_t size)
+TL_EXPORT void *tl_clone(const void *src, size_t size)
 {
-     void *p;
+    void *p;
 
-     assert(src);
-     p = tl_alloc(size);
-     memmove(p, src, size);
-     return p;
+    assert(src);
+    p = tl_alloc(size);
+    memmove(p, src, size);
+    return p;
 }
 
-void tl_copy(const void *src, void *dst, size_t size)
+TL_EXPORT void tl_copy(const void *src, void *dst, size_t size)
 {
-     assert(src && dst);
-     memmove(dst, src, size);
+    assert(src && dst);
+    memmove(dst, src, size);
 }
 
-void *tl_repeat(void *data, size_t size, int times)
+TL_EXPORT void *tl_repeat(void *data, size_t size, int times)
 {
-     void *p, *dst;
-     int i;
+    void *p, *dst;
+    int i;
 
-     assert(data && times > 0);
-     dst = p = tl_alloc(size * times);
-     for (i = 0; i < times; i++, p = (char *)p + size)
-          memmove(p, data, size);
-     return dst;
+    assert(data && times > 0);
+    dst = p = tl_alloc(size * times);
+    for (i = 0; i < times; i++, p = (char *)p + size)
+        memmove(p, data, size);
+    return dst;
 }
 
-int tl_compute_length(int ndim, const int *dims)
+TL_EXPORT int tl_compute_length(int ndim, const int *dims)
 {
-     int i, len;
+    int i, len;
 
-     assert(ndim > 0);
-     assert(dims);
-     for (i = 0, len = 1; i < ndim; i++) {
-          assert(dims[i] > 0);
-          len *= dims[i];
-     }
-     return len;
+    assert(ndim > 0);
+    assert(dims);
+    for (i = 0, len = 1; i < ndim; i++) {
+        assert(dims[i] > 0);
+        len *= dims[i];
+    }
+    return len;
 }
 
-int tl_read_floats(const char *filename, int num, float *buf)
+TL_EXPORT int tl_read_floats(const char *filename, int num, float *buf)
 {
     FILE *fp;
     int count = 0;
@@ -104,16 +104,15 @@ int tl_read_floats(const char *filename, int num, float *buf)
 /* The following functions are taken from APUE, the 3rd version. */
 static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)
 {
-     char buf[TL_MAXLINE];
+    char buf[TL_MAXLINE];
 
-     vsnprintf(buf, TL_MAXLINE-1, fmt, ap);
-     if (errnoflag)
-          snprintf(buf+strlen(buf), TL_MAXLINE-strlen(buf)-1, ": %s",
-               strerror(error));
-     strcat(buf, "\n");
-     fflush(stdout);
-     fputs(buf, stderr);
-     fflush(NULL);
+    vsnprintf(buf, TL_MAXLINE - 1, fmt, ap);
+    if (errnoflag)
+        snprintf(buf + strlen(buf), TL_MAXLINE - strlen(buf) - 1, ": %s", strerror(error));
+    strcat(buf, "\n");
+    fflush(stdout);
+    fputs(buf, stderr);
+    fflush(NULL);
 }
 
 /*
@@ -122,10 +121,10 @@ static void err_doit(int errnoflag, int error, const char *fmt, va_list ap)
  */
 void tl_warn_msg(const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(0, 0, fmt, ap);
-     va_end(ap);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(0, 0, fmt, ap);
+    va_end(ap);
 }
 
 /*
@@ -135,10 +134,10 @@ void tl_warn_msg(const char *fmt, ...)
  */
 void tl_warn_cont(int error, const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(1, error, fmt, ap);
-     va_end(ap);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(1, error, fmt, ap);
+    va_end(ap);
 }
 
 /*
@@ -147,10 +146,10 @@ void tl_warn_cont(int error, const char *fmt, ...)
  */
 void tl_warn_ret(const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(1, errno, fmt, ap);
-     va_end(ap);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(1, errno, fmt, ap);
+    va_end(ap);
 }
 
 /*
@@ -159,11 +158,11 @@ void tl_warn_ret(const char *fmt, ...)
  */
 void tl_err_quit(const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(0, 0, fmt, ap);
-     va_end(ap);
-     exit(1);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(0, 0, fmt, ap);
+    va_end(ap);
+    exit(1);
 }
 
 /*
@@ -172,12 +171,12 @@ void tl_err_quit(const char *fmt, ...)
  */
 void tl_err_bt(const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(0, 0, fmt, ap);
-     va_end(ap);
-     abort();
-     exit(1);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(0, 0, fmt, ap);
+    va_end(ap);
+    abort();
+    exit(1);
 }
 
 /*
@@ -187,12 +186,11 @@ void tl_err_bt(const char *fmt, ...)
  */
 void tl_err_exit(int error, const char *fmt, ...)
 {
-     va_list
-          ap;
-     va_start(ap, fmt);
-     err_doit(1, error, fmt, ap);
-     va_end(ap);
-     exit(1);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(1, error, fmt, ap);
+    va_end(ap);
+    exit(1);
 }
 
 /*
@@ -201,11 +199,11 @@ void tl_err_exit(int error, const char *fmt, ...)
  */
 void tl_err_sys(const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(1, errno, fmt, ap);
-     va_end(ap);
-     exit(1);
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(1, errno, fmt, ap);
+    va_end(ap);
+    exit(1);
 }
 
 /*
@@ -214,12 +212,12 @@ void tl_err_sys(const char *fmt, ...)
  */
 void tl_err_dump(const char *fmt, ...)
 {
-     va_list ap;
-     va_start(ap, fmt);
-     err_doit(1, errno, fmt, ap);
-     va_end(ap);
-     abort();
-/* dump core and terminate */
-     exit(1);
-/* shouldn’t get here */
+    va_list ap;
+    va_start(ap, fmt);
+    err_doit(1, errno, fmt, ap);
+    va_end(ap);
+    abort();
+    /* dump core and terminate */
+    exit(1);
+    /* shouldn’t get here */
 }

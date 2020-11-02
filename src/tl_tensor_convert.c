@@ -20,20 +20,33 @@
  * SOFTWARE.
  */
 
-#include "tl_type.h"
+#include "tl_tensor_internal.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
-TL_EXPORT int tl_fprintf_cuda(FILE *fp, const char *fmt, void *p, tl_dtype dtype)
+TL_EXPORT tl_tensor *tl_tensor_convert(const tl_tensor *src, tl_tensor *dst, tl_dtype dtype_d)
 {
-    void *p_h;
-    int ret;
+    size_t dsize_d, dsize_s;
+    void *s_data, *d_data;
+    tl_dtype dtype_s;
+    int thread_num;
+    int di;
 
-    p_h = tl_alloc(tl_size_of(dtype));
-    tl_pointer_assign_d2h(p_h, 0, p, 0, dtype);
-    ret = tl_fprintf(fp, fmt, p_h, dtype);
-    tl_free(p_h);
+    assert(src && src->data);
+    if (dst) {
+        assert(dst->data);
+        assert(tl_tensor_issameshape(src, dst));
+        assert(dst->dtype == dtype_d);
+    } else {
+        dst = tl_tensor_zeros(src->ndim, src->dims, dtype_d);
+    }
 
-    return ret;
+    dtype_s = src->dtype;
+    s_data = src->data;
+    d_data = dst->data;
+    dsize_d = tl_size_of(dtype_d);
+    dsize_s = tl_size_of(dtype_s);
+    thread_num = dst->len;
+    for (di = 0; di < thread_num; di++)
+        tl_convert(tl_padd(d_data, di, dsize_d), dtype_d, tl_padd(s_data, di, dsize_s), dtype_s);
+
+    return dst;
 }

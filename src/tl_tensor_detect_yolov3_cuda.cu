@@ -20,37 +20,16 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <float.h>
-#include <string.h>
-#include <assert.h>
-#include <stdarg.h>
-#include <math.h>
-#include <thrust/sort.h>
-#include <thrust/execution_policy.h>
-
-#include "tl_tensor.h"
-#include "tl_util.h"
-
-#define BLOCK_SIZE 1024
-#define BLOCK_NUM(bs, tn) (((tn) + (bs) - 1) / (bs))
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#include "tl_tensor_internal_cuda.h"
 
 #define YOLO_MAX_ANCHOR_NUM 64
 
-__global__ void detect_yolov3_kernel(const float *feature,
-                                     const float *anchors,
-                                     float *box_centers, float *box_sizes,
-                                     float *boxes, float *confs, float *probs,
-                                     int grid_h, int grid_w,
-                                     int img_h, int img_w,
-                                     int class_num, int anchor_num,
-                                     int block_size, int feature_len)
+static __global__ void detect_yolov3_kernel(const float *feature, const float *anchors,
+                                            float *box_centers, float *box_sizes, float *boxes,
+                                            float *confs, float *probs, int grid_h, int grid_w,
+                                            int img_h, int img_w, int class_num, int anchor_num,
+                                            int block_size, int feature_len)
 {
-
     assert(anchor_num <= YOLO_MAX_ANCHOR_NUM);
 
     __shared__ float anchors_cache[YOLO_MAX_ANCHOR_NUM * 2];
@@ -61,7 +40,7 @@ __global__ void detect_yolov3_kernel(const float *feature,
     __syncthreads();
 
     int ti = blockIdx.x * block_size + threadIdx.x;
-    if (ti >= feature_len)  /* ti is now the output index in a feature map */
+    if (ti >= feature_len) /* ti is now the output index in a feature map */
         return;
 
     int hw = grid_h * grid_w;
@@ -70,30 +49,28 @@ __global__ void detect_yolov3_kernel(const float *feature,
     float exp_f = expf(feature[ti]);
     float sigmoided = 1 / (1 + 1 / exp_f);
 
-    if (ai < hw * 2) {                  /* box_centers */
+    if (ai < hw * 2) { /* box_centers */
         float center;
-        if (ai < hw)            /* x */
+        if (ai < hw) /* x */
             center = (sigmoided + ai % grid_w) * ((float)img_w / grid_w);
-        else                    /* y */
+        else /* y */
             center = (sigmoided + (ai - hw) / grid_w) * ((float)img_h / grid_h);
         box_centers[ai + ti / anchor_volumn * hw * 2] = center;
     }
 
     if (ai >= hw * 2 && ai < hw * 4) { /* box_sizes */
         float size;
-        if (ai < hw * 3)        /* w */
-            size = anchors_cache[ti / anchor_volumn * 2]
-                * max(min(exp_f, 50), 1e-9);
-        else                    /* h */
-            size = anchors_cache[ti / anchor_volumn * 2 + 1]
-                * max(min(exp_f, 50), 1e-9);
+        if (ai < hw * 3) /* w */
+            size = anchors_cache[ti / anchor_volumn * 2] * max(min(exp_f, 50), 1e-9);
+        else /* h */
+            size = anchors_cache[ti / anchor_volumn * 2 + 1] * max(min(exp_f, 50), 1e-9);
         box_sizes[ai - hw * 2 + ti / anchor_volumn * hw * 2] = size;
     }
 
-    if (ai >= hw * 4 && ai < hw * 5)   /* conf */
+    if (ai >= hw * 4 && ai < hw * 5) /* conf */
         confs[ai - hw * 4 + ti / anchor_volumn * hw] = sigmoided;
 
-    if (ai >= hw * 5)                  /* probs */
+    if (ai >= hw * 5) /* probs */
         probs[ai - hw * 5 + ti / anchor_volumn * hw * class_num] = sigmoided;
 
     __syncthreads();
@@ -117,13 +94,10 @@ __global__ void detect_yolov3_kernel(const float *feature,
 // x_max, y_max)
 // confs in [N, anchor_num, 1, H, W] order
 // probs in [N, anchor_num, class_num, H, W] order
-void tl_tensor_detect_yolov3_cuda(const tl_tensor *feature,
-                                  const tl_tensor *anchors,
-                                  tl_tensor *box_centers,
-                                  tl_tensor *box_sizes,
-                                  tl_tensor *boxes,
-                                  tl_tensor *confs, tl_tensor *probs,
-                                  int img_h, int img_w)
+TL_EXPORT void tl_tensor_detect_yolov3_cuda(const tl_tensor *feature, const tl_tensor *anchors,
+                                            tl_tensor *box_centers, tl_tensor *box_sizes,
+                                            tl_tensor *boxes, tl_tensor *confs, tl_tensor *probs,
+                                            int img_h, int img_w)
 {
     assert(feature && tl_is_device_mem(feature->data));
     assert(feature->dtype == TL_FLOAT);
@@ -184,16 +158,9 @@ void tl_tensor_detect_yolov3_cuda(const tl_tensor *feature,
     assert(probs->dims[4] == W);
 
     int block_num = BLOCK_NUM(BLOCK_SIZE, feature->len);
-    detect_yolov3_kernel<<<block_num, BLOCK_SIZE>>>((float *)feature->data,
-                                                    (float *)anchors->data,
-                                                    (float *)box_centers->data,
-                                                    (float *)box_sizes->data,
-                                                    (float *)boxes->data,
-                                                    (float *)confs->data,
-                                                    (float *)probs->data,
-                                                    H, W, img_h, img_w,
-                                                    class_num, anchor_num,
-                                                    BLOCK_SIZE,
-                                                    feature->len);
+    detect_yolov3_kernel<<<block_num, BLOCK_SIZE>>>(
+        (float *)feature->data, (float *)anchors->data, (float *)box_centers->data,
+        (float *)box_sizes->data, (float *)boxes->data, (float *)confs->data, (float *)probs->data,
+        H, W, img_h, img_w, class_num, anchor_num, BLOCK_SIZE, feature->len);
     tl_cuda_device_sync();
 }

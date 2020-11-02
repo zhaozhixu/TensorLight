@@ -20,20 +20,37 @@
  * SOFTWARE.
  */
 
-#include "tl_type.h"
+#include "tl_tensor_internal.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
-TL_EXPORT int tl_fprintf_cuda(FILE *fp, const char *fmt, void *p, tl_dtype dtype)
+/* src: H*W*C, dst: C*H*W */
+TL_EXPORT tl_tensor *tl_tensor_submean(const tl_tensor *src, tl_tensor *dst, const double *mean)
 {
-    void *p_h;
-    int ret;
+    assert(src && src->data);
+    assert(mean);
+    assert(src->ndim == 3);
+    assert(src->dims[2] == 3);
+    int new_dims[] = { src->dims[2], src->dims[0], src->dims[1] };
+    int c, i, H, W, C;
+    double data;
 
-    p_h = tl_alloc(tl_size_of(dtype));
-    tl_pointer_assign_d2h(p_h, 0, p, 0, dtype);
-    ret = tl_fprintf(fp, fmt, p_h, dtype);
-    tl_free(p_h);
+    if (dst) {
+        assert(dst->data);
+        assert(dst->ndim == src->ndim);
+        assert(dst->dims[0] == 3);
+    } else {
+        dst = tl_tensor_zeros(src->ndim, new_dims, TL_FLOAT);
+    }
 
-    return ret;
+    H = src->dims[0];
+    W = src->dims[1];
+    C = src->dims[2];
+    for (c = 0; c < C; c++) {
+        for (i = 0; i < H * W; i++) {
+            TL_TENSOR_DATA_TO(src, i * C + c, data, TL_DOUBLE);
+            data = data - mean[c];
+            TL_TENSOR_DATA_FROM(dst, c * H * W + i, data, TL_DOUBLE);
+        }
+    }
+
+    return dst;
 }

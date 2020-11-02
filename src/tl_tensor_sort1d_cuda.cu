@@ -26,8 +26,7 @@
 #include "tl_tensor.h"
 #include "tl_util.h"
 
-template<typename T>
-static void thrust_sort(T *data, int len, tl_sort_dir dir)
+template <typename T> static void thrust_sort(T *data, int len, tl_sort_dir dir)
 {
     if (dir == TL_SORT_DIR_DESCENDING)
         thrust::sort(thrust::device, data, data + len, thrust::greater<T>());
@@ -35,7 +34,7 @@ static void thrust_sort(T *data, int len, tl_sort_dir dir)
         thrust::sort(thrust::device, data, data + len, thrust::less<T>());
 }
 
-void tl_tensor_sort1d_cuda(tl_tensor *key, tl_sort_dir dir)
+TL_EXPORT void tl_tensor_sort1d_cuda(tl_tensor *key, tl_sort_dir dir)
 {
     assert(key);
     assert(tl_is_device_mem(key->data));

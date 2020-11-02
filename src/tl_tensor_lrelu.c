@@ -20,20 +20,23 @@
  * SOFTWARE.
  */
 
-#include "tl_type.h"
+#include "tl_tensor_internal.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
-TL_EXPORT int tl_fprintf_cuda(FILE *fp, const char *fmt, void *p, tl_dtype dtype)
+TL_EXPORT tl_tensor *tl_tensor_lrelu(const tl_tensor *src, tl_tensor *dst, float negslope)
 {
-    void *p_h;
-    int ret;
+    assert(src && src->data);
+    if (dst) {
+        assert(dst && dst->data);
+        assert(tl_tensor_issameshape(dst, src));
+        assert(dst->dtype == src->dtype);
+    } else {
+        dst = tl_tensor_zeros(src->ndim, src->dims, src->dtype);
+    }
 
-    p_h = tl_alloc(tl_size_of(dtype));
-    tl_pointer_assign_d2h(p_h, 0, p, 0, dtype);
-    ret = tl_fprintf(fp, fmt, p_h, dtype);
-    tl_free(p_h);
+    tl_dtype dtype = src->dtype;
+    size_t dsize = tl_size_of(dtype);
+    for (int i = 0; i < src->len; i++)
+        tl_lrelu(tl_padd(dst->data, i, dsize), tl_padd(src->data, i, dsize), negslope, dtype);
 
-    return ret;
+    return dst;
 }

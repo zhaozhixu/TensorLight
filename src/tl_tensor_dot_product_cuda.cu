@@ -1,0 +1,256 @@
+/*
+ * Copyright (c) 2018-2020 Zhao Zhixu
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#include "tl_tensor_internal_cuda.h"
+
+template <typename T>
+static __global__ void dot_product_kernel(const T *src1, const T *src2, T *dst)
+{
+    extern __shared__ int sdata[];
+
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+    sdata[tid] = src1[i] * src2[i] + src1[i + blockDim.x] * src2[i + blockDim.x];
+    __syncthreads();
+
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if (tid == 0)
+        dst[blockIdx.x] = sdata[0];
+}
+
+template <typename T>
+static void call_dot_product_kernel(const T *src1, const T *src2, T *dst, int n, int threads,
+                                    int blocks)
+{
+    dim3 dimBlock(threads, 1, 1);
+    dim3 dimGrid(blocks, 1, 1);
+    int smem_size = (threads <= 32) ? 2 * threads * sizeof(T) : threads * sizeof(T);
+
+    dot_product_kernel<T><<<dimGrid, dimBlock, smem_size>>>(src1, src2, dst);
+    tl_cuda_device_sync();
+}
+
+template <typename T> static __global__ void reduce_sum_kernel(const T *src, T *dst)
+{
+    extern __shared__ int sdata[];
+
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+    sdata[tid] = src[i] + src[i + blockDim.x];
+    __syncthreads();
+
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if (tid == 0)
+        dst[blockIdx.x] = sdata[0];
+}
+
+template <typename T>
+static void call_reduce_sum_kernel(const T *src, T *dst, int n, int threads, int blocks)
+{
+    dim3 dimBlock(threads, 1, 1);
+    dim3 dimGrid(blocks, 1, 1);
+    int smem_size = (threads <= 32) ? 2 * threads * sizeof(T) : threads * sizeof(T);
+
+    reduce_sum_kernel<T><<<dimGrid, dimBlock, smem_size>>>(src, dst);
+    tl_cuda_device_sync();
+}
+
+static unsigned int next_pow2(unsigned int x)
+{
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return ++x;
+}
+
+static void reduce_get_num_blocks_and_threads(int n, int *blocks, int *threads)
+{
+    *threads = (n < MAX_THREADS * 2) ? next_pow2((n + 1) / 2) : MAX_THREADS;
+    *blocks = BLOCK_NUM(*threads * 2, n);
+}
+
+TL_EXPORT int tl_tensor_dot_product_cuda_ws_len(const tl_tensor *src)
+{
+    int num_threads, num_blocks;
+
+    reduce_get_num_blocks_and_threads(src->len, &num_blocks, &num_threads);
+    return num_blocks;
+}
+
+TL_EXPORT tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *src2,
+                                                tl_tensor *ws1, tl_tensor *ws2, tl_tensor *dst)
+{
+    int tmp_dim[1];
+
+    assert(tl_tensor_issameshape(src1, src2));
+    assert(tl_is_device_mem(src1->data) && tl_is_device_mem(src2->data));
+    assert(src1->dtype == src2->dtype);
+    if (dst) {
+        assert(tl_is_device_mem(dst->data));
+        assert(src1->dtype == dst->dtype);
+    } else {
+        tmp_dim[0] = 1;
+        dst = tl_tensor_zeros_cuda(1, tmp_dim, src1->dtype);
+    }
+
+    int num_threads, num_blocks;
+    reduce_get_num_blocks_and_threads(src1->len, &num_blocks, &num_threads);
+    if (ws1) {
+        assert(tl_is_device_mem(ws1->data));
+        assert(ws1->ndim == 1);
+        assert(ws1->dims[0] == num_blocks);
+        assert(ws1->dtype == src1->dtype);
+    } else {
+        tmp_dim[0] = num_blocks;
+        ws1 = tl_tensor_zeros_cuda(1, tmp_dim, src1->dtype);
+    }
+    if (ws2) {
+        assert(tl_is_device_mem(ws2->data));
+        assert(ws2->ndim == 1);
+        assert(ws2->dims[0] == num_blocks);
+        assert(ws2->dtype == src1->dtype);
+    } else {
+        tmp_dim[0] = num_blocks;
+        ws2 = tl_tensor_zeros_cuda(1, tmp_dim, src1->dtype);
+    }
+
+    /*
+     * Generated by tools/generic.pl with
+     * $switchtype(src1->dtype, T)
+     * $typenoset(T, TL_BOOL)
+     * call_dot_product_kernel<T>((const T *)src1->data, (const T *)src2->data, (T *)ws1->data, src1->len, num_threads,
+     * num_blocks);
+     */
+    switch (src1->dtype) {
+    case TL_DOUBLE:
+        call_dot_product_kernel<double>((const double *)src1->data, (const double *)src2->data,
+                                        (double *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_FLOAT:
+        call_dot_product_kernel<float>((const float *)src1->data, (const float *)src2->data,
+                                       (float *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_INT16:
+        call_dot_product_kernel<int16_t>((const int16_t *)src1->data, (const int16_t *)src2->data,
+                                         (int16_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_INT32:
+        call_dot_product_kernel<int32_t>((const int32_t *)src1->data, (const int32_t *)src2->data,
+                                         (int32_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_INT8:
+        call_dot_product_kernel<int8_t>((const int8_t *)src1->data, (const int8_t *)src2->data,
+                                        (int8_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_UINT16:
+        call_dot_product_kernel<uint16_t>((const uint16_t *)src1->data,
+                                          (const uint16_t *)src2->data, (uint16_t *)ws1->data,
+                                          src1->len, num_threads, num_blocks);
+        break;
+    case TL_UINT32:
+        call_dot_product_kernel<uint32_t>((const uint32_t *)src1->data,
+                                          (const uint32_t *)src2->data, (uint32_t *)ws1->data,
+                                          src1->len, num_threads, num_blocks);
+        break;
+    case TL_UINT8:
+        call_dot_product_kernel<uint8_t>((const uint8_t *)src1->data, (const uint8_t *)src2->data,
+                                         (uint8_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    default:
+        assert(0 && "unsupported dtype for src1->dtype");
+        break;
+    }
+
+    int s = num_blocks;
+    while (s > 1) {
+        int threads = 0, blocks = 0;
+        reduce_get_num_blocks_and_threads(s, &blocks, &threads);
+        tl_memcpy_d2d(ws2->data, ws1->data, s * tl_size_of(ws1->dtype));
+        /*
+         * Generated by tools/generic.pl with
+         * $switchtype(src1->dtype,T)
+         * $typenoset(T, TL_BOOL)
+         * call_reduce_sum_kernel<T>((const T *)ws2->data, (T *)ws1->data, s, threads, blocks);
+         */
+        switch (src1->dtype) {
+        case TL_DOUBLE:
+            call_reduce_sum_kernel<double>((const double *)ws2->data, (double *)ws1->data, s,
+                                           threads, blocks);
+            break;
+        case TL_FLOAT:
+            call_reduce_sum_kernel<float>((const float *)ws2->data, (float *)ws1->data, s, threads,
+                                          blocks);
+            break;
+        case TL_INT16:
+            call_reduce_sum_kernel<int16_t>((const int16_t *)ws2->data, (int16_t *)ws1->data, s,
+                                            threads, blocks);
+            break;
+        case TL_INT32:
+            call_reduce_sum_kernel<int32_t>((const int32_t *)ws2->data, (int32_t *)ws1->data, s,
+                                            threads, blocks);
+            break;
+        case TL_INT8:
+            call_reduce_sum_kernel<int8_t>((const int8_t *)ws2->data, (int8_t *)ws1->data, s,
+                                           threads, blocks);
+            break;
+        case TL_UINT16:
+            call_reduce_sum_kernel<uint16_t>((const uint16_t *)ws2->data, (uint16_t *)ws1->data, s,
+                                             threads, blocks);
+            break;
+        case TL_UINT32:
+            call_reduce_sum_kernel<uint32_t>((const uint32_t *)ws2->data, (uint32_t *)ws1->data, s,
+                                             threads, blocks);
+            break;
+        case TL_UINT8:
+            call_reduce_sum_kernel<uint8_t>((const uint8_t *)ws2->data, (uint8_t *)ws1->data, s,
+                                            threads, blocks);
+            break;
+        default:
+            assert(0 && "unsupported dtype for src1->dtype");
+            break;
+        }
+        s = (s + (threads * 2 - 1)) / (threads * 2);
+    }
+    tl_memcpy_d2d(dst->data, ws1->data, tl_size_of(src1->dtype));
+
+    if (!ws1)
+        tl_tensor_free_data_too_cuda(ws1);
+    if (!ws2)
+        tl_tensor_free_data_too_cuda(ws2);
+
+    return dst;
+}

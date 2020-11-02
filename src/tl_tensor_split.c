@@ -20,20 +20,26 @@
  * SOFTWARE.
  */
 
-#include "tl_type.h"
+#include "tl_tensor_internal.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
-TL_EXPORT int tl_fprintf_cuda(FILE *fp, const char *fmt, void *p, tl_dtype dtype)
+TL_EXPORT tl_tensor *tl_tensor_split(const tl_tensor *src, tl_tensor *dst1, tl_tensor *dst2,
+                                     int axis, const int *splits)
 {
-    void *p_h;
-    int ret;
-
-    p_h = tl_alloc(tl_size_of(dtype));
-    tl_pointer_assign_d2h(p_h, 0, p, 0, dtype);
-    ret = tl_fprintf(fp, fmt, p_h, dtype);
-    tl_free(p_h);
-
-    return ret;
+    assert(src && src->data);
+    assert(dst1 && dst1->data);
+    assert(dst1 && dst2->data);
+    assert(src->dtype == dst1->dtype);
+    assert(src->dtype == dst2->dtype);
+    assert(axis >= 0 && axis < src->ndim);
+    assert(splits[0] + splits[1] == src->dims[axis]);
+    assert(splits[0] == dst1->dims[axis]);
+    assert(splits[1] == dst2->dims[axis]);
+#ifndef NDEBUG
+    for (int i = 0; i < src->ndim; i++) {
+        if (i != axis) {
+            assert(src->dims[i] == dst1->dims[i]);
+            assert(src->dims[i] == dst2->dims[i]);
+        }
+    }
+#endif /* NDEBUG */
 }

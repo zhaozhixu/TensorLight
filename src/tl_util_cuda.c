@@ -66,9 +66,13 @@ int tl_is_device_mem(const void *ptr)
         return 0;
     }
     TL_CUDA_CK(status);
-    return attributes.memoryType == cudaMemoryTypeDevice;
-}
 
+#if defined(CUDART_VERSION) && (CUDART_VERSION < 10000)
+    return attributes.memoryType == cudaMemoryTypeDevice;
+#else
+    return attributes.type == cudaMemoryTypeDevice;
+#endif
+}
 
 void *tl_alloc_cuda(size_t size)
 {

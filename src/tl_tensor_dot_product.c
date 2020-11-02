@@ -20,20 +20,41 @@
  * SOFTWARE.
  */
 
-#include "tl_type.h"
+#include "tl_tensor_internal.h"
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
-TL_EXPORT int tl_fprintf_cuda(FILE *fp, const char *fmt, void *p, tl_dtype dtype)
+TL_EXPORT tl_tensor *tl_tensor_dot_product(const tl_tensor *src1, const tl_tensor *src2,
+                                           tl_tensor *dst)
 {
-    void *p_h;
-    int ret;
+    int di;
+    size_t dsize;
+    tl_dtype dtype;
+    void *s1_data, *s2_data, *d_data;
+    char elew_prod[TL_DTYPE_MAX_SIZE];
+    tl_elew_func elew;
 
-    p_h = tl_alloc(tl_size_of(dtype));
-    tl_pointer_assign_d2h(p_h, 0, p, 0, dtype);
-    ret = tl_fprintf(fp, fmt, p_h, dtype);
-    tl_free(p_h);
+    assert(tl_tensor_issameshape(src1, src2));
+    assert(src1->data && src2->data);
+    assert(src1->dtype == src2->dtype);
+    if (dst) {
+        assert(dst->data);
+        assert(dst->ndim == 1);
+        assert(dst->dims[0] == 1);
+        assert(src1->dtype == dst->dtype);
+    } else {
+        dst = tl_tensor_zeros(1, (int[]){ 1 }, src1->dtype);
+    }
 
-    return ret;
+    s1_data = src1->data;
+    s2_data = src2->data;
+    d_data = dst->data;
+    dtype = src1->dtype;
+    dsize = tl_size_of(dtype);
+    elew = tl_elew_getfunc(dtype);
+    memset(dst->data, 0, tl_tensor_size(dst));
+    for (di = 0; di < src1->len; di++) {
+        elew(tl_padd(s1_data, di, dsize), tl_padd(s2_data, di, dsize), elew_prod, TL_MUL);
+        elew(elew_prod, d_data, d_data, TL_SUM);
+    }
+
+    return dst;
 }

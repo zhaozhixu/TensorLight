@@ -23,7 +23,7 @@
 #ifndef _TENSORLIGHT_H_
 #define _TENSORLIGHT_H_
 
-/* end of config defines */
+/* start of config */
 
 #include "tl_tensor.h"
 

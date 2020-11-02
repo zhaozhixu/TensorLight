@@ -27,6 +27,8 @@
 
 #define TL_MAXLINE 4096
 
+#define TL_EXPORT __attribute__((visibility("default")))
+
 #define tl_free free
 
 #ifdef __cplusplus

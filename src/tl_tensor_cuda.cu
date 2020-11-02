@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhao Zhixu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,11 +36,12 @@
 
 #define MAX_THREADS 1024
 #define BLOCK_SIZE MAX_THREADS
-#define BLOCK_NUM(bs, tn) (((tn) + (bs) - 1) / (bs))
+#define BLOCK_NUM(bs, tn) (((tn) + (bs)-1) / (bs))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-static unsigned int next_pow2(unsigned int x) {
+static unsigned int next_pow2(unsigned int x)
+{
     --x;
     x |= x >> 1;
     x |= x >> 2;
@@ -53,21 +54,20 @@ static unsigned int next_pow2(unsigned int x) {
 static inline __device__ int get_index(const int *ids, int ndim, const int *dims)
 {
     int i, id;
-    for (i = 0, id = ids[0]; i < ndim-1; i++)
-        id = dims[i+1] * id + ids[i+1];
+    for (i = 0, id = ids[0]; i < ndim - 1; i++)
+        id = dims[i + 1] * id + ids[i + 1];
     return id;
 }
 
 static inline __device__ void get_coords(int id, int *ids, int ndim, const int *dims)
 {
-    for (int i = ndim-1; i >= 0; i--) {
+    for (int i = ndim - 1; i >= 0; i--) {
         ids[i] = id % dims[i];
         id /= dims[i];
     }
 }
 
-static __device__ void convert_device(void *pd, tl_dtype dtype_d,
-                                      const void *ps, tl_dtype dtype_s)
+static __device__ void convert_device(void *pd, tl_dtype dtype_d, const void *ps, tl_dtype dtype_s)
 {
     tl_check_dtype(dtype_d);
     tl_check_dtype(dtype_s);
@@ -194,13 +194,13 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(int64_t *)pd = *(int64_t *)ps;
             break;
         case TL_INT32:
-            *(int64_t *)pd = (int64_t)*(int32_t *)ps;
+            *(int64_t *)pd = (int64_t) * (int32_t *)ps;
             break;
         case TL_INT16:
-            *(int64_t *)pd = (int64_t)*(int16_t *)ps;
+            *(int64_t *)pd = (int64_t) * (int16_t *)ps;
             break;
         case TL_INT8:
-            *(int64_t *)pd = (int64_t)*(int8_t *)ps;
+            *(int64_t *)pd = (int64_t) * (int8_t *)ps;
             break;
         case TL_UINT64:
             val_u64 = *(uint64_t *)ps;
@@ -210,16 +210,16 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
                 *(int64_t *)pd = (int64_t)val_u64;
             break;
         case TL_UINT32:
-            *(int64_t *)pd = (int64_t)*(uint32_t *)ps;
+            *(int64_t *)pd = (int64_t) * (uint32_t *)ps;
             break;
         case TL_UINT16:
-            *(int64_t *)pd = (int64_t)*(uint16_t *)ps;
+            *(int64_t *)pd = (int64_t) * (uint16_t *)ps;
             break;
         case TL_UINT8:
-            *(int64_t *)pd = (int64_t)*(uint8_t *)ps;
+            *(int64_t *)pd = (int64_t) * (uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(int64_t *)pd = (int64_t)*(tl_bool_t *)ps;
+            *(int64_t *)pd = (int64_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -257,10 +257,10 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(int32_t *)pd = *(int32_t *)ps;
             break;
         case TL_INT16:
-            *(int32_t *)pd = (int32_t)*(int16_t *)ps;
+            *(int32_t *)pd = (int32_t) * (int16_t *)ps;
             break;
         case TL_INT8:
-            *(int32_t *)pd = (int32_t)*(int8_t *)ps;
+            *(int32_t *)pd = (int32_t) * (int8_t *)ps;
             break;
         case TL_UINT64:
             val_u64 = *(uint64_t *)ps;
@@ -278,14 +278,14 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             break;
         case TL_UINT16:
             /* printf("*ps = %d\n", *(uint16_t *)ps); */
-            *(int32_t *)pd = (int32_t)*(uint16_t *)ps;
+            *(int32_t *)pd = (int32_t) * (uint16_t *)ps;
             /* printf("*pd = %d\n", *(int32_t *)pd); */
             break;
         case TL_UINT8:
-            *(int32_t *)pd = (int32_t)*(uint8_t *)ps;
+            *(int32_t *)pd = (int32_t) * (uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(int32_t *)pd = (int32_t)*(tl_bool_t *)ps;
+            *(int32_t *)pd = (int32_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -334,7 +334,7 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(int16_t *)pd = *(int16_t *)ps;
             break;
         case TL_INT8:
-            *(int16_t *)pd = (int16_t)*(int8_t *)ps;
+            *(int16_t *)pd = (int16_t) * (int8_t *)ps;
             break;
         case TL_UINT64:
             val_u64 = *(uint64_t *)ps;
@@ -358,10 +358,10 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
                 *(int16_t *)pd = (int16_t)val_u16;
             break;
         case TL_UINT8:
-            *(int16_t *)pd = (int16_t)*(uint8_t *)ps;
+            *(int16_t *)pd = (int16_t) * (uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(int16_t *)pd = (int16_t)*(tl_bool_t *)ps;
+            *(int16_t *)pd = (int16_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -447,7 +447,7 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
                 *(int8_t *)pd = (int8_t)val_u8;
             break;
         case TL_BOOL:
-            *(int8_t *)pd = (int8_t)*(tl_bool_t *)ps;
+            *(int8_t *)pd = (int8_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -509,13 +509,13 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(uint64_t *)pd = *(uint32_t *)ps;
             break;
         case TL_UINT16:
-            *(uint64_t *)pd = (uint64_t)*(uint16_t *)ps;
+            *(uint64_t *)pd = (uint64_t) * (uint16_t *)ps;
             break;
         case TL_UINT8:
-            *(uint64_t *)pd = (uint64_t)*(uint8_t *)ps;
+            *(uint64_t *)pd = (uint64_t) * (uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(uint64_t *)pd = (uint64_t)*(tl_bool_t *)ps;
+            *(uint64_t *)pd = (uint64_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -545,9 +545,9 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
         case TL_INT64:
             val_i64 = *(int64_t *)ps;
             if (val_i64 >= UINT32_MAX)
-              *(uint32_t *)pd = UINT32_MAX;
+                *(uint32_t *)pd = UINT32_MAX;
             else if (val_i64 >= 0)
-              *(uint32_t *)pd = (uint32_t)val_i64;
+                *(uint32_t *)pd = (uint32_t)val_i64;
             else
                 *(uint32_t *)pd = 0;
             break;
@@ -583,13 +583,13 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(uint32_t *)pd = *(uint32_t *)ps;
             break;
         case TL_UINT16:
-            *(uint32_t *)pd = (uint32_t)*(uint16_t *)ps;
+            *(uint32_t *)pd = (uint32_t) * (uint16_t *)ps;
             break;
         case TL_UINT8:
-            *(uint32_t *)pd = (uint32_t)*(uint8_t *)ps;
+            *(uint32_t *)pd = (uint32_t) * (uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(uint32_t *)pd = (uint32_t)*(tl_bool_t *)ps;
+            *(uint32_t *)pd = (uint32_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -635,12 +635,12 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
                 *(uint16_t *)pd = (uint16_t)val_i32;
             break;
         case TL_INT16:
-          val_i16 = *(int16_t *)ps;
-          if (val_i16 >= 0)
-            *(uint16_t *)pd = (uint16_t)val_i16;
-          else
-            *(uint16_t *)pd = 0;
-          break;
+            val_i16 = *(int16_t *)ps;
+            if (val_i16 >= 0)
+                *(uint16_t *)pd = (uint16_t)val_i16;
+            else
+                *(uint16_t *)pd = 0;
+            break;
         case TL_INT8:
             val_i8 = *(int8_t *)ps;
             if (val_i8 >= 0)
@@ -666,10 +666,10 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(uint16_t *)pd = *(uint16_t *)ps;
             break;
         case TL_UINT8:
-            *(uint16_t *)pd = (uint16_t)*(uint8_t *)ps;
+            *(uint16_t *)pd = (uint16_t) * (uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(uint16_t *)pd = (uint16_t)*(tl_bool_t *)ps;
+            *(uint16_t *)pd = (uint16_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -755,7 +755,7 @@ static __device__ void convert_device(void *pd, tl_dtype dtype_d,
             *(uint8_t *)pd = *(uint8_t *)ps;
             break;
         case TL_BOOL:
-            *(uint8_t *)pd = (uint8_t)*(tl_bool_t *)ps;
+            *(uint8_t *)pd = (uint8_t) * (tl_bool_t *)ps;
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -875,7 +875,7 @@ tl_tensor *tl_tensor_clone_h2d(const tl_tensor *src)
     tl_tensor *dst;
 
     assert(src);
-    data = tl_clone_h2d(src->data, src->len*tl_size_of(src->dtype));
+    data = tl_clone_h2d(src->data, src->len * tl_size_of(src->dtype));
     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
     dst->owner = dst;
     return dst;
@@ -887,7 +887,7 @@ tl_tensor *tl_tensor_clone_d2h(const tl_tensor *src)
     tl_tensor *dst;
 
     assert(src);
-    data = tl_clone_d2h(src->data, src->len*tl_size_of(src->dtype));
+    data = tl_clone_d2h(src->data, src->len * tl_size_of(src->dtype));
     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
     dst->owner = dst;
     return dst;
@@ -899,7 +899,7 @@ tl_tensor *tl_tensor_clone_d2d(const tl_tensor *src)
     tl_tensor *dst;
 
     assert(src);
-    data = tl_clone_d2d(src->data, src->len*tl_size_of(src->dtype));
+    data = tl_clone_d2d(src->data, src->len * tl_size_of(src->dtype));
     dst = tl_tensor_create(data, src->ndim, src->dims, src->dtype);
     dst->owner = dst;
     return dst;
@@ -912,11 +912,11 @@ tl_tensor *tl_tensor_repeat_h2d(const tl_tensor *src, int times)
     tl_tensor *dst;
 
     assert(src);
-    data = tl_repeat_h2d(src->data, src->len*tl_size_of(src->dtype), times);
-    dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
-    memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+    data = tl_repeat_h2d(src->data, src->len * tl_size_of(src->dtype), times);
+    dims = (int *)tl_alloc(sizeof(int) * (src->ndim + 1));
+    memmove(dims + 1, src->dims, sizeof(int) * (src->ndim));
     dims[0] = times;
-    dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+    dst = tl_tensor_create(data, src->ndim + 1, dims, src->dtype);
     dst->owner = dst;
     tl_free(dims);
     return dst;
@@ -929,11 +929,11 @@ tl_tensor *tl_tensor_repeat_d2h(const tl_tensor *src, int times)
     tl_tensor *dst;
 
     assert(src);
-    data = tl_repeat_d2h(src->data, src->len*tl_size_of(src->dtype), times);
-    dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
-    memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+    data = tl_repeat_d2h(src->data, src->len * tl_size_of(src->dtype), times);
+    dims = (int *)tl_alloc(sizeof(int) * (src->ndim + 1));
+    memmove(dims + 1, src->dims, sizeof(int) * (src->ndim));
     dims[0] = times;
-    dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+    dst = tl_tensor_create(data, src->ndim + 1, dims, src->dtype);
     dst->owner = dst;
     tl_free(dims);
     return dst;
@@ -946,19 +946,18 @@ tl_tensor *tl_tensor_repeat_d2d(const tl_tensor *src, int times)
     tl_tensor *dst;
 
     assert(src);
-    data = tl_repeat_d2d(src->data, src->len*tl_size_of(src->dtype), times);
-    dims = (int *)tl_alloc(sizeof(int)*(src->ndim+1));
-    memmove(dims+1, src->dims, sizeof(int)*(src->ndim));
+    data = tl_repeat_d2d(src->data, src->len * tl_size_of(src->dtype), times);
+    dims = (int *)tl_alloc(sizeof(int) * (src->ndim + 1));
+    memmove(dims + 1, src->dims, sizeof(int) * (src->ndim));
     dims[0] = times;
-    dst = tl_tensor_create(data, src->ndim+1, dims, src->dtype);
+    dst = tl_tensor_create(data, src->ndim + 1, dims, src->dtype);
     dst->owner = dst;
     tl_free(dims);
     return dst;
 }
 
 /* arrange at host, copy to device */
-tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
-                                 tl_dtype dtype)
+tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step, tl_dtype dtype)
 {
     int dims[1];
     void *data;
@@ -975,7 +974,7 @@ tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
     assert(stop >= min_d && stop <= max_d);
     assert(step >= min_d && step <= max_d);
     assert(step != 0);
-    assert(stop > start);      /* TODO: expand to all possibilities */
+    assert(stop > start); /* TODO: expand to all possibilities */
 #endif
 
     len = ceil((stop - start) / step);
@@ -994,9 +993,9 @@ tl_tensor *tl_tensor_arange_cuda(double start, double stop, double step,
     return dst;
 }
 
-template<typename T>
-__global__ void rearange_kernel(T *dst, int len, double start, double step,
-                                int block_size, int total)
+template <typename T>
+__global__ void rearange_kernel(T *dst, int len, double start, double step, int block_size,
+                                int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1005,8 +1004,7 @@ __global__ void rearange_kernel(T *dst, int len, double start, double step,
     dst[di] = (T)(start + step * di);
 }
 
-void tl_tensor_rearange_cuda(tl_tensor *src, double start, double stop,
-                             double step)
+void tl_tensor_rearange_cuda(tl_tensor *src, double start, double stop, double step)
 {
     double len;
 
@@ -1018,7 +1016,7 @@ void tl_tensor_rearange_cuda(tl_tensor *src, double start, double stop,
     assert(stop >= min_d && stop <= max_d);
     assert(step >= min_d && step <= max_d);
     assert(step != 0);
-    assert(stop > start);      /* TODO: expand to all possibilities */
+    assert(stop > start); /* TODO: expand to all possibilities */
 #endif
 
     len = ceil((stop - start) / step);
@@ -1034,49 +1032,40 @@ void tl_tensor_rearange_cuda(tl_tensor *src, double start, double stop,
 
     switch (src->dtype) {
     case TL_DOUBLE:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((double *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((double *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_FLOAT:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((float *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((float *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_INT32:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_INT16:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_INT8:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_UINT32:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_UINT16:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_UINT8:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     case TL_BOOL:
-        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int *)src->data,
-                                                   src->len, start, step,
-                                                   BLOCK_SIZE, thread_num);
+        rearange_kernel<<<block_num, BLOCK_SIZE>>>((int *)src->data, src->len, start, step,
+                                                     BLOCK_SIZE, thread_num);
         break;
     default:
         assert(0 && "unsupported tl_dtype");
@@ -1099,8 +1088,7 @@ void tl_tensor_print_cuda(const tl_tensor *t, const char *fmt)
     tl_tensor_fprint_cuda(stdout, t, fmt);
 }
 
-int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t,
-                        const char *fmt)
+int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t, const char *fmt)
 {
     tl_tensor *t_host;
     int ret;
@@ -1111,8 +1099,7 @@ int tl_tensor_save_cuda(const char *file_name, const tl_tensor *t,
     return ret;
 }
 
-tl_tensor *tl_tensor_zeros_slice_cuda(const tl_tensor *src, int axis, int len,
-                                      tl_dtype dtype)
+tl_tensor *tl_tensor_zeros_slice_cuda(const tl_tensor *src, int axis, int len, tl_dtype dtype)
 {
     tl_tensor *dst;
     int *dims;
@@ -1130,8 +1117,8 @@ tl_tensor *tl_tensor_zeros_slice_cuda(const tl_tensor *src, int axis, int len,
 }
 
 template <typename T>
-static __global__ void slice_kernel(T *src, T *dst, int start, int s_vol,
-                                    int d_vol, int vol, int block_size, int total)
+static __global__ void slice_kernel(T *src, T *dst, int start, int s_vol, int d_vol, int vol,
+                                    int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1140,8 +1127,7 @@ static __global__ void slice_kernel(T *src, T *dst, int start, int s_vol,
     dst[di] = src[si];
 }
 
-tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
-                                int start, int len)
+tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis, int start, int len)
 {
     int i;
     int d_vol, s_vol, vol;
@@ -1158,14 +1144,13 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
         assert(src->dtype == dst->dtype);
         assert(dst->ndim == src->ndim);
         for (i = 0; i < src->ndim; i++)
-            assert(i == axis ? dst->dims[i] == len :
-                   dst->dims[i] == src->dims[i]);
+            assert(i == axis ? dst->dims[i] == len : dst->dims[i] == src->dims[i]);
 #endif
     } else {
         dst = tl_tensor_zeros_slice_cuda(src, axis, len, src->dtype);
     }
 
-    for (i = axis+1, vol = 1; i < dst->ndim; i++)
+    for (i = axis + 1, vol = 1; i < dst->ndim; i++)
         vol *= dst->dims[i];
     d_vol = vol * dst->dims[axis];
     s_vol = vol * src->dims[axis];
@@ -1174,58 +1159,49 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
 
     switch (src->dtype) {
     case TL_DOUBLE:
-        slice_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
-                                                        (double *)dst->data,
-                                                        start, s_vol, d_vol, vol,
-                                                        BLOCK_SIZE, thread_num);
+        slice_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data, (double *)dst->data,
+                                                          start, s_vol, d_vol, vol, BLOCK_SIZE,
+                                                          thread_num);
         break;
     case TL_FLOAT:
-        slice_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
-                                                       (float *)dst->data,
-                                                       start, s_vol, d_vol, vol,
-                                                       BLOCK_SIZE, thread_num);
+        slice_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data, (float *)dst->data,
+                                                         start, s_vol, d_vol, vol, BLOCK_SIZE,
+                                                         thread_num);
         break;
     case TL_INT32:
         slice_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
-                                                         (int32_t *)dst->data,
-                                                         start, s_vol, d_vol, vol,
-                                                         BLOCK_SIZE, thread_num);
+                                                           (int32_t *)dst->data, start, s_vol,
+                                                           d_vol, vol, BLOCK_SIZE, thread_num);
         break;
     case TL_INT16:
         slice_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
-                                                         (int16_t *)dst->data,
-                                                         start, s_vol, d_vol, vol,
-                                                         BLOCK_SIZE, thread_num);
+                                                           (int16_t *)dst->data, start, s_vol,
+                                                           d_vol, vol, BLOCK_SIZE, thread_num);
         break;
     case TL_INT8:
-        slice_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
-                                                        (int8_t *)dst->data,
-                                                        start, s_vol, d_vol, vol,
-                                                        BLOCK_SIZE, thread_num);
+        slice_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int8_t *)dst->data,
+                                                          start, s_vol, d_vol, vol, BLOCK_SIZE,
+                                                          thread_num);
         break;
     case TL_UINT32:
         slice_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
-                                                          (uint32_t *)dst->data,
-                                                          start, s_vol, d_vol, vol,
-                                                          BLOCK_SIZE, thread_num);
+                                                            (uint32_t *)dst->data, start, s_vol,
+                                                            d_vol, vol, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT16:
         slice_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
-                                                          (uint16_t *)dst->data,
-                                                          start, s_vol, d_vol, vol,
-                                                          BLOCK_SIZE, thread_num);
+                                                            (uint16_t *)dst->data, start, s_vol,
+                                                            d_vol, vol, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT8:
         slice_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
-                                                         (uint8_t *)dst->data,
-                                                         start, s_vol, d_vol, vol,
-                                                         BLOCK_SIZE, thread_num);
+                                                           (uint8_t *)dst->data, start, s_vol,
+                                                           d_vol, vol, BLOCK_SIZE, thread_num);
         break;
     case TL_BOOL:
         slice_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
-                                                           (tl_bool_t *)dst->data,
-                                                           start, s_vol, d_vol, vol,
-                                                           BLOCK_SIZE, thread_num);
+                                                             (tl_bool_t *)dst->data, start, s_vol,
+                                                             d_vol, vol, BLOCK_SIZE, thread_num);
         break;
     default:
         assert(0 && "unsupported tl_dtype");
@@ -1236,9 +1212,8 @@ tl_tensor *tl_tensor_slice_cuda(const tl_tensor *src, tl_tensor *dst, int axis,
 }
 
 template <typename T>
-static __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size,
-                                        int reduce_vol, int batch_vol,
-                                        int block_size, int total)
+static __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_size, int reduce_vol,
+                                        int batch_vol, int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1252,7 +1227,7 @@ static __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_si
     T now = src[si], max = now;
     int maxi = 0;
     for (int i = 1; i < dim_size; i++) {
-        now = src[si+i*reduce_vol];
+        now = src[si + i * reduce_vol];
         if (now > max) {
             max = now;
             maxi = i;
@@ -1263,9 +1238,7 @@ static __global__ void maxreduce_kernel(T *src, T *dst, int32_t *arg, int dim_si
         arg[di] = maxi;
 }
 
-
-tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
-                                    tl_tensor *arg, int axis)
+tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst, tl_tensor *arg, int axis)
 {
     /* suppose the shape of src is [N, C, H, W], dim = 1, then thread_num is N x H x W
        reduce_vol is H x W, index_vol is C x H x W */
@@ -1281,8 +1254,7 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
         assert(tl_is_device_mem(dst->data));
         assert(src->dtype == dst->dtype);
         for (i = 0; i < dst->ndim; i++)
-            assert(i == axis ? dst->dims[i] == 1 :
-                   dst->dims[i] == src->dims[i]);
+            assert(i == axis ? dst->dims[i] == 1 : dst->dims[i] == src->dims[i]);
 #endif
     } else {
         dst = tl_tensor_zeros_slice_cuda(src, axis, 1, src->dtype);
@@ -1292,15 +1264,14 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
         assert(tl_is_device_mem(arg->data));
         assert(arg->dtype == TL_INT32);
         for (i = 0; i < arg->ndim; i++)
-            assert(i == axis ? arg->dims[i] == 1 :
-                   arg->dims[i] == src->dims[i]);
+            assert(i == axis ? arg->dims[i] == 1 : arg->dims[i] == src->dims[i]);
 #endif
         arg_data = arg->data;
     } else {
         arg_data = NULL;
     }
 
-    for (i = axis+1, thread_num = 1; i < dst->ndim; i++)
+    for (i = axis + 1, thread_num = 1; i < dst->ndim; i++)
         thread_num *= dst->dims[i];
     reduce_vol = thread_num;
     index_vol = thread_num * src->dims[axis];
@@ -1310,94 +1281,50 @@ tl_tensor *tl_tensor_maxreduce_cuda(const tl_tensor *src, tl_tensor *dst,
 
     switch (src->dtype) {
     case TL_DOUBLE:
-        maxreduce_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
-                                                            (double *)dst->data,
-                                                            (int32_t *)arg_data,
-                                                            src->dims[axis],
-                                                            reduce_vol,
-                                                            index_vol,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+        maxreduce_kernel<double><<<block_num, BLOCK_SIZE>>>(
+            (double *)src->data, (double *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_FLOAT:
-        maxreduce_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
-                                                           (float *)dst->data,
-                                                           (int32_t *)arg_data,
-                                                           src->dims[axis],
-                                                           reduce_vol,
-                                                           index_vol,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+        maxreduce_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data, (float *)dst->data,
+                                                             (int32_t *)arg_data, src->dims[axis],
+                                                             reduce_vol, index_vol, BLOCK_SIZE,
+                                                             thread_num);
         break;
     case TL_INT32:
-        maxreduce_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
-                                                             (int32_t *)dst->data,
-                                                             (int32_t *)arg_data,
-                                                             src->dims[axis],
-                                                             reduce_vol,
-                                                             index_vol,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+        maxreduce_kernel<int32_t><<<block_num, BLOCK_SIZE>>>(
+            (int32_t *)src->data, (int32_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_INT16:
-        maxreduce_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
-                                                             (int16_t *)dst->data,
-                                                             (int32_t *)arg_data,
-                                                             src->dims[axis],
-                                                             reduce_vol,
-                                                             index_vol,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+        maxreduce_kernel<int16_t><<<block_num, BLOCK_SIZE>>>(
+            (int16_t *)src->data, (int16_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_INT8:
-        maxreduce_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
-                                                            (int8_t *)dst->data,
-                                                            (int32_t *)arg_data,
-                                                            src->dims[axis],
-                                                            reduce_vol,
-                                                            index_vol,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+        maxreduce_kernel<int8_t><<<block_num, BLOCK_SIZE>>>(
+            (int8_t *)src->data, (int8_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT32:
-        maxreduce_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
-                                                              (uint32_t *)dst->data,
-                                                              (int32_t *)arg_data,
-                                                              src->dims[axis],
-                                                              reduce_vol,
-                                                              index_vol,
-                                                              BLOCK_SIZE,
-                                                              thread_num);
+        maxreduce_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>(
+            (uint32_t *)src->data, (uint32_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT16:
-        maxreduce_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
-                                                              (uint16_t *)dst->data,
-                                                              (int32_t *)arg_data,
-                                                              src->dims[axis],
-                                                              reduce_vol,
-                                                              index_vol,
-                                                              BLOCK_SIZE,
-                                                              thread_num);
+        maxreduce_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>(
+            (uint16_t *)src->data, (uint16_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT8:
-        maxreduce_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
-                                                             (uint8_t *)dst->data,
-                                                             (int32_t *)arg_data,
-                                                             src->dims[axis],
-                                                             reduce_vol,
-                                                             index_vol,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+        maxreduce_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>(
+            (uint8_t *)src->data, (uint8_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     case TL_BOOL:
-        maxreduce_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
-                                                               (tl_bool_t *)dst->data,
-                                                               (int32_t *)arg_data,
-                                                               src->dims[axis],
-                                                               reduce_vol,
-                                                               index_vol,
-                                                               BLOCK_SIZE,
-                                                               thread_num);
+        maxreduce_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>(
+            (tl_bool_t *)src->data, (tl_bool_t *)dst->data, (int32_t *)arg_data, src->dims[axis],
+            reduce_vol, index_vol, BLOCK_SIZE, thread_num);
         break;
     default:
         assert(0 && "unsupported tl_dtype");
@@ -1416,8 +1343,8 @@ static __global__ void mul_kernel(T *src1, T *src2, T *dst, int block_size, int 
     dst[di] = src1[di] * src2[di];
 }
 
-static __global__ void mul_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                       tl_bool_t *dst, int block_size, int total)
+static __global__ void mul_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
+                                       int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1439,8 +1366,8 @@ static __global__ void div_kernel(T *src1, T *src2, T *dst, int block_size, int 
     dst[di] = src1[di] / src2[di];
 }
 
-static __global__ void div_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                       tl_bool_t *dst, int block_size, int total)
+static __global__ void div_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
+                                       int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1461,8 +1388,8 @@ static __global__ void sum_kernel(T *src1, T *src2, T *dst, int block_size, int 
     dst[di] = src1[di] + src2[di];
 }
 
-static __global__ void sum_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                       tl_bool_t *dst, int block_size, int total)
+static __global__ void sum_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
+                                       int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1483,8 +1410,8 @@ static __global__ void sub_kernel(T *src1, T *src2, T *dst, int block_size, int 
     dst[di] = src1[di] - src2[di];
 }
 
-static __global__ void sub_bool_kernel(tl_bool_t *src1, tl_bool_t *src2,
-                                       tl_bool_t *dst, int block_size, int total)
+static __global__ void sub_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool_t *dst,
+                                       int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1535,8 +1462,8 @@ static __global__ void pow_int_kernel(T *src1, T *src2, T *dst, T type_max, T ty
         dst[di] = (T)fd;
 }
 
-static __global__ void pow_double_kernel(double *src1, double *src2, double *dst,
-                                         int block_size, int total)
+static __global__ void pow_double_kernel(double *src1, double *src2, double *dst, int block_size,
+                                         int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1545,8 +1472,8 @@ static __global__ void pow_double_kernel(double *src1, double *src2, double *dst
     dst[di] = pow(src1[di], src2[di]);
 }
 
-static __global__ void pow_float_kernel(float *src1, float *src2, float *dst,
-                                        int block_size, int total)
+static __global__ void pow_float_kernel(float *src1, float *src2, float *dst, int block_size,
+                                        int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
@@ -1573,8 +1500,8 @@ static __global__ void pow_bool_kernel(tl_bool_t *src1, tl_bool_t *src2, tl_bool
         dst[di] = TL_FALSE;
 }
 
-tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
-                               tl_tensor *dst, tl_elew_op elew_op)
+tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2, tl_tensor *dst,
+                               tl_elew_op elew_op)
 {
     assert(tl_tensor_issameshape(src1, src2));
     assert(tl_is_device_mem(src1->data) && tl_is_device_mem(src2->data));
@@ -1594,53 +1521,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_DOUBLE:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                          (double *)src2->data,
-                                                          (double *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            mul_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src1->data, (double *)src2->data,
+                                              (double *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                          (double *)src2->data,
-                                                          (double *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            div_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src1->data, (double *)src2->data,
+                                              (double *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                          (double *)src2->data,
-                                                          (double *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            sum_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src1->data, (double *)src2->data,
+                                              (double *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                          (double *)src2->data,
-                                                          (double *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            sub_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src1->data, (double *)src2->data,
+                                              (double *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                          (double *)src2->data,
-                                                          (double *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            max_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src1->data, (double *)src2->data,
+                                              (double *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                          (double *)src2->data,
-                                                          (double *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            min_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src1->data, (double *)src2->data,
+                                              (double *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_double_kernel<<<block_num, BLOCK_SIZE>>>((double *)src1->data,
-                                                         (double *)src2->data,
-                                                         (double *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+                                                           (double *)src2->data,
+                                                           (double *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1650,53 +1564,39 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_FLOAT:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                         (float *)src2->data,
-                                                         (float *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+            mul_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                           (float *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         case TL_DIV:
-            div_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                         (float *)src2->data,
-                                                         (float *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+            div_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                           (float *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         case TL_SUM:
-            sum_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                         (float *)src2->data,
-                                                         (float *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+            sum_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                           (float *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         case TL_SUB:
-            sub_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                         (float *)src2->data,
-                                                         (float *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+            sub_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                           (float *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         case TL_MAX:
-            max_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                         (float *)src2->data,
-                                                         (float *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+            max_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                           (float *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         case TL_MIN:
-            min_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                         (float *)src2->data,
-                                                         (float *)dst->data,
-                                                         BLOCK_SIZE,
-                                                         thread_num);
+            min_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                           (float *)dst->data, BLOCK_SIZE,
+                                                           thread_num);
             break;
         case TL_POW:
-            pow_float_kernel<<<block_num, BLOCK_SIZE>>>((float *)src1->data,
-                                                        (float *)src2->data,
-                                                        (float *)dst->data,
-                                                        BLOCK_SIZE,
-                                                        thread_num);
+            pow_float_kernel<<<block_num, BLOCK_SIZE>>>((float *)src1->data, (float *)src2->data,
+                                                          (float *)dst->data, BLOCK_SIZE,
+                                                          thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1706,55 +1606,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_INT32:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                           (int32_t *)src2->data,
-                                                           (int32_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            mul_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data, (int32_t *)src2->data,
+                                              (int32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                           (int32_t *)src2->data,
-                                                           (int32_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            div_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data, (int32_t *)src2->data,
+                                              (int32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                           (int32_t *)src2->data,
-                                                           (int32_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            sum_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data, (int32_t *)src2->data,
+                                              (int32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                           (int32_t *)src2->data,
-                                                           (int32_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            sub_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data, (int32_t *)src2->data,
+                                              (int32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                           (int32_t *)src2->data,
-                                                           (int32_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            max_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data, (int32_t *)src2->data,
+                                              (int32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                           (int32_t *)src2->data,
-                                                           (int32_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            min_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data, (int32_t *)src2->data,
+                                              (int32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_int_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src1->data,
-                                                               (int32_t *)src2->data,
-                                                               (int32_t *)dst->data,
-                                                               INT32_MAX,
-                                                               INT32_MIN,
-                                                               BLOCK_SIZE,
-                                                               thread_num);
+                                                                 (int32_t *)src2->data,
+                                                                 (int32_t *)dst->data, INT32_MAX,
+                                                                 INT32_MIN, BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1764,55 +1649,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_INT16:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                           (int16_t *)src2->data,
-                                                           (int16_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            mul_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data, (int16_t *)src2->data,
+                                              (int16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                           (int16_t *)src2->data,
-                                                           (int16_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            div_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data, (int16_t *)src2->data,
+                                              (int16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                           (int16_t *)src2->data,
-                                                           (int16_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            sum_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data, (int16_t *)src2->data,
+                                              (int16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                           (int16_t *)src2->data,
-                                                           (int16_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            sub_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data, (int16_t *)src2->data,
+                                              (int16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                           (int16_t *)src2->data,
-                                                           (int16_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            max_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data, (int16_t *)src2->data,
+                                              (int16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                           (int16_t *)src2->data,
-                                                           (int16_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            min_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data, (int16_t *)src2->data,
+                                              (int16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_int_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src1->data,
-                                                               (int16_t *)src2->data,
-                                                               (int16_t *)dst->data,
-                                                               INT16_MAX,
-                                                               INT16_MIN,
-                                                               BLOCK_SIZE,
-                                                               thread_num);
+                                                                 (int16_t *)src2->data,
+                                                                 (int16_t *)dst->data, INT16_MAX,
+                                                                 INT16_MIN, BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1822,55 +1692,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_INT8:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                          (int8_t *)src2->data,
-                                                          (int8_t *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            mul_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data, (int8_t *)src2->data,
+                                              (int8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                          (int8_t *)src2->data,
-                                                          (int8_t *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            div_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data, (int8_t *)src2->data,
+                                              (int8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                          (int8_t *)src2->data,
-                                                          (int8_t *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            sum_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data, (int8_t *)src2->data,
+                                              (int8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                          (int8_t *)src2->data,
-                                                          (int8_t *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            sub_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data, (int8_t *)src2->data,
+                                              (int8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                          (int8_t *)src2->data,
-                                                          (int8_t *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            max_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data, (int8_t *)src2->data,
+                                              (int8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                          (int8_t *)src2->data,
-                                                          (int8_t *)dst->data,
-                                                          BLOCK_SIZE,
-                                                          thread_num);
+            min_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data, (int8_t *)src2->data,
+                                              (int8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_int_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src1->data,
-                                                              (int8_t *)src2->data,
-                                                              (int8_t *)dst->data,
-                                                              INT8_MAX,
-                                                              INT8_MIN,
-                                                              BLOCK_SIZE,
-                                                              thread_num);
+                                                                (int8_t *)src2->data,
+                                                                (int8_t *)dst->data, INT8_MAX,
+                                                                INT8_MIN, BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1880,55 +1735,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_UINT32:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                            (uint32_t *)src2->data,
-                                                            (uint32_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            mul_kernel<uint32_t>
+                <<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data, (uint32_t *)src2->data,
+                                              (uint32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                            (uint32_t *)src2->data,
-                                                            (uint32_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            div_kernel<uint32_t>
+                <<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data, (uint32_t *)src2->data,
+                                              (uint32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                            (uint32_t *)src2->data,
-                                                            (uint32_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            sum_kernel<uint32_t>
+                <<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data, (uint32_t *)src2->data,
+                                              (uint32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                            (uint32_t *)src2->data,
-                                                            (uint32_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            sub_kernel<uint32_t>
+                <<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data, (uint32_t *)src2->data,
+                                              (uint32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                            (uint32_t *)src2->data,
-                                                            (uint32_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            max_kernel<uint32_t>
+                <<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data, (uint32_t *)src2->data,
+                                              (uint32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                            (uint32_t *)src2->data,
-                                                            (uint32_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            min_kernel<uint32_t>
+                <<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data, (uint32_t *)src2->data,
+                                              (uint32_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_int_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src1->data,
-                                                                (uint32_t *)src2->data,
-                                                                (uint32_t *)dst->data,
-                                                                UINT32_MAX,
-                                                                0,
-                                                                BLOCK_SIZE,
-                                                                thread_num);
+                                                                  (uint32_t *)src2->data,
+                                                                  (uint32_t *)dst->data, UINT32_MAX,
+                                                                  0, BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1938,55 +1778,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_UINT16:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                            (uint16_t *)src2->data,
-                                                            (uint16_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            mul_kernel<uint16_t>
+                <<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data, (uint16_t *)src2->data,
+                                              (uint16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                            (uint16_t *)src2->data,
-                                                            (uint16_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            div_kernel<uint16_t>
+                <<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data, (uint16_t *)src2->data,
+                                              (uint16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                            (uint16_t *)src2->data,
-                                                            (uint16_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            sum_kernel<uint16_t>
+                <<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data, (uint16_t *)src2->data,
+                                              (uint16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                            (uint16_t *)src2->data,
-                                                            (uint16_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            sub_kernel<uint16_t>
+                <<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data, (uint16_t *)src2->data,
+                                              (uint16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                            (uint16_t *)src2->data,
-                                                            (uint16_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            max_kernel<uint16_t>
+                <<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data, (uint16_t *)src2->data,
+                                              (uint16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                            (uint16_t *)src2->data,
-                                                            (uint16_t *)dst->data,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+            min_kernel<uint16_t>
+                <<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data, (uint16_t *)src2->data,
+                                              (uint16_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_int_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src1->data,
-                                                                (uint16_t *)src2->data,
-                                                                (uint16_t *)dst->data,
-                                                                UINT16_MAX,
-                                                                0,
-                                                                BLOCK_SIZE,
-                                                                thread_num);
+                                                                  (uint16_t *)src2->data,
+                                                                  (uint16_t *)dst->data, UINT16_MAX,
+                                                                  0, BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -1996,55 +1821,40 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
     case TL_UINT8:
         switch (elew_op) {
         case TL_MUL:
-            mul_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                           (uint8_t *)src2->data,
-                                                           (uint8_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            mul_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data, (uint8_t *)src2->data,
+                                              (uint8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_DIV:
-            div_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                           (uint8_t *)src2->data,
-                                                           (uint8_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            div_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data, (uint8_t *)src2->data,
+                                              (uint8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUM:
-            sum_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                           (uint8_t *)src2->data,
-                                                           (uint8_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            sum_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data, (uint8_t *)src2->data,
+                                              (uint8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_SUB:
-            sub_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                           (uint8_t *)src2->data,
-                                                           (uint8_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            sub_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data, (uint8_t *)src2->data,
+                                              (uint8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MAX:
-            max_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                           (uint8_t *)src2->data,
-                                                           (uint8_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            max_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data, (uint8_t *)src2->data,
+                                              (uint8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                           (uint8_t *)src2->data,
-                                                           (uint8_t *)dst->data,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+            min_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data, (uint8_t *)src2->data,
+                                              (uint8_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_int_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src1->data,
-                                                               (uint8_t *)src2->data,
-                                                               (uint8_t *)dst->data,
-                                                               UINT8_MAX,
-                                                               0,
-                                                               BLOCK_SIZE,
-                                                               thread_num);
+                                                                 (uint8_t *)src2->data,
+                                                                 (uint8_t *)dst->data, UINT8_MAX, 0,
+                                                                 BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -2055,52 +1865,43 @@ tl_tensor *tl_tensor_elew_cuda(const tl_tensor *src1, const tl_tensor *src2,
         switch (elew_op) {
         case TL_MUL:
             mul_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                       (tl_bool_t *)src2->data,
-                                                       (tl_bool_t *)dst->data,
-                                                       BLOCK_SIZE,
-                                                       thread_num);
+                                                         (tl_bool_t *)src2->data,
+                                                         (tl_bool_t *)dst->data, BLOCK_SIZE,
+                                                         thread_num);
             break;
         case TL_DIV:
             div_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                       (tl_bool_t *)src2->data,
-                                                       (tl_bool_t *)dst->data,
-                                                       BLOCK_SIZE,
-                                                       thread_num);
+                                                         (tl_bool_t *)src2->data,
+                                                         (tl_bool_t *)dst->data, BLOCK_SIZE,
+                                                         thread_num);
             break;
         case TL_SUM:
             sum_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                       (tl_bool_t *)src2->data,
-                                                       (tl_bool_t *)dst->data,
-                                                       BLOCK_SIZE,
-                                                       thread_num);
+                                                         (tl_bool_t *)src2->data,
+                                                         (tl_bool_t *)dst->data, BLOCK_SIZE,
+                                                         thread_num);
             break;
         case TL_SUB:
             sub_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                       (tl_bool_t *)src2->data,
-                                                       (tl_bool_t *)dst->data,
-                                                       BLOCK_SIZE,
-                                                       thread_num);
+                                                         (tl_bool_t *)src2->data,
+                                                         (tl_bool_t *)dst->data, BLOCK_SIZE,
+                                                         thread_num);
             break;
         case TL_MAX:
-            max_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                             (tl_bool_t *)src2->data,
-                                                             (tl_bool_t *)dst->data,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+            max_kernel<tl_bool_t>
+                <<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data, (tl_bool_t *)src2->data,
+                                              (tl_bool_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_MIN:
-            min_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                             (tl_bool_t *)src2->data,
-                                                             (tl_bool_t *)dst->data,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+            min_kernel<tl_bool_t>
+                <<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data, (tl_bool_t *)src2->data,
+                                              (tl_bool_t *)dst->data, BLOCK_SIZE, thread_num);
             break;
         case TL_POW:
             pow_bool_kernel<<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src1->data,
-                                                       (tl_bool_t *)src2->data,
-                                                       (tl_bool_t *)dst->data,
-                                                       BLOCK_SIZE,
-                                                       thread_num);
+                                                         (tl_bool_t *)src2->data,
+                                                         (tl_bool_t *)dst->data, BLOCK_SIZE,
+                                                         thread_num);
             break;
         default:
             assert(0 && "unsopported tl_elew_op");
@@ -2123,7 +1924,7 @@ static __global__ void dot_product_kernel(const T *src1, const T *src2, T *dst)
 
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
-    sdata[tid] = src1[i] * src2[i] + src1[i+blockDim.x] * src2[i+blockDim.x];
+    sdata[tid] = src1[i] * src2[i] + src1[i + blockDim.x] * src2[i + blockDim.x];
     __syncthreads();
 
     for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
@@ -2138,7 +1939,8 @@ static __global__ void dot_product_kernel(const T *src1, const T *src2, T *dst)
 }
 
 template <typename T>
-static void call_dot_product_kernel(const T *src1, const T *src2, T *dst, int n, int threads, int blocks)
+static void call_dot_product_kernel(const T *src1, const T *src2, T *dst, int n, int threads,
+                                    int blocks)
 {
     dim3 dimBlock(threads, 1, 1);
     dim3 dimGrid(blocks, 1, 1);
@@ -2148,8 +1950,8 @@ static void call_dot_product_kernel(const T *src1, const T *src2, T *dst, int n,
     tl_cuda_device_sync();
 }
 
-template <typename T>
-static __global__ void reduce_sum_kernel(const T *src, T *dst) {
+template <typename T> static __global__ void reduce_sum_kernel(const T *src, T *dst)
+{
     extern __shared__ int sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -2169,7 +1971,8 @@ static __global__ void reduce_sum_kernel(const T *src, T *dst) {
 }
 
 template <typename T>
-static void call_reduce_sum_kernel(const T *src, T *dst, int n, int threads, int blocks) {
+static void call_reduce_sum_kernel(const T *src, T *dst, int n, int threads, int blocks)
+{
     dim3 dimBlock(threads, 1, 1);
     dim3 dimGrid(blocks, 1, 1);
     int smem_size = (threads <= 32) ? 2 * threads * sizeof(T) : threads * sizeof(T);
@@ -2192,8 +1995,8 @@ int tl_tensor_dot_product_cuda_ws_len(const tl_tensor *src)
     return num_blocks;
 }
 
-tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *src2,
-                                      tl_tensor *ws1, tl_tensor *ws2, tl_tensor *dst)
+tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *src2, tl_tensor *ws1,
+                                      tl_tensor *ws2, tl_tensor *dst)
 {
     int tmp_dim[1];
 
@@ -2237,41 +2040,43 @@ tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *sr
      * num_blocks);
      */
     switch (src1->dtype) {
-        case TL_DOUBLE:
-            call_dot_product_kernel<double>((const double *)src1->data, (const double *)src2->data, (double *)ws1->data,
-                                            src1->len, num_threads, num_blocks);
-            break;
-        case TL_FLOAT:
-            call_dot_product_kernel<float>((const float *)src1->data, (const float *)src2->data, (float *)ws1->data,
-                                           src1->len, num_threads, num_blocks);
-            break;
-        case TL_INT16:
-            call_dot_product_kernel<int16_t>((const int16_t *)src1->data, (const int16_t *)src2->data,
-                                             (int16_t *)ws1->data, src1->len, num_threads, num_blocks);
-            break;
-        case TL_INT32:
-            call_dot_product_kernel<int32_t>((const int32_t *)src1->data, (const int32_t *)src2->data,
-                                             (int32_t *)ws1->data, src1->len, num_threads, num_blocks);
-            break;
-        case TL_INT8:
-            call_dot_product_kernel<int8_t>((const int8_t *)src1->data, (const int8_t *)src2->data, (int8_t *)ws1->data,
-                                            src1->len, num_threads, num_blocks);
-            break;
-        case TL_UINT16:
-            call_dot_product_kernel<uint16_t>((const uint16_t *)src1->data, (const uint16_t *)src2->data,
-                                              (uint16_t *)ws1->data, src1->len, num_threads, num_blocks);
-            break;
-        case TL_UINT32:
-            call_dot_product_kernel<uint32_t>((const uint32_t *)src1->data, (const uint32_t *)src2->data,
-                                              (uint32_t *)ws1->data, src1->len, num_threads, num_blocks);
-            break;
-        case TL_UINT8:
-            call_dot_product_kernel<uint8_t>((const uint8_t *)src1->data, (const uint8_t *)src2->data,
-                                             (uint8_t *)ws1->data, src1->len, num_threads, num_blocks);
-            break;
-        default:
-            assert(0 && "unsupported dtype for src1->dtype");
-            break;
+    case TL_DOUBLE:
+        call_dot_product_kernel<double>((const double *)src1->data, (const double *)src2->data,
+                                        (double *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_FLOAT:
+        call_dot_product_kernel<float>((const float *)src1->data, (const float *)src2->data,
+                                       (float *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_INT16:
+        call_dot_product_kernel<int16_t>((const int16_t *)src1->data, (const int16_t *)src2->data,
+                                         (int16_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_INT32:
+        call_dot_product_kernel<int32_t>((const int32_t *)src1->data, (const int32_t *)src2->data,
+                                         (int32_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_INT8:
+        call_dot_product_kernel<int8_t>((const int8_t *)src1->data, (const int8_t *)src2->data,
+                                        (int8_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    case TL_UINT16:
+        call_dot_product_kernel<uint16_t>((const uint16_t *)src1->data,
+                                          (const uint16_t *)src2->data, (uint16_t *)ws1->data,
+                                          src1->len, num_threads, num_blocks);
+        break;
+    case TL_UINT32:
+        call_dot_product_kernel<uint32_t>((const uint32_t *)src1->data,
+                                          (const uint32_t *)src2->data, (uint32_t *)ws1->data,
+                                          src1->len, num_threads, num_blocks);
+        break;
+    case TL_UINT8:
+        call_dot_product_kernel<uint8_t>((const uint8_t *)src1->data, (const uint8_t *)src2->data,
+                                         (uint8_t *)ws1->data, src1->len, num_threads, num_blocks);
+        break;
+    default:
+        assert(0 && "unsupported dtype for src1->dtype");
+        break;
     }
 
     int s = num_blocks;
@@ -2286,35 +2091,41 @@ tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *sr
          * call_reduce_sum_kernel<T>((const T *)ws2->data, (T *)ws1->data, s, threads, blocks);
          */
         switch (src1->dtype) {
-            case TL_DOUBLE:
-                call_reduce_sum_kernel<double>((const double *)ws2->data, (double *)ws1->data, s, threads, blocks);
-                break;
-            case TL_FLOAT:
-                call_reduce_sum_kernel<float>((const float *)ws2->data, (float *)ws1->data, s, threads, blocks);
-                break;
-            case TL_INT16:
-                call_reduce_sum_kernel<int16_t>((const int16_t *)ws2->data, (int16_t *)ws1->data, s, threads, blocks);
-                break;
-            case TL_INT32:
-                call_reduce_sum_kernel<int32_t>((const int32_t *)ws2->data, (int32_t *)ws1->data, s, threads, blocks);
-                break;
-            case TL_INT8:
-                call_reduce_sum_kernel<int8_t>((const int8_t *)ws2->data, (int8_t *)ws1->data, s, threads, blocks);
-                break;
-            case TL_UINT16:
-                call_reduce_sum_kernel<uint16_t>((const uint16_t *)ws2->data, (uint16_t *)ws1->data, s, threads,
-                                                 blocks);
-                break;
-            case TL_UINT32:
-                call_reduce_sum_kernel<uint32_t>((const uint32_t *)ws2->data, (uint32_t *)ws1->data, s, threads,
-                                                 blocks);
-                break;
-            case TL_UINT8:
-                call_reduce_sum_kernel<uint8_t>((const uint8_t *)ws2->data, (uint8_t *)ws1->data, s, threads, blocks);
-                break;
-            default:
-                assert(0 && "unsupported dtype for src1->dtype");
-                break;
+        case TL_DOUBLE:
+            call_reduce_sum_kernel<double>((const double *)ws2->data, (double *)ws1->data, s,
+                                           threads, blocks);
+            break;
+        case TL_FLOAT:
+            call_reduce_sum_kernel<float>((const float *)ws2->data, (float *)ws1->data, s, threads,
+                                          blocks);
+            break;
+        case TL_INT16:
+            call_reduce_sum_kernel<int16_t>((const int16_t *)ws2->data, (int16_t *)ws1->data, s,
+                                            threads, blocks);
+            break;
+        case TL_INT32:
+            call_reduce_sum_kernel<int32_t>((const int32_t *)ws2->data, (int32_t *)ws1->data, s,
+                                            threads, blocks);
+            break;
+        case TL_INT8:
+            call_reduce_sum_kernel<int8_t>((const int8_t *)ws2->data, (int8_t *)ws1->data, s,
+                                           threads, blocks);
+            break;
+        case TL_UINT16:
+            call_reduce_sum_kernel<uint16_t>((const uint16_t *)ws2->data, (uint16_t *)ws1->data, s,
+                                             threads, blocks);
+            break;
+        case TL_UINT32:
+            call_reduce_sum_kernel<uint32_t>((const uint32_t *)ws2->data, (uint32_t *)ws1->data, s,
+                                             threads, blocks);
+            break;
+        case TL_UINT8:
+            call_reduce_sum_kernel<uint8_t>((const uint8_t *)ws2->data, (uint8_t *)ws1->data, s,
+                                            threads, blocks);
+            break;
+        default:
+            assert(0 && "unsupported dtype for src1->dtype");
+            break;
         }
         s = (s + (threads * 2 - 1)) / (threads * 2);
     }
@@ -2328,8 +2139,7 @@ tl_tensor *tl_tensor_dot_product_cuda(const tl_tensor *src1, const tl_tensor *sr
     return dst;
 }
 
-static __global__ void convert_kernel(void *src, void *dst,
-                                      tl_dtype dtype_s, tl_dtype dtype_d,
+static __global__ void convert_kernel(void *src, void *dst, tl_dtype dtype_s, tl_dtype dtype_d,
                                       int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
@@ -2864,8 +2674,7 @@ static __global__ void convert_kernel(void *src, void *dst,
     }
 }
 
-tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
-                                  tl_dtype dtype_d)
+tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst, tl_dtype dtype_d)
 {
     tl_dtype dtype_s;
     int thread_num, block_num;
@@ -2882,17 +2691,15 @@ tl_tensor *tl_tensor_convert_cuda(const tl_tensor *src, tl_tensor *dst,
     dtype_s = src->dtype;
     thread_num = dst->len;
     block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
-    convert_kernel<<<block_num, BLOCK_SIZE>>>(src->data, dst->data,
-                                              dtype_s, dtype_d,
-                                              BLOCK_SIZE, thread_num);
+    convert_kernel<<<block_num, BLOCK_SIZE>>>(src->data, dst->data, dtype_s, dtype_d, BLOCK_SIZE,
+                                                thread_num);
     tl_cuda_device_sync();
 
     return dst;
 }
 
 template <typename T>
-static __global__ void transpose_kernel(T *src, T *dst, int ndim,
-                                        int *s_dims, int *d_dims,
+static __global__ void transpose_kernel(T *src, T *dst, int ndim, int *s_dims, int *d_dims,
                                         int *axes, int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
@@ -2908,13 +2715,12 @@ static __global__ void transpose_kernel(T *src, T *dst, int ndim,
     dst[di] = src[si];
 }
 
-tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
-                                    const int *axes)
+tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst, const int *axes)
 {
     int i;
 
 #ifndef NDEBUG
-    int tmp[TL_MAXDIM] = {0};
+    int tmp[TL_MAXDIM] = { 0 };
     for (i = 0; i < src->ndim; i++)
         tmp[axes[i]] = 1;
     for (i = 0; i < src->ndim; i++)
@@ -2949,85 +2755,49 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
 
     switch (src->dtype) {
     case TL_DOUBLE:
-        transpose_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
-                                                            (double *)dst->data,
-                                                            dst->ndim,
-                                                            s_dims, d_dims,
-                                                            axes_device,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+        transpose_kernel<double>
+            <<<block_num, BLOCK_SIZE>>>((double *)src->data, (double *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_FLOAT:
-        transpose_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
-                                                           (float *)dst->data,
-                                                           dst->ndim,
-                                                           s_dims, d_dims,
-                                                           axes_device,
-                                                           BLOCK_SIZE,
-                                                           thread_num);
+        transpose_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data, (float *)dst->data,
+                                                             dst->ndim, s_dims, d_dims, axes_device,
+                                                             BLOCK_SIZE, thread_num);
         break;
     case TL_INT32:
-        transpose_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
-                                                             (int32_t *)dst->data,
-                                                             dst->ndim,
-                                                             s_dims, d_dims,
-                                                             axes_device,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+        transpose_kernel<int32_t>
+            <<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (int32_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_INT16:
-        transpose_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
-                                                             (int16_t *)dst->data,
-                                                             dst->ndim,
-                                                             s_dims, d_dims,
-                                                             axes_device,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+        transpose_kernel<int16_t>
+            <<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (int16_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_INT8:
-        transpose_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
-                                                            (int8_t *)dst->data,
-                                                            dst->ndim,
-                                                            s_dims, d_dims,
-                                                            axes_device,
-                                                            BLOCK_SIZE,
-                                                            thread_num);
+        transpose_kernel<int8_t>
+            <<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int8_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT32:
-        transpose_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
-                                                              (uint32_t *)dst->data,
-                                                              dst->ndim,
-                                                              s_dims, d_dims,
-                                                              axes_device,
-                                                              BLOCK_SIZE,
-                                                              thread_num);
+        transpose_kernel<uint32_t>
+            <<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (uint32_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT16:
-        transpose_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
-                                                              (uint16_t *)dst->data,
-                                                              dst->ndim,
-                                                              s_dims, d_dims,
-                                                              axes_device,
-                                                              BLOCK_SIZE,
-                                                              thread_num);
+        transpose_kernel<uint16_t>
+            <<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (uint16_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT8:
-        transpose_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
-                                                             (uint8_t *)dst->data,
-                                                             dst->ndim,
-                                                             s_dims, d_dims,
-                                                             axes_device,
-                                                             BLOCK_SIZE,
-                                                             thread_num);
+        transpose_kernel<uint8_t>
+            <<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (uint8_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     case TL_BOOL:
-        transpose_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data,
-                                                               (tl_bool_t *)dst->data,
-                                                               dst->ndim,
-                                                               s_dims, d_dims,
-                                                               axes_device,
-                                                               BLOCK_SIZE,
-                                                               thread_num);
+        transpose_kernel<tl_bool_t>
+            <<<block_num, BLOCK_SIZE>>>((tl_bool_t *)src->data, (tl_bool_t *)dst->data, dst->ndim,
+                                          s_dims, d_dims, axes_device, BLOCK_SIZE, thread_num);
         break;
     default:
         assert(0 && "unsupported tl_dtype");
@@ -3042,9 +2812,8 @@ tl_tensor *tl_tensor_transpose_cuda(const tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
-template<typename T>
-static __global__ void lrelu_kernel(const T *src, T *dst, float negslope,
-                                    int block_size, int total)
+template <typename T>
+static __global__ void lrelu_kernel(const T *src, T *dst, float negslope, int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di > total)
@@ -3054,12 +2823,10 @@ static __global__ void lrelu_kernel(const T *src, T *dst, float negslope,
     dst[di] = s >= 0 ? s : s * (T)negslope;
 }
 
-#define LRELU_CUDA(ps, pd, ns, bn, bs, tn, type)                        \
-    lrelu_kernel<type><<<(bn), (bs)>>>((type *)(ps), (type *)(pd),      \
-                                       (ns), (bs), (tn))
+#define LRELU_CUDA(ps, pd, ns, bn, bs, tn, type)                                                   \
+    lrelu_kernel<type><<<(bn), (bs)>>>((type *)(ps), (type *)(pd), (ns), (bs), (tn))
 
-tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst,
-                                float negslope)
+tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst, float negslope)
 {
     assert(src && tl_is_device_mem(src->data));
     if (dst) {
@@ -3076,24 +2843,19 @@ tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst,
     block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
     switch (src->dtype) {
     case TL_DOUBLE:
-        LRELU_CUDA(src->data, dst->data, negslope,
-                   block_num, BLOCK_SIZE, thread_num, double);
+        LRELU_CUDA(src->data, dst->data, negslope, block_num, BLOCK_SIZE, thread_num, double);
         break;
     case TL_FLOAT:
-        LRELU_CUDA(src->data, dst->data, negslope,
-                   block_num, BLOCK_SIZE, thread_num, float);
+        LRELU_CUDA(src->data, dst->data, negslope, block_num, BLOCK_SIZE, thread_num, float);
         break;
     case TL_INT32:
-        LRELU_CUDA(src->data, dst->data, negslope,
-                   block_num, BLOCK_SIZE, thread_num, int32_t);
+        LRELU_CUDA(src->data, dst->data, negslope, block_num, BLOCK_SIZE, thread_num, int32_t);
         break;
     case TL_INT16:
-        LRELU_CUDA(src->data, dst->data, negslope,
-                   block_num, BLOCK_SIZE, thread_num, int16_t);
+        LRELU_CUDA(src->data, dst->data, negslope, block_num, BLOCK_SIZE, thread_num, int16_t);
         break;
     case TL_INT8:
-        LRELU_CUDA(src->data, dst->data, negslope,
-                   block_num, BLOCK_SIZE, thread_num, int8_t);
+        LRELU_CUDA(src->data, dst->data, negslope, block_num, BLOCK_SIZE, thread_num, int8_t);
         break;
     case TL_UINT32:
         tl_memcpy_d2d(dst->data, src->data, tl_tensor_size(dst));
@@ -3105,8 +2867,7 @@ tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst,
         tl_memcpy_d2d(dst->data, src->data, tl_tensor_size(dst));
         break;
     case TL_BOOL:
-        LRELU_CUDA(src->data, dst->data, negslope,
-                   block_num, BLOCK_SIZE, thread_num, int);
+        LRELU_CUDA(src->data, dst->data, negslope, block_num, BLOCK_SIZE, thread_num, int);
         break;
     default:
         assert(0 && "unsupported tl_dtype");
@@ -3119,16 +2880,14 @@ tl_tensor *tl_tensor_lrelu_cuda(const tl_tensor *src, tl_tensor *dst,
 #undef LRELU_CUDA
 
 template <typename T>
-static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim,
-                                             const int *dims, const int *new_dims,
-                                             int block_size, int total)
+static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim, const int *dims,
+                                             const int *new_dims, int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
 
     __shared__ float scales[TL_MAXDIM];
     if (threadIdx.x < ndim) {
-        scales[threadIdx.x] = (float)dims[threadIdx.x] /
-            (float)new_dims[threadIdx.x];
+        scales[threadIdx.x] = (float)dims[threadIdx.x] / (float)new_dims[threadIdx.x];
     }
 
     if (di > total)
@@ -3147,8 +2906,8 @@ static __global__ void nearest_resize_kernel(const T *src, T *dst, int ndim,
     dst[di] = src[si];
 }
 
-tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
-                                 const int *new_dims, tl_resize_type rtype)
+tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst, const int *new_dims,
+                                 tl_resize_type rtype)
 {
     assert(src);
     assert(tl_is_device_mem(src->data));
@@ -3165,8 +2924,8 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
     int block_num, thread_num;
     int *dims_cuda, *new_dims_cuda;
 
-    dims_cuda = (int *)tl_clone_h2d(src->dims, sizeof(int)*src->ndim);
-    new_dims_cuda = (int *)tl_clone_h2d(new_dims, sizeof(int)*src->ndim);
+    dims_cuda = (int *)tl_clone_h2d(src->dims, sizeof(int) * src->ndim);
+    new_dims_cuda = (int *)tl_clone_h2d(new_dims, sizeof(int) * src->ndim);
 
     thread_num = dst->len;
     block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
@@ -3174,30 +2933,48 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_NEAREST:
         switch (src->dtype) {
         case TL_DOUBLE:
-            nearest_resize_kernel<double><<<block_num, BLOCK_SIZE>>>((double*)src->data, (double*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<double>
+                <<<block_num, BLOCK_SIZE>>>((double *)src->data, (double *)dst->data, src->ndim,
+                                              dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            nearest_resize_kernel<float><<<block_num, BLOCK_SIZE>>>((float*)src->data, (float*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<float>
+                <<<block_num, BLOCK_SIZE>>>((float *)src->data, (float *)dst->data, src->ndim,
+                                              dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            nearest_resize_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t*)src->data, (int32_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<int32_t>
+                <<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (int32_t *)dst->data, src->ndim,
+                                              dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            nearest_resize_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t*)src->data, (int16_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<int16_t>
+                <<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (int16_t *)dst->data, src->ndim,
+                                              dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            nearest_resize_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t*)src->data, (int8_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<int8_t>
+                <<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int8_t *)dst->data, src->ndim,
+                                              dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            nearest_resize_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t*)src->data, (uint32_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (uint32_t *)dst->data, src->ndim, dims_cuda, new_dims_cuda,
+                BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            nearest_resize_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t*)src->data, (uint16_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (uint16_t *)dst->data, src->ndim, dims_cuda, new_dims_cuda,
+                BLOCK_SIZE, thread_num);
         case TL_UINT8:
-            nearest_resize_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t*)src->data, (uint8_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<uint8_t>
+                <<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (uint8_t *)dst->data, src->ndim,
+                                              dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
             break;
         case TL_BOOL:
-            nearest_resize_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>((tl_bool_t*)src->data, (tl_bool_t*)dst->data, src->ndim, dims_cuda, new_dims_cuda, BLOCK_SIZE, thread_num);
+            nearest_resize_kernel<tl_bool_t><<<block_num, BLOCK_SIZE>>>(
+                (tl_bool_t *)src->data, (tl_bool_t *)dst->data, src->ndim, dims_cuda, new_dims_cuda,
+                BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported tl_dtype");
@@ -3218,9 +2995,8 @@ tl_tensor *tl_tensor_resize_cuda(const tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
-__global__ void transform_bboxSQD_kernel(float *delta, float *anchor, float *res,
-                                         int width, int height, int img_width,
-                                         int img_height, int x_shift,
+__global__ void transform_bboxSQD_kernel(float *delta, float *anchor, float *res, int width,
+                                         int height, int img_width, int img_height, int x_shift,
                                          int y_shift, int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
@@ -3234,8 +3010,8 @@ __global__ void transform_bboxSQD_kernel(float *delta, float *anchor, float *res
 
     /* take 4 elements from each of delta and anchor */
     int si = di * 4;
-    float d[4] = {delta[si], delta[si+1], delta[si+2], delta[si+3]};
-    float a[4] = {anchor[si], anchor[si+1], anchor[si+2], anchor[si+3]};
+    float d[4] = { delta[si], delta[si + 1], delta[si + 2], delta[si + 3] };
+    float a[4] = { anchor[si], anchor[si + 1], anchor[si + 2], anchor[si + 3] };
     /* compute and put 4 result elements to res,
        according to SqueezeDet's source code */
 
@@ -3246,17 +3022,14 @@ __global__ void transform_bboxSQD_kernel(float *delta, float *anchor, float *res
     float w = (a[2] * (d[2] < 1 ? expf(d[2]) : d[2] * E)) * x_scale;
     float h = (a[3] * (d[3] < 1 ? expf(d[3]) : d[3] * E)) * y_scale;
     res[si] = min(max(cx - w * 0.5, 0), img_width - 1);
-    res[si+1] = min(max(cy - h * 0.5, 0), img_height - 1);
-    res[si+2] = max(min(cx + w * 0.5, img_width - 1), 0);
-    res[si+3] = max(min(cy + h * 0.5, img_height - 1), 0);
+    res[si + 1] = min(max(cy - h * 0.5, 0), img_height - 1);
+    res[si + 2] = max(min(cx + w * 0.5, img_width - 1), 0);
+    res[si + 3] = max(min(cy + h * 0.5, img_height - 1), 0);
 }
 
-tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
-                                            const tl_tensor *anchor,
-                                            tl_tensor *dst,
-                                            int width, int height,
-                                            int img_width, int img_height,
-                                            int x_shift, int y_shift)
+tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta, const tl_tensor *anchor,
+                                            tl_tensor *dst, int width, int height, int img_width,
+                                            int img_height, int x_shift, int y_shift)
 {
     assert(delta && anchor);
     assert(tl_is_device_mem(delta->data));
@@ -3276,36 +3049,32 @@ tl_tensor *tl_tensor_transform_bboxSQD_cuda(const tl_tensor *delta,
     }
 
     int i, thread_num, block_num;
-    for (i = 0, thread_num = 1; i < dst->ndim-1; i++)
+    for (i = 0, thread_num = 1; i < dst->ndim - 1; i++)
         thread_num *= dst->dims[i];
     block_num = BLOCK_NUM(BLOCK_SIZE, thread_num);
 
     transform_bboxSQD_kernel<<<block_num, BLOCK_SIZE>>>((float *)delta->data,
-                                                        (float *)anchor->data,
-                                                        (float *)dst->data,
-                                                        width, height,
-                                                        img_width, img_height,
-                                                        x_shift, y_shift,
-                                                        BLOCK_SIZE, thread_num);
+                                                          (float *)anchor->data, (float *)dst->data,
+                                                          width, height, img_width, img_height,
+                                                          x_shift, y_shift, BLOCK_SIZE, thread_num);
     tl_cuda_device_sync();
     return dst;
 }
 
 /* TODO: strided access should be avoid */
-template<typename T>
-__global__ void pick1d_kernel(T *src, T *dst, int *idx, int stride,
-                              int block_size, int total)
+template <typename T>
+__global__ void pick1d_kernel(T *src, T *dst, int *idx, int stride, int block_size, int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
         return;
     int si = idx[di];
     for (int i = 0; i < stride; i++)
-        dst[di*stride+i] = src[si*stride+i];
+        dst[di * stride + i] = src[si * stride + i];
 }
 
-tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
-                                 tl_tensor *dst, int stride, int len)
+tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index, tl_tensor *dst,
+                                 int stride, int len)
 {
     assert(src);
     assert(tl_is_device_mem(src->data));
@@ -3334,67 +3103,48 @@ tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
 
     switch (src->dtype) {
     case TL_DOUBLE:
-        pick1d_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data,
-                                                         (double *)dst->data,
-                                                         (int *)index->data,
-                                                         stride, BLOCK_SIZE,
-                                                         thread_num);
+        pick1d_kernel<double><<<block_num, BLOCK_SIZE>>>((double *)src->data, (double *)dst->data,
+                                                           (int *)index->data, stride, BLOCK_SIZE,
+                                                           thread_num);
         break;
     case TL_FLOAT:
-        pick1d_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data,
-                                                        (float *)dst->data,
-                                                        (int *)index->data,
-                                                        stride, BLOCK_SIZE,
-                                                        thread_num);
+        pick1d_kernel<float><<<block_num, BLOCK_SIZE>>>((float *)src->data, (float *)dst->data,
+                                                          (int *)index->data, stride, BLOCK_SIZE,
+                                                          thread_num);
         break;
     case TL_INT32:
-        pick1d_kernel<int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data,
-                                                          (int32_t *)dst->data,
-                                                          (int *)index->data,
-                                                          stride, BLOCK_SIZE,
-                                                          thread_num);
+        pick1d_kernel<int32_t>
+            <<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (int32_t *)dst->data,
+                                          (int *)index->data, stride, BLOCK_SIZE, thread_num);
         break;
     case TL_INT16:
-        pick1d_kernel<int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data,
-                                                          (int16_t *)dst->data,
-                                                          (int *)index->data,
-                                                          stride, BLOCK_SIZE,
-                                                          thread_num);
+        pick1d_kernel<int16_t>
+            <<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (int16_t *)dst->data,
+                                          (int *)index->data, stride, BLOCK_SIZE, thread_num);
         break;
     case TL_INT8:
-        pick1d_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data,
-                                                         (int8_t *)dst->data,
-                                                         (int *)index->data,
-                                                         stride, BLOCK_SIZE,
-                                                         thread_num);
+        pick1d_kernel<int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int8_t *)dst->data,
+                                                           (int *)index->data, stride, BLOCK_SIZE,
+                                                           thread_num);
         break;
     case TL_UINT32:
-        pick1d_kernel<uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data,
-                                                           (uint32_t *)dst->data,
-                                                           (int *)index->data,
-                                                           stride, BLOCK_SIZE,
-                                                           thread_num);
+        pick1d_kernel<uint32_t>
+            <<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (uint32_t *)dst->data,
+                                          (int *)index->data, stride, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT16:
-        pick1d_kernel<uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data,
-                                                           (uint16_t *)dst->data,
-                                                           (int *)index->data,
-                                                           stride, BLOCK_SIZE,
-                                                           thread_num);
+        pick1d_kernel<uint16_t>
+            <<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (uint16_t *)dst->data,
+                                          (int *)index->data, stride, BLOCK_SIZE, thread_num);
         break;
     case TL_UINT8:
-        pick1d_kernel<uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data,
-                                                          (uint8_t *)dst->data,
-                                                          (int *)index->data,
-                                                          stride, BLOCK_SIZE,
-                                                          thread_num);
+        pick1d_kernel<uint8_t>
+            <<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (uint8_t *)dst->data,
+                                          (int *)index->data, stride, BLOCK_SIZE, thread_num);
         break;
     case TL_BOOL:
-        pick1d_kernel<int><<<block_num, BLOCK_SIZE>>>((int *)src->data,
-                                                      (int *)dst->data,
-                                                      (int *)index->data,
-                                                      stride, BLOCK_SIZE,
-                                                      thread_num);
+        pick1d_kernel<int><<<block_num, BLOCK_SIZE>>>(
+            (int *)src->data, (int *)dst->data, (int *)index->data, stride, BLOCK_SIZE, thread_num);
         break;
     default:
         assert(0 && "unsupported tl_dtype");
@@ -3405,21 +3155,20 @@ tl_tensor *tl_tensor_pick1d_cuda(const tl_tensor *src, const tl_tensor *index,
     return dst;
 }
 
-template<typename Ts, typename Td>
-__global__ void submean_kernel(const Ts *src, Td *dst, tl_dtype dst_dtype,
-                               double mean1, double mean2, double mean3,
-                               int H, int W, int C,
-                               int block_size, int total)
+template <typename Ts, typename Td>
+__global__ void submean_kernel(const Ts *src, Td *dst, tl_dtype dst_dtype, double mean1,
+                               double mean2, double mean3, int H, int W, int C, int block_size,
+                               int total)
 {
     int di = blockIdx.x * block_size + threadIdx.x;
     if (di >= total)
         return;
 
-    double mean[] = {mean1, mean2, mean3};
+    double mean[] = { mean1, mean2, mean3 };
     int src_coords[TL_MAXDIM];
     int dst_coords[TL_MAXDIM];
-    int src_dims[] = {H, W, C};
-    int dst_dims[] = {C, H, W};
+    int src_dims[] = { H, W, C };
+    int dst_dims[] = { C, H, W };
     get_coords(di, dst_coords, 3, dst_dims);
     src_coords[0] = dst_coords[1];
     src_coords[1] = dst_coords[2];
@@ -3430,14 +3179,13 @@ __global__ void submean_kernel(const Ts *src, Td *dst, tl_dtype dst_dtype,
 }
 
 /* src: H*W*C, dst: C*H*W */
-tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
-                                  const double *mean)
+tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst, const double *mean)
 {
     assert(src);
     assert(tl_is_device_mem(src->data));
     assert(mean);
     assert(src->ndim == 3);
-    int new_dims[] = {src->dims[2], src->dims[0], src->dims[1]};
+    int new_dims[] = { src->dims[2], src->dims[0], src->dims[1] };
 
     if (dst) {
         assert(tl_is_device_mem(dst->data));
@@ -3463,28 +3211,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_DOUBLE:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<double, double><<<block_num, BLOCK_SIZE>>>((double *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, double><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<double, float><<<block_num, BLOCK_SIZE>>>((double *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, float><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<double, int16_t><<<block_num, BLOCK_SIZE>>>((double *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<double, int32_t><<<block_num, BLOCK_SIZE>>>((double *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<double, int8_t><<<block_num, BLOCK_SIZE>>>((double *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<double, uint16_t><<<block_num, BLOCK_SIZE>>>((double *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<double, uint32_t><<<block_num, BLOCK_SIZE>>>((double *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<double, uint8_t><<<block_num, BLOCK_SIZE>>>((double *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<double, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (double *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3494,28 +3258,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_FLOAT:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<float, double><<<block_num, BLOCK_SIZE>>>((float *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, double><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<float, float><<<block_num, BLOCK_SIZE>>>((float *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, float><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<float, int16_t><<<block_num, BLOCK_SIZE>>>((float *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<float, int32_t><<<block_num, BLOCK_SIZE>>>((float *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<float, int8_t><<<block_num, BLOCK_SIZE>>>((float *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<float, uint16_t><<<block_num, BLOCK_SIZE>>>((float *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<float, uint32_t><<<block_num, BLOCK_SIZE>>>((float *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<float, uint8_t><<<block_num, BLOCK_SIZE>>>((float *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<float, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (float *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3525,28 +3305,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_INT16:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<int16_t, double><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, double><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<int16_t, float><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, float><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<int16_t, int16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<int16_t, int32_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<int16_t, int8_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<int16_t, uint16_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<int16_t, uint32_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<int16_t, uint8_t><<<block_num, BLOCK_SIZE>>>((int16_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int16_t, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (int16_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3556,28 +3352,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_INT32:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<int32_t, double><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, double><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<int32_t, float><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, float><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<int32_t, int16_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<int32_t, int32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<int32_t, int8_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<int32_t, uint16_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<int32_t, uint32_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<int32_t, uint8_t><<<block_num, BLOCK_SIZE>>>((int32_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int32_t, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (int32_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3587,28 +3399,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_INT8:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<int8_t, double><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, double><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<int8_t, float><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, float><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<int8_t, int16_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<int8_t, int32_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<int8_t, int8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<int8_t, uint16_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<int8_t, uint32_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<int8_t, uint8_t><<<block_num, BLOCK_SIZE>>>((int8_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<int8_t, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (int8_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3618,28 +3446,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_UINT16:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<uint16_t, double><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, double><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<uint16_t, float><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, float><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<uint16_t, int16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<uint16_t, int32_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<uint16_t, int8_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<uint16_t, uint16_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<uint16_t, uint32_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<uint16_t, uint8_t><<<block_num, BLOCK_SIZE>>>((uint16_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint16_t, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (uint16_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3649,28 +3493,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_UINT32:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<uint32_t, double><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, double><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<uint32_t, float><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, float><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<uint32_t, int16_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<uint32_t, int32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<uint32_t, int8_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<uint32_t, uint16_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<uint32_t, uint32_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<uint32_t, uint8_t><<<block_num, BLOCK_SIZE>>>((uint32_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint32_t, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (uint32_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");
@@ -3680,28 +3540,44 @@ tl_tensor *tl_tensor_submean_cuda(const tl_tensor *src, tl_tensor *dst,
     case TL_UINT8:
         switch (dst->dtype) {
         case TL_DOUBLE:
-            submean_kernel<uint8_t, double><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, double><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (double *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_FLOAT:
-            submean_kernel<uint8_t, float><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, float><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (float *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT16:
-            submean_kernel<uint8_t, int16_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, int16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (int16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT32:
-            submean_kernel<uint8_t, int32_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, int32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (int32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_INT8:
-            submean_kernel<uint8_t, int8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, int8_t><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (int8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT16:
-            submean_kernel<uint8_t, uint16_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, uint16_t><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (uint16_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT32:
-            submean_kernel<uint8_t, uint32_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, uint32_t><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (uint32_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         case TL_UINT8:
-            submean_kernel<uint8_t, uint8_t><<<block_num, BLOCK_SIZE>>>((uint8_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2], src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
+            submean_kernel<uint8_t, uint8_t><<<block_num, BLOCK_SIZE>>>(
+                (uint8_t *)src->data, (uint8_t *)dst->data, dst->dtype, mean[0], mean[1], mean[2],
+                src->dims[0], src->dims[1], src->dims[2], BLOCK_SIZE, thread_num);
             break;
         default:
             assert(0 && "unsupported dtype for dst->dtype");

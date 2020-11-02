@@ -1,81 +1,32 @@
 include ../config.mk
-include ../common.mk
+BUILDTOOLS_DIR := ../$(BUILDTOOLS_DIR)
+include $(BUILDTOOLS_DIR)/common.mk
+BUILD_DIR := ../$(BUILD_DIR)
 
-TARGET ?= tensorlight
-LIBTARGET_A = lib$(TARGET).a
-LIBTARGET_SO = lib$(TARGET).so
+SRC = $(SRC_FILES)
+DEP = $(SRC_DEP_FILES)
+REQUIRES = $(SRC_REQUIRES)
+CFLAGS += $(SRC_EXTRA_CFLAGS)
 
-CFLAGS += -fPIC
-CXXFLAGS += -fPIC
+include $(BUILDTOOLS_DIR)/common_recipe.mk
 
-LDFLAGS += -shared
-CUFLAGS += --compiler-options '-fPIC' -shared
-ifeq ($(UNAME_S),Linux)
-LDFLAGS += -Wl,--no-undefined
-CUFLAGS += --linker-options '-Wl,--no-undefined -shared'
-else ifeq ($(UNAME_S),Darwin)
-LDFLAGS += -Wl,-undefined,error
-CUFLAGS += --linker-options '-Wl,-undefined,error'
-endif
+.PHONY: all bin lib liba libso
 
-SRC = $(wildcard *.c)
-SRC += $(wildcard *.cpp)
-SRC += $(wildcard *.cc)
-SRC += $(wildcard *.cu)
-NORMAL_SRC = $(filter-out %cuda.c %.cu,$(SRC))
-CUDA_SRC = $(filter %cuda.c %.cu,$(SRC))
+all: bin lib
 
-OBJDIR = obj
-OBJS   = $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(NORMAL_SRC)))
-OBJS  += $(patsubst %.cpp,$(OBJDIR)/%.o,$(filter %.cpp,$(NORMAL_SRC)))
-OBJS  += $(patsubst %.cc,$(OBJDIR)/%.o,$(filter %.cc,$(NORMAL_SRC)))
-ifeq ($(WITH_CUDA), yes)
-OBJS  += $(patsubst %.cu,$(OBJDIR)/%.o,$(filter %.cu,$(CUDA_SRC)))
-OBJS  += $(patsubst %.c,$(OBJDIR)/%.o,$(filter %.c,$(CUDA_SRC)))
-endif
+bin: $(OBJDIR)/$(BIN)
 
-.PHONY: all libso liba clean
-all: liba libso
+lib: liba libso
 
 liba: $(OBJDIR)/$(LIBTARGET_A)
 
 libso: $(OBJDIR)/$(LIBTARGET_SO)
 
-$(OBJDIR)/$(LIBTARGET_A): $(OBJS)
-	$(ECHO) Packing: $@
-	$(AT)$(AR) $@ $^
+$(OBJDIR)/$(BIN): $(OBJS)
+	$(call ld-bin)
 
 $(OBJDIR)/$(LIBTARGET_SO): $(OBJS)
-	$(ECHO) Linking: $@
-	$(AT)$(CC) -o $@ $^ $(LDFLAGS)
+	$(call ld-so)
 
-$(OBJDIR)/%.o: %.c
-	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
-	$(call make-depend-c,$<,$@,$(subst .o,.d,$@))
-	$(ECHO) Compiling: $<
-	$(AT)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(OBJDIR)/%.o: %.cpp
-	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
-	$(call make-depend-cxx,$<,$@,$(subst .o,.d,$@))
-	$(ECHO) Compiling: $<
-	$(AT)$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OBJDIR)/%.o: %.cc
-	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
-	$(call make-depend-cxx,$<,$@,$(subst .o,.d,$@))
-	$(ECHO) Compiling: $<
-	$(AT)$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OBJDIR)/%.o: %.cu
-	$(AT)if [ ! -d $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi
-	$(call make-depend-cu,$<,$@,$(subst .o,.d,$@))
-	$(ECHO) Compiling CUDA: $<
-	$(AT)$(CUCC) $(CUFLAGS) -c -o $@ $<
-
-clean:
-	rm -rf $(OBJDIR)
-
-ifneq "$(MAKECMDGOALS)" "clean"
--include $(OBJDIR)/*.d
-endif
+$(OBJDIR)/$(LIBTARGET_A): $(OBJS)
+	$(call ar-a)

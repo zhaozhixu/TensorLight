@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhao Zhixu
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -467,6 +467,28 @@ tl_tensor *tl_tensor_slice_nocopy(tl_tensor *src, tl_tensor *dst,
     return dst;
 }
 
+tl_tensor *tl_tensor_split(const tl_tensor *src, tl_tensor *dst1, tl_tensor *dst2, int axis,
+                           const int *splits)
+{
+    assert(src && src->data);
+    assert(dst1 && dst1->data);
+    assert(dst1 && dst2->data);
+    assert(src->dtype == dst1->dtype);
+    assert(src->dtype == dst2->dtype);
+    assert(axis >= 0 && axis < src->ndim);
+    assert(splits[0] + splits[1] == src->dims[axis]);
+    assert(splits[0] == dst1->dims[axis]);
+    assert(splits[1] == dst2->dims[axis]);
+#ifndef NDEBUG
+    for (int i = 0; i < src->ndim; i++) {
+        if (i != axis) {
+            assert(src->dims[i] == dst1->dims[i]);
+            assert(src->dims[i] == dst2->dims[i]);
+        }
+    }
+#endif  /* NDEBUG */
+}
+
 tl_tensor *tl_tensor_concat(const tl_tensor *src1, const tl_tensor *src2,
                             tl_tensor *dst, int axis)
 {
@@ -775,7 +797,7 @@ tl_tensor *tl_tensor_transpose(const tl_tensor *src, tl_tensor *dst,
         assert(src->len == dst->len);
         assert(src->ndim == dst->ndim);
         for (i = 0; i < dst->ndim; i++)
-            assert(src->dims[axes[i]] = dst->dims[i]);
+            assert(src->dims[axes[i]] == dst->dims[i]);
 #endif
     } else {
         int d_dims[TL_MAXDIM];

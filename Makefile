@@ -1,109 +1,150 @@
 include config.mk
 include common.mk
 
-TARGET ?= tensorlight
-ABBR ?= tl
-LIBTARGET_A = lib$(TARGET).a
-LIBTARGET_SO = lib$(TARGET).so
+ifdef VERBOSE
+AT =
+else
+AT = @
+endif
+
+export LIBTARGET_A = lib$(TARGET).a
+export LIBTARGET_SO = lib$(TARGET).so
+
 LIBTARGET_SO_MM = $(LIBTARGET_SO).$(MAJOR).$(MINOR)
 LIBTARGET_SO_MMM = $(LIBTARGET_SO).$(MAJOR).$(MINOR).$(MICRO)
 
-SRC_DIR = src
-OBJ_DIR = $(SRC_DIR)/obj
-TEST_DIR = test
-BUILD_DIR ?= build
-BUILD_INCLUDE_DIR = $(BUILD_DIR)/include
-BUILD_LIB_DIR = $(BUILD_DIR)/lib
-INSTALL_DIR ?= /usr/local
-INSTALL_INCLUDE_DIR = $(INSTALL_DIR)/include
-INSTALL_LIB_DIR = $(INSTALL_DIR)/lib
-PKGCONFIG_DIR ?= /usr/local/lib/pkgconfig
+BUILD_SRC_DIR = $(BUILD_DIR)/$(SRC_DIR)
+OBJ_A = $(BUILD_SRC_DIR)/$(LIBTARGET_A)
+OBJ_SO = $(BUILD_SRC_DIR)/$(LIBTARGET_SO)
 
-OBJ_A = $(OBJ_DIR)/$(LIBTARGET_A)
-OBJ_SO = $(OBJ_DIR)/$(LIBTARGET_SO)
-SRC_HEADERS = $(wildcard $(SRC_DIR)/$(ABBR)_*.h)
-HEADERS = $(patsubst $(SRC_DIR)/%.h,%.h,$(SRC_HEADERS))
+BUILD_INCLUDE_DIR = $(BUILD_DIR)/include/$(TARGET)
+BUILD_LIB_DIR = $(BUILD_DIR)/lib
+BUILD_DOC_DIR = $(BUILD_DIR)/doc
 
 BUILD_A = $(BUILD_LIB_DIR)/$(LIBTARGET_A)
 BUILD_SO = $(BUILD_LIB_DIR)/$(LIBTARGET_SO)
 BUILD_SO_MM = $(BUILD_LIB_DIR)/$(LIBTARGET_SO_MM)
 BUILD_SO_MMM = $(BUILD_LIB_DIR)/$(LIBTARGET_SO_MMM)
-BUILD_HEADERS = $(patsubst %.h,$(BUILD_INCLUDE_DIR)/%.h,$(HEADERS))
+BUILD_DOC = $(BUILD_DOC_DIR)/$(TARGET)
 
-CONFIG_HEADER = $(BUILD_INCLUDE_DIR)/$(ABBR)_tensor.h
-CONFIG_DEFINES =
-ifeq ($(WITH_CUDA), yes)
-CONFIG_DEFINES += TL_CUDA
-endif
+INSTALL_INCLUDE_DIR = $(INSTALL_DIR)/include/$(TARGET)
+INSTALL_LIB_DIR = $(INSTALL_DIR)/lib
+INSTALL_DOC_DIR = $(INSTALL_DIR)/doc
 
 INSTALL_A = $(INSTALL_LIB_DIR)/$(LIBTARGET_A)
 INSTALL_SO = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO)
 INSTALL_SO_MM = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MM)
 INSTALL_SO_MMM = $(INSTALL_LIB_DIR)/$(LIBTARGET_SO_MMM)
-INSTALL_HEADERS = $(patsubst %.h,$(INSTALL_INCLUDE_DIR)/%.h,$(HEADERS))
+INSTALL_DOC = $(INSTALL_DOC_DIR)/$(TARGET)
 
-define add-config-defines
-  $(AT)tools/addconfig.pl $(CONFIG_HEADER) $(CONFIG_DEFINES)
-endef
+CONFIG_SRC = $(SRC_DIR)/$(TARGET).h.in
+CONFIG_DST = $(BUILD_INCLUDE_DIR)/$(TARGET).h
+CONFIG_DEFINES =
+CONFIG_DEFINES += "$(ABBR)_MAJOR_VERSION ($(MAJOR))"
+CONFIG_DEFINES += "$(ABBR)_MINOR_VERSION ($(MINOR))"
+CONFIG_DEFINES += "$(ABBR)_MICRO_VERSION ($(MICRO))"
+ifeq ($(WITH_CUDA), yes)
+CONFIG_DEFINES += "$(ABBR)_CUDA"
+endif
 
 define make-build-dir
-  $(AT)if [ ! -d $(BUILD_DIR) ]; then mkdir -p $(BUILD_DIR); fi
-  $(AT)if [ ! -d $(BUILD_INCLUDE_DIR) ]; then mkdir -p $(BUILD_INCLUDE_DIR); fi
-  $(AT)if [ ! -d $(BUILD_LIB_DIR) ]; then mkdir -p $(BUILD_LIB_DIR); fi
-  cp $(SRC_HEADERS) $(BUILD_INCLUDE_DIR)
-  cp $(OBJ_A) $(BUILD_A)
-  cp $(OBJ_SO) $(BUILD_SO)
-  cp $(OBJ_SO) $(BUILD_SO_MM)
-  cp $(OBJ_SO) $(BUILD_SO_MMM)
+$(AT)if [ ! -d $(BUILD_DIR) ]; then mkdir -p $(BUILD_DIR); fi
+$(AT)if [ ! -d $(BUILD_INCLUDE_DIR) ]; then mkdir -p $(BUILD_INCLUDE_DIR); fi
+$(AT)if [ ! -d $(BUILD_LIB_DIR) ]; then mkdir -p $(BUILD_LIB_DIR); fi
+$(AT)if [ ! -d $(BUILD_DOC_DIR) ]; then mkdir -p $(BUILD_DOC_DIR); fi
+$(AT)find $(SRC_DIR) -type d -print0 | xargs -0 -I{} mkdir -p $(BUILD_DIR)/{}
+$(AT)find $(TEST_DIR) -type d -print0 | xargs -0 -I{} mkdir -p $(BUILD_DIR)/{}
 endef
 
 define make-install-dir
-  $(AT)if [ ! -d $(INSTALL_DIR) ]; then mkdir -p $(INSTALL_DIR); fi
-  $(AT)if [ ! -d $(INSTALL_INCLUDE_DIR) ]; then mkdir -p $(INSTALL_INCLUDE_DIR); fi
-  $(AT)if [ ! -d $(INSTALL_LIB_DIR) ]; then mkdir -p $(INSTALL_LIB_DIR); fi
-  $(AT)if [ ! -d $(PKGCONFIG_DIR) ]; then mkdir -p $(PKGCONFIG_DIR); fi
-  cp $(BUILD_HEADERS) $(INSTALL_INCLUDE_DIR)
-  cp $(BUILD_A) $(INSTALL_A)
-  cp $(BUILD_SO) $(INSTALL_SO)
-  cp $(BUILD_SO_MM) $(INSTALL_SO_MM)
-  cp $(BUILD_SO_MMM) $(INSTALL_SO_MMM)
+$(AT)if [ ! -d $(INSTALL_DIR) ]; then mkdir -p $(INSTALL_DIR); fi
+$(AT)if [ ! -d $(INSTALL_INCLUDE_DIR) ]; then mkdir -p $(INSTALL_INCLUDE_DIR); fi
+$(AT)if [ ! -d $(INSTALL_LIB_DIR) ]; then mkdir -p $(INSTALL_LIB_DIR); fi
+$(AT)if [ ! -d $(INSTALL_DOC_DIR) ]; then mkdir -p $(INSTALL_DOC_DIR); fi
+$(AT)if [ ! -d $(PKGCONFIG_DIR) ]; then mkdir -p $(PKGCONFIG_DIR); fi
 endef
 
-.PHONY: all lib test clean info install uninstall
+define pre-make-config
+$(AT)perl $(BUILDTOOLS_DIR)/add_config.pl $(CONFIG_SRC) $(CONFIG_DST) -d $(CONFIG_DEFINES) -i
+endef
+
+define make-lib
+$(AT)cp $(EXPORT_HEADERS) $(BUILD_INCLUDE_DIR)
+$(AT)cp $(OBJ_A) $(BUILD_A)
+$(AT)cp $(OBJ_SO) $(BUILD_SO_MMM)
+$(AT)ln -sf $(LIBTARGET_SO_MMM) $(BUILD_SO_MM)
+$(AT)ln -sf $(LIBTARGET_SO_MMM) $(BUILD_SO)
+endef
+
+define make-install
+cp -r $(BUILD_INCLUDE_DIR)/* $(INSTALL_INCLUDE_DIR)
+cp $(BUILD_A) $(INSTALL_A)
+cp $(BUILD_SO_MMM) $(INSTALL_SO_MMM)
+ln -sf $(LIBTARGET_SO_MMM) $(INSTALL_SO_MM)
+ln -sf $(LIBTARGET_SO_MMM) $(INSTALL_SO)
+$(INSTALL_DOC_CMD)
+perl $(BUILDTOOLS_DIR)/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR) "$(REQUIRES)" "A light-weight neural network compiler for different software/hardware backends."
+$(INSTALL_PYTHON)
+endef
+
+define make-uninstall
+rm -rf $(INSTALL_INCLUDE_DIR)
+rm -f $(INSTALL_A)
+rm -f $(INSTALL_SO)
+rm -f $(INSTALL_SO_MM)
+rm -f $(INSTALL_SO_MMM)
+$(UNINSTALL_DOC_CMD)
+rm -f $(PKGCONFIG_DIR)/$(TARGET).pc
+$(UNINSTALL_PYTHON)
+endef
+
+define make-clean
+$(AT)$(MAKE) -C $(SRC_DIR) clean; $(MAKE) -C $(TEST_DIR) clean
+rm -rf $(BUILD_DIR)
+endef
+
+CMD_FILE ?= $(BUILD_DIR)/compile_commands.json
+
+.PHONY: all lib test cmd clean info help install uninstall
 
 all: lib
 
 install:
 	$(call make-install-dir)
-	perl tools/gen_pkgconfig.pl $(TARGET) $(INSTALL_DIR) $(MAJOR).$(MINOR).$(MICRO) $(PKGCONFIG_DIR)
-
-test: lib
-	$(AT)+(cd $(TEST_DIR) && make)
+	$(call make-install)
 
 lib:
-	$(AT)+(cd $(SRC_DIR) && make)
 	$(call make-build-dir)
-	$(call add-config-defines)
+	$(call pre-make-config)
+	$(AT)$(MAKE) -C $(SRC_DIR) lib
+	$(call make-lib)
+
+test: lib
+	$(AT)$(MAKE) -C $(TEST_DIR) all
+
+cmd:
+	$(call make-build-dir)
+	$(call pre-make-config)
+	$(AT)[ -e $(CMD_FILE) ] || echo "[]" > $(CMD_FILE)
+	$(AT)$(MAKE) -C $(SRC_DIR) cmd
+	$(AT)$(MAKE) -C $(TEST_DIR) cmd
 
 clean:
-	$(AT)(cd $(SRC_DIR) && make clean);\
-	(cd $(TEST_DIR) && make clean)
-	rm -rf $(BUILD_DIR)
+	$(call make-clean)
 
 uninstall:
-	rm $(INSTALL_HEADERS)
-	rm $(INSTALL_A)
-	rm $(INSTALL_SO)
-	rm $(INSTALL_SO_MM)
-	rm $(INSTALL_SO_MMM)
-	rm $(PKGCONFIG_DIR)/$(TARGET).pc
+	$(call make-uninstall)
 
 info:
 	@echo "Available make targets:"
-	@echo "  all: compile libraries and run tests"
-	@echo "  lib: compile libraries"
-	@echo "  test: compile and run tests"
-	@echo "  install: install headers and libraries files"
-	@echo "  clean: clean up all object files"
-	@echo "  uninstall: uninstall headers and libraries files"
-	@echo "  info: show this infomation"
+	@echo "  all: make lib"
+	@echo "  lib: make libraries"
+	@echo "  test: make lib, test and run test"
+	@echo "  cmd: generate $(BUILD_DIR)/compile_commands.json for clang tooling;"
+	@echo "       use 'cmd' before 'all/lib/test' for the initial generation"
+	@echo "  install: install to $(INSTALL_DIR)"
+	@echo "  clean: remove all the files generated by the build"
+	@echo "  uninstall: uninstall installed files"
+	@echo "  info/help: show this infomation"
+
+help: info

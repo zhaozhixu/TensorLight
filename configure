@@ -2,135 +2,89 @@
 
 use warnings;
 use strict;
+use version;
 use File::Copy;
-use File::Path;
 use Getopt::Long;
+use lib 'tools/buildtools';
+use ConfigUtil;
 
-my $usage = <<EOF;
-Usage: $0 [<option>[=<value>]...]
-Generate configuration makefile for building TensorLight.
+# version number
+my $major = 0;
+my $minor = 1;
+my $micro = 0;
 
-options:
-  -h, --help                 print this information
-  --target=<name>            target name [tensorlight]
-  --abbr=<abbr>              abbreviation for target name [tl]
-  --build-dir=<path>         building directory [build]
-  --install-dir=<path>       installation directory [/usr/local]
-  --prefix=DIR               same as --install-dir; who comes later counts
-  --pkgconfig-dir=<path>     pkgconfig directory [INSTALL_DIR/lib/pkgconfig]
-  --with-cuda=<value>        set to yes if build with CUDA [no]
-  --cuda-install-dir=<path>  cuda installation directory [/usr/local/cuda]
-  --debug=<value>            set to yes when debugging [no]
-EOF
+# project specified make variables
+my %customs =
+    (
+     "TARGET" => "tensorlight",
+     "ABBR" => "TL",
+     "abbr" => "tl",
+     "EXPORT_HEADERS" => "src/tl_tensor.h src/tl_check.h src/tl_type.h src/tl_util.h",
+     "BUILDTOOLS_DIR" => "tools/buildtools",
+     "SRC_DIR" => "src",
+     "SRC_SUB_DIRS" => "",
+     "SRC_EXTRA_CFLAGS" => '-I$(BUILD_DIR)/include/$(TARGET)',
+     "SRC_REQUIRES" => "",
+     "TEST_DIR" => "test",
+     "TEST_SUB_DIRS" => "lightnettest",
+     "TEST_EXTRA_CFLAGS" => '-D$(ABBR)_TEST_DIR="\"$(CURDIR)\"" -D$(ABBR)_BUILD_TEST_DIR="\"$(shell realpath $(OBJDIR))\"" -I../$(SRC_DIR)',
+     "TEST_REQUIRES" => "check"
+    );
 
-# default options
-my %opts = (
-            "TARGET" => "tensorlight",
-            "ABBR" => "tl",
-            "BUILD_DIR" => "build",
-            "INSTALL_DIR" => "/usr/local",
-            "PKGCONFIG_DIR" => "/usr/local/lib/pkgconfig",
-            "WITH_CUDA" => "no",
-            "CUDA_INSTALL_DIR" => "/usr/local/cuda",
-            "DEBUG" => "no",
-           );
+# make variables that can be set by configure options
+my @options =
+    (
+     # [ $opt_name, $var_name, $type, $default, $desc ]
+     [ "build-dir", "BUILD_DIR", "DIR", "build", "building directory" ],
+     [ "install-dir", "INSTALL_DIR", "DIR", "/usr/local", "installation directory" ],
+     [ "prefix", "INSTALL_DIR", "DIR", "/usr/local", "same as --install-dir; who comes later counts" ],
+     [ "pkgconfig-dir", "PKGCONFIG_DIR", "DIR", '$(INSTALL_DIR)/lib/pkgconfig', "pkgconfig directory" ],
+     [ "with-cuda", "WITH_CUDA", "BOOL", "no", "set to yes if build with CUDA"],
+     [ "cuda-install-dir", "CUDA_INSTALL_DIR", "DIR", "/usr/local/cuda", "cuda installation directory"],
+     [ "debug", "DEBUG", "BOOL", "no", "set to yes when debugging" ],
+    );
 
-# parse arguments
-GetOptions(
-           'help' => sub {&exit_msg(0, $usage)},
-           'target=s' => \$opts{TARGET},
-           'abbr=s' => \$opts{ABBR},
-           'build-dir=s' => \$opts{BUILD_DIR},
-           'install-dir=s' => \&set_prefix,
-           'prefix=s' => \&set_prefix,
-           'pkgconfig-dir=s' => \$opts{PKGCONFIG_DIR},
-           'with-cuda=s' => \$opts{WITH_CUDA},
-           'cuda-install-dir=s' => \$opts{CUDA_INSTALL_DIR},
-           'debug=s' => \$opts{DEBUG},
-          ) or &exit_msg(1, $usage);
+# parse configure options
+my $options_obj = gen_options(\@options, "Generate configuration makefile for building $customs{TARGET}.");
+GetOptions(%{$options_obj->{getopt_args}}) or die $options_obj->{format_usage};
+my %opts = %{$options_obj->{options}};
+
+print "configure $customs{TARGET} version $major.$minor.$micro\n";
 
 # check configuration
-# TODO: check versions
+common_checks(\%opts);
+
 my $output;
-$output = `gcc --version`;
+$output = `pkg-config --modversion check`;
 if (!defined $output or $output eq "") {
-  &err_exit("gcc not installed");
+    err_exit("check is not installed");
 }
 
-$output = `make --version`;;
+$output = `pkg-config --modversion check`;
 if (!defined $output or $output eq "") {
-  &err_exit("make not installed");
+    &err_exit("check not installed");
 }
 
-$output = `pkg-config --version`;;
-if (!defined $output or $output eq "") {
-  &err_exit("pkg-config not installed");
-}
-
-$output = `pkg-config --modversion check`;;
-if (!defined $output or $output eq "") {
-  &err_exit("check not installed");
-}
-
-if ($opts{WITH_CUDA} eq "yes") {
-  $output = `nvcc --version`;;
-  if (!defined $output or $output eq "") {
-    &err_exit("nvcc not installed");
-  }
-}
-
-# get current version
-my ($major, $minor, $micro);
-my $version_h = "src/tl_tensor.h";
-open my $version_h_fh, '<', $version_h or die "Cannot open $version_h: $!";
-while (<$version_h_fh>) {
-  $major = $1 if /MAJOR_VERSION \((\d)\)/;
-  $minor = $1 if /MINOR_VERSION \((\d)\)/;
-  $micro = $1 if /MICRO_VERSION \((\d)\)/;
-}
-close $version_h_fh;
-if (not defined $major or not defined $minor or not defined $micro) {
-  &err_exit("cannot find version macros in $version_h, maybe a bug?");
-}
-
-# print configuration to config.mk
-my $config_str = <<EOF;
+my $config_str = <<EOC;
 .SUFFIXES:
 MAJOR = $major
 MINOR = $minor
 MICRO = $micro
-EOF
-foreach my $key (sort keys %opts) {
-  $config_str .= "$key ?= $opts{$key}\n";
-  print "$key = $opts{$key}\n";
-}
+
+EOC
+
+$config_str .= config_to_str(\%opts);
+$config_str .= "\n";
+set_extra_bins(\%customs);
+set_module_files(\%customs, "SRC");
+set_module_files(\%customs, "TEST");
+$config_str .= config_to_str(\%customs);
+
 my $conf_file = "config.mk";
+if (-e $conf_file) {
+    copy($conf_file, "$conf_file.bak") or die "Cannot copy $conf_file: $!";
+}
 open my $conf_fh, '>', $conf_file or die "Cannot open $conf_file: $!";
 print $conf_fh $config_str;
 close $conf_fh;
-
-# subroutines
-
-sub set_prefix {
-  my $prefix = $_[1];
-  $opts{INSTALL_DIR} = $prefix;
-  $opts{PKGCONFIG_DIR} = "$prefix/lib/pkgconfig";
-}
-
-sub err_exit {
-  my $msg = $_[0];
-  print STDERR "Error: $msg\n";
-  exit 1;
-}
-
-sub exit_msg {
-  my $code = shift;
-  my $msg = shift;
-  print $msg;
-  exit $code;
-}
-
-sub warn_msg {
-  my $msg = shift;
-  print STDERR "\e[35mWarning:\e[0m $msg\n";
-}
+print $config_str;

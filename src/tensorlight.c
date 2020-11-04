@@ -20,26 +20,10 @@
  * SOFTWARE.
  */
 
-#include "tl_tensor_internal.h"
+#include <stdio.h>
+#include "tensorlight.h"
 
-TL_EXPORT tl_tensor *tl_tensor_split(const tl_tensor *src, tl_tensor *dst1, tl_tensor *dst2,
-                                     int axis, const int *splits)
+TL_EXPORT void tl_sprint_version(char *version_str)
 {
-    assert(src && src->data);
-    assert(dst1 && dst1->data);
-    assert(dst1 && dst2->data);
-    assert(src->dtype == dst1->dtype);
-    assert(src->dtype == dst2->dtype);
-    assert(axis >= 0 && axis < src->ndim);
-    assert(splits[0] + splits[1] == src->dims[axis]);
-    assert(splits[0] == dst1->dims[axis]);
-    assert(splits[1] == dst2->dims[axis]);
-#ifndef NDEBUG
-    for (int i = 0; i < src->ndim; i++) {
-        if (i != axis) {
-            assert(src->dims[i] == dst1->dims[i]);
-            assert(src->dims[i] == dst2->dims[i]);
-        }
-    }
-#endif /* NDEBUG */
+    snprintf(version_str, 20, "%d.%d.%d", TL_MAJOR_VERSION, TL_MINOR_VERSION, TL_MICRO_VERSION);
 }

@@ -1,5 +1,4 @@
 include config.mk
-include common.mk
 
 ifdef VERBOSE
 AT =

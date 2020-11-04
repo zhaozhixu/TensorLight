@@ -27,4 +27,14 @@
 
 #include "tl_tensor.h"
 
+#ifdef __cplusplus
+TL_CPPSTART
+#endif
+
+void tl_sprint_version(char *version_str);
+
+#ifdef __cplusplus
+TL_CPPEND
+#endif
+
 #endif /* _TENSORLIGHT_H_ */

@@ -60,11 +60,6 @@ if (!defined $output or $output eq "") {
     err_exit("check is not installed");
 }
 
-$output = `pkg-config --modversion check`;
-if (!defined $output or $output eq "") {
-    &err_exit("check not installed");
-}
-
 my $config_str = <<EOC;
 .SUFFIXES:
 MAJOR = $major

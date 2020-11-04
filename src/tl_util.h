@@ -75,10 +75,10 @@ void *tl_repeat_d2d(void *data, size_t size, int times);
 void tl_cuda_device_sync(void);
 void tl_cuda_print_last_error(void);
 
-#endif  /* TL_CUDA */
+#endif /* TL_CUDA */
 
 #ifdef __cplusplus
 TL_CPPEND
 #endif
 
-#endif	/* _TL_UTIL_H_ */
+#endif /* _TL_UTIL_H_ */

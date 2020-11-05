@@ -20,10 +20,36 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
-#include "tensorlight.h"
+#ifndef _LN_TEST_UTIL_H_
+#define _LN_TEST_UTIL_H_
 
-TL_EXPORT void tl_sprint_version(char *version_str)
-{
-    snprintf(version_str, 20, "%d.%d.%d", TL_MAJOR_VERSION, TL_MINOR_VERSION, TL_MICRO_VERSION);
-}
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <time.h>
+
+#define ln_test_free free
+
+#define ln_test_free_arrays(arr, len)           \
+    do {                                        \
+        for (int _i = 0; _i < (len); _i++)      \
+            free((arr)[_i]);                    \
+        free((arr));                            \
+    } while(0)
+
+#ifdef __cplusplus
+#define LN_TEST_CPPSTART extern "C" {
+#define LN_TEST_CPPEND }
+LN_TEST_CPPSTART
+#endif
+
+void *ln_test_alloc(size_t size);
+void *ln_test_realloc(void *ptr, size_t size);
+char *ln_test_strdup(const char *s);
+
+#ifdef __cplusplus
+LN_TEST_CPPEND
+#endif
+
+#endif  /* _LN_TEST_UTIL_H_ */

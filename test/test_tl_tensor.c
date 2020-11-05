@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhixu Zhao
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,22 @@
  */
 
 #include "test_tensorlight.h"
-#include "../src/tl_tensor.h"
-#include "../src/tl_util.h"
-#include "../src/tl_check.h"
+#include "lightnettest/ln_test.h"
+#include "tl_tensor.h"
+#include "tl_util.h"
+#include "tl_check.h"
 
 #define ARR(type, varg...) (type[]){varg}
 
-static void setup(void)
+static void checked_setup(void)
 {
 }
 
-static void teardown(void)
+static void checked_teardown(void)
 {
 }
 
-START_TEST(test_tl_tensor_create)
+LN_TEST_START(test_tl_tensor_create)
 {
      tl_tensor *t;
      int dims[3] = {1, 2, 3};
@@ -80,14 +81,14 @@ START_TEST(test_tl_tensor_create)
           ck_assert(((int32_t *)t->data)[i] == data[i]);
      tl_tensor_free(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_free)
+LN_TEST_START(test_tl_tensor_free)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_clone)
+LN_TEST_START(test_tl_tensor_clone)
 {
      tl_tensor *t1, *t2;
      int dims[3] = {1, 2, 3};
@@ -106,9 +107,9 @@ START_TEST(test_tl_tensor_clone)
      tl_tensor_free(t1);
      tl_tensor_free_data_too(t2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_repeat)
+LN_TEST_START(test_tl_tensor_repeat)
 {
      int dims[] = {2, 3};
      float data[] = {1, 2, 3, 4, 5, 6};
@@ -139,9 +140,9 @@ START_TEST(test_tl_tensor_repeat)
 
      tl_tensor_free(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_arange)
+LN_TEST_START(test_tl_tensor_arange)
 {
      tl_tensor *dst, *t;
 
@@ -163,9 +164,9 @@ START_TEST(test_tl_tensor_arange)
      tl_tensor_free(t);
      tl_tensor_free_data_too(dst);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_rearange)
+LN_TEST_START(test_tl_tensor_rearange)
 {
      tl_tensor *src, *t;
 
@@ -190,9 +191,9 @@ START_TEST(test_tl_tensor_rearange)
      tl_tensor_free(t);
      tl_tensor_free_data_too(src);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_issameshape)
+LN_TEST_START(test_tl_tensor_issameshape)
 {
      tl_tensor *t1;
      tl_tensor *t2;
@@ -203,9 +204,9 @@ START_TEST(test_tl_tensor_issameshape)
      tl_tensor_free_data_too(t1);
      tl_tensor_free_data_too(t2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_fprint)
+LN_TEST_START(test_tl_tensor_fprint)
 {
      tl_tensor *t;
      FILE *fp;
@@ -235,14 +236,14 @@ START_TEST(test_tl_tensor_fprint)
 
      tl_tensor_free_data_too(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_print)
+LN_TEST_START(test_tl_tensor_print)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_save)
+LN_TEST_START(test_tl_tensor_save)
 {
      tl_tensor *t;
      FILE *fp;
@@ -263,9 +264,9 @@ START_TEST(test_tl_tensor_save)
      /* ck_assert_int_lt(tl_tensor_save("__non_exist_dir/tmp", t, NULL), 0); */
      tl_tensor_free_data_too(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_zeros_slice)
+LN_TEST_START(test_tl_tensor_zeros_slice)
 {
      tl_tensor *t1, *t2;
      int i;
@@ -295,9 +296,9 @@ START_TEST(test_tl_tensor_zeros_slice)
      tl_tensor_free_data_too(t1);
      tl_tensor_free_data_too(t2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_slice)
+LN_TEST_START(test_tl_tensor_slice)
 {
      tl_tensor *t1, *t2;
      int ndim = 3;
@@ -334,9 +335,9 @@ START_TEST(test_tl_tensor_slice)
      tl_tensor_free(t1);
      tl_tensor_free_data_too(t2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_slice_nocopy)
+LN_TEST_START(test_tl_tensor_slice_nocopy)
 {
      tl_tensor *t1, *t2;
      int ndim = 2;
@@ -373,9 +374,9 @@ START_TEST(test_tl_tensor_slice_nocopy)
      tl_tensor_free(t1);
      tl_tensor_free(t2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_concat)
+LN_TEST_START(test_tl_tensor_concat)
 {
      tl_tensor *t, *t1, *t2, *t3, *t4, *t5, *t6;
      int ndim = 3;
@@ -420,9 +421,9 @@ START_TEST(test_tl_tensor_concat)
      tl_tensor_free(t5);
      tl_tensor_free(t6);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_reshape)
+LN_TEST_START(test_tl_tensor_reshape)
 {
      tl_tensor *t1, *t2;
      int dims1[3] = {1, 2, 3};
@@ -442,9 +443,9 @@ START_TEST(test_tl_tensor_reshape)
      tl_tensor_free(t1);
      tl_tensor_free(t2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_maxreduce)
+LN_TEST_START(test_tl_tensor_maxreduce)
 {
      tl_tensor *src, *dst, *arg;
      int dims[3] = {2, 3, 2};
@@ -503,9 +504,9 @@ START_TEST(test_tl_tensor_maxreduce)
 
      tl_tensor_free(src);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_elew)
+LN_TEST_START(test_tl_tensor_elew)
 {
      tl_tensor *src1, *src2, *dst;
      int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
@@ -542,9 +543,9 @@ START_TEST(test_tl_tensor_elew)
      tl_tensor_free(src1);
      tl_tensor_free(src2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_elew_param)
+LN_TEST_START(test_tl_tensor_elew_param)
 {
      tl_tensor *src, *dst;
      int8_t src_data[6] = {1, 1, 2, 2, 3, 3};
@@ -578,9 +579,9 @@ START_TEST(test_tl_tensor_elew_param)
 
      tl_tensor_free(src);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_dot_product)
+LN_TEST_START(test_tl_tensor_dot_product)
 {
      tl_tensor *src1, *src2, *dst;
      int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
@@ -612,9 +613,9 @@ START_TEST(test_tl_tensor_dot_product)
      tl_tensor_free(src1);
      tl_tensor_free(src2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_transpose)
+LN_TEST_START(test_tl_tensor_transpose)
 {
      tl_tensor *src, *dst;
      int dims1[3] = {2, 3, 2};
@@ -653,9 +654,9 @@ START_TEST(test_tl_tensor_transpose)
 
      tl_tensor_free(src);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_lrelu)
+LN_TEST_START(test_tl_tensor_lrelu)
 {
     float data_f[5] = {-1, 0, 1, 255, -256};
     float data_lrelu_f[5] = {-0.1, 0, 1, 255, -25.6};
@@ -676,9 +677,9 @@ START_TEST(test_tl_tensor_lrelu)
 
     tl_tensor_free(t1);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_convert)
+LN_TEST_START(test_tl_tensor_convert)
 {
      float data_f[5] = {-1, 0, 1, 255, 256};
      uint8_t data_ui8[5] = {0, 0, 1, 255, 255};
@@ -707,9 +708,9 @@ START_TEST(test_tl_tensor_convert)
 
      tl_tensor_free(t1);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_resize)
+LN_TEST_START(test_tl_tensor_resize)
 {
      float src_data[] = {1, 2, 3, 4};
      float true_data[] = {1, 1, 2, 2, 1, 1, 2, 2, 3, 3, 4, 4, 3, 3, 4, 4};
@@ -730,9 +731,9 @@ START_TEST(test_tl_tensor_resize)
      tl_tensor_free(src);
      tl_tensor_free(true_tensor);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_submean)
+LN_TEST_START(test_tl_tensor_submean)
 {
     uint8_t src_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     float dst_data[12];
@@ -757,45 +758,36 @@ START_TEST(test_tl_tensor_submean)
     tl_tensor_free(src);
     tl_tensor_free(true_tensor);
 }
-END_TEST
+LN_TEST_END
 /* end of tests */
 
-Suite *make_tensor_suite(void)
+LN_TEST_TCASE_START(tensor, checked_setup, checked_teardown)
 {
-     Suite *s;
-     TCase *tc_tensor;
-
-     s = suite_create("tensor");
-     tc_tensor = tcase_create("tensor");
-     tcase_add_checked_fixture(tc_tensor, setup, teardown);
-
-     tcase_add_test(tc_tensor, test_tl_tensor_create);
-     tcase_add_test(tc_tensor, test_tl_tensor_free);
-     tcase_add_test(tc_tensor, test_tl_tensor_clone);
-     tcase_add_test(tc_tensor, test_tl_tensor_repeat);
-     tcase_add_test(tc_tensor, test_tl_tensor_arange);
-     tcase_add_test(tc_tensor, test_tl_tensor_rearange);
-     tcase_add_test(tc_tensor, test_tl_tensor_issameshape);
-     tcase_add_test(tc_tensor, test_tl_tensor_fprint);
-     tcase_add_test(tc_tensor, test_tl_tensor_print);
-     tcase_add_test(tc_tensor, test_tl_tensor_save);
-     tcase_add_test(tc_tensor, test_tl_tensor_zeros_slice);
-     tcase_add_test(tc_tensor, test_tl_tensor_slice);
-     tcase_add_test(tc_tensor, test_tl_tensor_slice_nocopy);
-     tcase_add_test(tc_tensor, test_tl_tensor_concat);
-     tcase_add_test(tc_tensor, test_tl_tensor_reshape);
-     tcase_add_test(tc_tensor, test_tl_tensor_maxreduce);
-     tcase_add_test(tc_tensor, test_tl_tensor_elew);
-     tcase_add_test(tc_tensor, test_tl_tensor_elew_param);
-     tcase_add_test(tc_tensor, test_tl_tensor_dot_product);
-     tcase_add_test(tc_tensor, test_tl_tensor_transpose);
-     tcase_add_test(tc_tensor, test_tl_tensor_lrelu);
-     tcase_add_test(tc_tensor, test_tl_tensor_convert);
-     tcase_add_test(tc_tensor, test_tl_tensor_resize);
-     tcase_add_test(tc_tensor, test_tl_tensor_submean);
-     /* end of adding tests */
-
-     suite_add_tcase(s, tc_tensor);
-
-     return s;
+    LN_TEST_ADD_TEST(test_tl_tensor_create);
+    LN_TEST_ADD_TEST(test_tl_tensor_free);
+    LN_TEST_ADD_TEST(test_tl_tensor_clone);
+    LN_TEST_ADD_TEST(test_tl_tensor_repeat);
+    LN_TEST_ADD_TEST(test_tl_tensor_arange);
+    LN_TEST_ADD_TEST(test_tl_tensor_rearange);
+    LN_TEST_ADD_TEST(test_tl_tensor_issameshape);
+    LN_TEST_ADD_TEST(test_tl_tensor_fprint);
+    LN_TEST_ADD_TEST(test_tl_tensor_print);
+    LN_TEST_ADD_TEST(test_tl_tensor_save);
+    LN_TEST_ADD_TEST(test_tl_tensor_zeros_slice);
+    LN_TEST_ADD_TEST(test_tl_tensor_slice);
+    LN_TEST_ADD_TEST(test_tl_tensor_slice_nocopy);
+    LN_TEST_ADD_TEST(test_tl_tensor_concat);
+    LN_TEST_ADD_TEST(test_tl_tensor_reshape);
+    LN_TEST_ADD_TEST(test_tl_tensor_maxreduce);
+    LN_TEST_ADD_TEST(test_tl_tensor_elew);
+    LN_TEST_ADD_TEST(test_tl_tensor_elew_param);
+    LN_TEST_ADD_TEST(test_tl_tensor_dot_product);
+    LN_TEST_ADD_TEST(test_tl_tensor_transpose);
+    LN_TEST_ADD_TEST(test_tl_tensor_lrelu);
+    LN_TEST_ADD_TEST(test_tl_tensor_convert);
+    LN_TEST_ADD_TEST(test_tl_tensor_resize);
+    LN_TEST_ADD_TEST(test_tl_tensor_submean);
 }
+LN_TEST_TCASE_END
+
+LN_TEST_ADD_TCASE(tensor);

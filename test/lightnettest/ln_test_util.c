@@ -20,10 +20,43 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
-#include "tensorlight.h"
+#include <err.h>
+#include <assert.h>
+#include "ln_test_util.h"
 
-TL_EXPORT void tl_sprint_version(char *version_str)
+void *ln_test_alloc(size_t size)
 {
-    snprintf(version_str, 20, "%d.%d.%d", TL_MAJOR_VERSION, TL_MINOR_VERSION, TL_MICRO_VERSION);
+    void *p;
+
+    p = calloc(1, size);
+    if (p == NULL) {
+        err(EXIT_FAILURE, "%s(): calloc(1, %lu) failed", __func__, size);
+    }
+
+    return p;
+}
+
+void *ln_test_realloc(void *ptr, size_t size)
+{
+    void *p;
+
+    p = realloc(ptr, size);
+    if (p == NULL && size != 0) {
+        err(EXIT_FAILURE, "%s(): realloc() failed", __func__);
+    }
+
+    return p;
+}
+
+char *ln_test_strdup(const char *s)
+{
+    char *new_s;
+
+    assert(s);
+    new_s = strdup(s);
+    if (new_s == NULL) {
+        err(EXIT_FAILURE, "%s(): strdup(%s) failed", __func__, s);
+    }
+
+    return new_s;
 }

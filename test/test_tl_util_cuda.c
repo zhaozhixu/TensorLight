@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhixu Zhao
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,18 @@
 #ifdef TL_CUDA
 
 #include "test_tensorlight.h"
-#include "../src/tl_util.h"
+#include "lightnettest/ln_test.h"
+#include "tl_util.h"
 
-static void setup(void)
+static void checked_setup(void)
 {
 }
 
-static void teardown(void)
+static void checked_teardown(void)
 {
 }
 
-START_TEST(test_tl_is_device_mem)
+LN_TEST_START(test_tl_is_device_mem)
 {
      void *p_d, *p_h;
 
@@ -46,14 +47,14 @@ START_TEST(test_tl_is_device_mem)
      tl_free(p_h);
      tl_free_cuda(p_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_alloc_cuda)
+LN_TEST_START(test_tl_alloc_cuda)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_memcpy_h2d)
+LN_TEST_START(test_tl_memcpy_h2d)
 {
      int array[] = {0, 1, 2};
      int *array_h = tl_alloc(sizeof(int)*3);
@@ -67,14 +68,14 @@ START_TEST(test_tl_memcpy_h2d)
      tl_free(array_h);
      tl_free_cuda(array_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_memcpy_d2h)
+LN_TEST_START(test_tl_memcpy_d2h)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_memcpy_d2d)
+LN_TEST_START(test_tl_memcpy_d2d)
 {
      int array[] = {0, 1, 2};
      int *array_h = tl_alloc(sizeof(int)*3);
@@ -91,9 +92,9 @@ START_TEST(test_tl_memcpy_d2d)
      tl_free_cuda(array_d1);
      tl_free_cuda(array_d2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_clone_h2d)
+LN_TEST_START(test_tl_clone_h2d)
 {
      int array[] = {0, 1, 2};
      int *array_d, *array_h;
@@ -107,14 +108,14 @@ START_TEST(test_tl_clone_h2d)
      tl_free(array_h);
      tl_free_cuda(array_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_clone_d2h)
+LN_TEST_START(test_tl_clone_d2h)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_clone_d2d)
+LN_TEST_START(test_tl_clone_d2d)
 {
      int array[] = {0, 1, 2};
      int *array_d1, *array_d2, *array_h;
@@ -130,9 +131,9 @@ START_TEST(test_tl_clone_d2d)
      tl_free_cuda(array_d1);
      tl_free_cuda(array_d2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_repeat_h2d)
+LN_TEST_START(test_tl_repeat_h2d)
 {
      int array[] = {0, 1, 2};
      int *array_d, *array_h;
@@ -146,9 +147,9 @@ START_TEST(test_tl_repeat_h2d)
      tl_free(array_h);
      tl_free_cuda(array_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_repeat_d2h)
+LN_TEST_START(test_tl_repeat_d2h)
 {
      int array[] = {0, 1, 2};
      int *array_d, *array_h;
@@ -162,9 +163,9 @@ START_TEST(test_tl_repeat_d2h)
      tl_free(array_h);
      tl_free_cuda(array_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_repeat_d2d)
+LN_TEST_START(test_tl_repeat_d2d)
 {
      int array[] = {0, 1, 2};
      int *array_d1, *array_d2, *array_h;
@@ -180,36 +181,26 @@ START_TEST(test_tl_repeat_d2d)
      tl_free_cuda(array_d1);
      tl_free_cuda(array_d2);
 }
-END_TEST
+LN_TEST_END
 /* end of tests */
 
-Suite *make_util_cuda_suite(void)
+LN_TEST_TCASE_START_TIMEOUT(util_cuda, checked_setup, checked_teardown, 30)
 {
-     Suite *s;
-     TCase *tc_util_cuda;
-
-     s = suite_create("util_cuda");
-     tc_util_cuda = tcase_create("util_cuda");
-     tcase_add_checked_fixture(tc_util_cuda, setup, teardown);
-     tcase_set_timeout(tc_util_cuda, 30);
-
-     tcase_add_test(tc_util_cuda, test_tl_is_device_mem);
-     tcase_add_test(tc_util_cuda, test_tl_alloc_cuda);
-     tcase_add_test(tc_util_cuda, test_tl_memcpy_h2d);
-     tcase_add_test(tc_util_cuda, test_tl_memcpy_d2h);
-     tcase_add_test(tc_util_cuda, test_tl_memcpy_d2d);
-     tcase_add_test(tc_util_cuda, test_tl_clone_h2d);
-     tcase_add_test(tc_util_cuda, test_tl_clone_d2h);
-     tcase_add_test(tc_util_cuda, test_tl_clone_d2d);
-     tcase_add_test(tc_util_cuda, test_tl_repeat_h2d);
-     tcase_add_test(tc_util_cuda, test_tl_repeat_d2h);
-     tcase_add_test(tc_util_cuda, test_tl_repeat_d2d);
-     /* end of adding tests */
-
-     suite_add_tcase(s, tc_util_cuda);
-
-     return s;
+    LN_TEST_ADD_TEST(test_tl_is_device_mem);
+    LN_TEST_ADD_TEST(test_tl_alloc_cuda);
+    LN_TEST_ADD_TEST(test_tl_memcpy_h2d);
+    LN_TEST_ADD_TEST(test_tl_memcpy_d2h);
+    LN_TEST_ADD_TEST(test_tl_memcpy_d2d);
+    LN_TEST_ADD_TEST(test_tl_clone_h2d);
+    LN_TEST_ADD_TEST(test_tl_clone_d2h);
+    LN_TEST_ADD_TEST(test_tl_clone_d2d);
+    LN_TEST_ADD_TEST(test_tl_repeat_h2d);
+    LN_TEST_ADD_TEST(test_tl_repeat_d2h);
+    LN_TEST_ADD_TEST(test_tl_repeat_d2d);
 }
+LN_TEST_TCASE_END
+
+LN_TEST_ADD_TCASE(util_cuda);
 
 #endif /* TL_CUDA */
 

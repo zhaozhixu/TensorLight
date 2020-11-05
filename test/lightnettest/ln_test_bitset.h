@@ -20,29 +20,39 @@
  * SOFTWARE.
  */
 
-#ifndef _TEST_TSL_H_
-#define _TEST_TSL_H_
+#ifndef _LN_TEST_BITSET_H_
+#define _LN_TEST_BITSET_H_
 
-#include <stdio.h>
-#include <check.h>
+#include <stdint.h>
+#include "ln_test_util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-Suite *make_master_suite(void);
-Suite *make_util_suite(void);
-Suite *make_type_suite(void);
-Suite *make_tensor_suite(void);
-/* end of normal declarations */
-
-#ifdef TL_CUDA
-Suite *make_util_cuda_suite(void);
-Suite *make_tensor_cuda_suite(void);
-#endif /* TL_CUDA */
+struct ln_test_bitset {
+    uint64_t *ints;
+    int       num_ints;
+    int       num_bits;
+};
+typedef struct ln_test_bitset ln_test_bitset;
 
 #ifdef __cplusplus
-}
+LN_TEST_CPPSTART
 #endif
 
-#endif /* _TEST_TSL_H_ */
+ln_test_bitset *ln_test_bitset_create(int init_num_bits);
+void ln_test_bitset_free(ln_test_bitset *bitset);
+ln_test_bitset *ln_test_bitset_ones(int num_ones);
+void ln_test_bitset_zero(ln_test_bitset *bitset);
+ln_test_bitset *ln_test_bitset_copy(ln_test_bitset *bitset);
+int ln_test_bitset_population(const ln_test_bitset *bitset);
+int *ln_test_bitset_create_one_indexes(const ln_test_bitset *bitset, int *count);
+void ln_test_bitset_expand(ln_test_bitset *bitset, int num_bits);
+void ln_test_bitset_set(ln_test_bitset *bitset, int n);
+void ln_test_bitset_clear(ln_test_bitset *bitset, int n);
+void ln_test_bitset_and_assign(ln_test_bitset *bitset1, ln_test_bitset *bitset2);
+void ln_test_bitset_or_assign(ln_test_bitset *bitset1, ln_test_bitset *bitset2);
+void ln_test_bitset_not_assign(ln_test_bitset *bitset);
+
+#ifdef __cplusplus
+LN_TEST_CPPEND
+#endif
+
+#endif  /* _LN_TEST_BITSET_H_ */

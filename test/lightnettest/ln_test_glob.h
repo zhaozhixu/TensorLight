@@ -20,10 +20,20 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
-#include "tensorlight.h"
+#ifndef _LN_TEST_GLOB_H_
+#define _LN_TEST_GLOB_H_
 
-TL_EXPORT void tl_sprint_version(char *version_str)
-{
-    snprintf(version_str, 20, "%d.%d.%d", TL_MAJOR_VERSION, TL_MINOR_VERSION, TL_MICRO_VERSION);
-}
+#include "ln_test_util.h"
+
+#ifdef __cplusplus
+LN_TEST_CPPSTART
+#endif
+
+int *ln_test_glob_match(const char *glob, const char *const *strs, int num_strs,
+                        int *num_matches);
+
+#ifdef __cplusplus
+LN_TEST_CPPEND
+#endif
+
+#endif  /* _LN_TEST_GLOB_H_ */

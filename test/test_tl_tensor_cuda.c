@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhixu Zhao
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +25,21 @@
 #include <time.h>
 
 #include "test_tensorlight.h"
-#include "../src/tl_tensor.h"
-#include "../src/tl_check.h"
+#include "lightnettest/ln_test.h"
+#include "tl_tensor.h"
+#include "tl_check.h"
 
 #define ARR(type, varg...) (type[]){varg}
 
-static void setup(void)
+static void checked_setup(void)
 {
 }
 
-static void teardown(void)
+static void checked_teardown(void)
 {
 }
 
-START_TEST(test_tl_tensor_zeros_cuda)
+LN_TEST_START(test_tl_tensor_zeros_cuda)
 {
     tl_tensor *t;
     int dims[3] = {1, 2, 3};
@@ -95,14 +96,14 @@ START_TEST(test_tl_tensor_zeros_cuda)
     tl_tensor_free(t);
     tl_free(data_h);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_free_data_too_cuda)
+LN_TEST_START(test_tl_tensor_free_data_too_cuda)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_clone_h2d)
+LN_TEST_START(test_tl_tensor_clone_h2d)
 {
     tl_tensor *t1, *t2;
     int dims[3] = {1, 2, 3};
@@ -124,9 +125,9 @@ START_TEST(test_tl_tensor_clone_h2d)
     tl_tensor_free_data_too_cuda(t2);
     tl_free(data_h);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_clone_d2h)
+LN_TEST_START(test_tl_tensor_clone_d2h)
 {
     tl_tensor *t1, *t2;
     int dims[3] = {1, 2, 3};
@@ -148,9 +149,9 @@ START_TEST(test_tl_tensor_clone_d2h)
     tl_tensor_free_data_too(t2);
     tl_free_cuda(data_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_clone_d2d)
+LN_TEST_START(test_tl_tensor_clone_d2d)
 {
     tl_tensor *t1, *t2, *t3;
     int dims[3] = {1, 2, 3};
@@ -174,9 +175,9 @@ START_TEST(test_tl_tensor_clone_d2d)
     tl_tensor_free_data_too_cuda(t3);
     tl_free(data_h);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_repeat_h2d)
+LN_TEST_START(test_tl_tensor_repeat_h2d)
 {
      int dims[] = {2, 3};
      float data[] = {1, 2, 3, 4, 5, 6};
@@ -213,9 +214,9 @@ START_TEST(test_tl_tensor_repeat_h2d)
 
      tl_tensor_free(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_repeat_d2d)
+LN_TEST_START(test_tl_tensor_repeat_d2d)
 {
      int dims[] = {2, 3};
      float data[] = {1, 2, 3, 4, 5, 6};
@@ -254,9 +255,9 @@ START_TEST(test_tl_tensor_repeat_d2d)
      tl_tensor_free(t_h);
      tl_tensor_free_data_too_cuda(t_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_repeat_d2h)
+LN_TEST_START(test_tl_tensor_repeat_d2h)
 {
      int dims[] = {2, 3};
      float data[] = {1, 2, 3, 4, 5, 6};
@@ -289,9 +290,9 @@ START_TEST(test_tl_tensor_repeat_d2h)
      tl_tensor_free(t_h);
      tl_tensor_free_data_too_cuda(t_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_arange_cuda)
+LN_TEST_START(test_tl_tensor_arange_cuda)
 {
     tl_tensor *dst_d, *dst_h, *t;
 
@@ -319,9 +320,9 @@ START_TEST(test_tl_tensor_arange_cuda)
     tl_tensor_free_data_too(dst_h);
     tl_tensor_free_data_too_cuda(dst_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_rearange_cuda)
+LN_TEST_START(test_tl_tensor_rearange_cuda)
 {
     tl_tensor *dst_d, *dst_h, *t;
 
@@ -352,9 +353,9 @@ START_TEST(test_tl_tensor_rearange_cuda)
     tl_tensor_free_data_too(dst_h);
     tl_tensor_free_data_too_cuda(dst_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_fprint_cuda)
+LN_TEST_START(test_tl_tensor_fprint_cuda)
 {
     tl_tensor *t;
     FILE *fp;
@@ -384,14 +385,14 @@ START_TEST(test_tl_tensor_fprint_cuda)
 
     tl_tensor_free_data_too_cuda(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_print_cuda)
+LN_TEST_START(test_tl_tensor_print_cuda)
 {
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_save_cuda)
+LN_TEST_START(test_tl_tensor_save_cuda)
 {
     tl_tensor *t;
     FILE *fp;
@@ -412,9 +413,9 @@ START_TEST(test_tl_tensor_save_cuda)
     /* ck_assert_int_lt(tl_tensor_save("__non_exist_dir/tmp", t, NULL), 0); */
     tl_tensor_free_data_too_cuda(t);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_zeros_slice_cuda)
+LN_TEST_START(test_tl_tensor_zeros_slice_cuda)
 {
     tl_tensor *t1, *t2;
     void *data_h;
@@ -448,9 +449,9 @@ START_TEST(test_tl_tensor_zeros_slice_cuda)
     tl_tensor_free_data_too_cuda(t2);
     tl_free(data_h);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_slice_cuda)
+LN_TEST_START(test_tl_tensor_slice_cuda)
 {
     tl_tensor *t1, *t2;
     int ndim = 3;
@@ -496,9 +497,9 @@ START_TEST(test_tl_tensor_slice_cuda)
     tl_free_cuda(data_d);
     tl_free(data_h);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_maxreduce_cuda)
+LN_TEST_START(test_tl_tensor_maxreduce_cuda)
 {
     tl_tensor *src, *dst, *arg;
     int dims[3] = {2, 3, 2};
@@ -567,9 +568,9 @@ START_TEST(test_tl_tensor_maxreduce_cuda)
     tl_free_cuda(data_d);
     tl_tensor_free(src);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_elew_cuda)
+LN_TEST_START(test_tl_tensor_elew_cuda)
 {
     tl_tensor *src1, *src2, *dst;
     int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
@@ -616,9 +617,9 @@ START_TEST(test_tl_tensor_elew_cuda)
     tl_free_cuda(data_d1);
     tl_free_cuda(data_d2);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_dot_product_cuda)
+LN_TEST_START(test_tl_tensor_dot_product_cuda)
 {
     tl_tensor *src1, *src2, *dst;
     int8_t src1_data[6] = {1, 1, 2, 2, 3, 3};
@@ -663,9 +664,9 @@ START_TEST(test_tl_tensor_dot_product_cuda)
     /* tl_free_cuda(data_d1); */
     /* tl_free_cuda(data_d2); */
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_convert_cuda)
+LN_TEST_START(test_tl_tensor_convert_cuda)
 {
     float data_f[5] = {-1, 0, 1, 255, 256};
     uint8_t data_ui8[5] = {0, 0, 1, 255, 255};
@@ -700,9 +701,9 @@ START_TEST(test_tl_tensor_convert_cuda)
 
     tl_tensor_free(t1);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_transpose_cuda)
+LN_TEST_START(test_tl_tensor_transpose_cuda)
 {
     tl_tensor *src, *dst;
     int dims1[3] = {2, 3, 2};
@@ -748,9 +749,9 @@ START_TEST(test_tl_tensor_transpose_cuda)
     tl_tensor_free(src);
     tl_free_cuda(data_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_lrelu_cuda)
+LN_TEST_START(test_tl_tensor_lrelu_cuda)
 {
     float data_f[5] = {-1, 0, 1, 255, -256};
     float *data_f_d;
@@ -780,9 +781,9 @@ START_TEST(test_tl_tensor_lrelu_cuda)
     tl_free_cuda(data_f_d);
     tl_tensor_free(t1);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_resize_cuda)
+LN_TEST_START(test_tl_tensor_resize_cuda)
 {
     float src_data_h[] = {1, 2, 3,
                           4, 5, 6,
@@ -827,9 +828,9 @@ START_TEST(test_tl_tensor_resize_cuda)
     tl_free_cuda(src_data_d);
     tl_free_cuda(dst_data_d);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_transform_bboxSQD_cuda)
+LN_TEST_START(test_tl_tensor_transform_bboxSQD_cuda)
 {
     int width = 1248;
     int height = 384;
@@ -901,9 +902,9 @@ START_TEST(test_tl_tensor_transform_bboxSQD_cuda)
     tl_tensor_free_data_too_cuda(anchor);
     tl_tensor_free_data_too_cuda(dst);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_detect_yolov3_cuda)
+LN_TEST_START(test_tl_tensor_detect_yolov3_cuda)
 {
     tl_tensor *feature;
     tl_tensor *anchors;
@@ -1027,7 +1028,7 @@ START_TEST(test_tl_tensor_detect_yolov3_cuda)
     tl_tensor_free_data_too(confs_true);
     tl_tensor_free_data_too(probs_true);
 }
-END_TEST
+LN_TEST_END
 
 static void check_sorted_data(int *src, int *res, int N, tl_sort_dir dir)
 {
@@ -1068,7 +1069,7 @@ static void check_sorted_index(int *src, int *res, int *res_index, int N)
         ck_assert_int_eq(src[res_index[i]], res[i]);
 }
 
-START_TEST(test_tl_tensor_sort1d_cuda)
+LN_TEST_START(test_tl_tensor_sort1d_cuda)
 {
     const int N = 65536;
     int h_input[N];
@@ -1096,9 +1097,9 @@ START_TEST(test_tl_tensor_sort1d_cuda)
 
     tl_tensor_free_data_too_cuda(src);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_sort1d_by_key_cuda)
+LN_TEST_START(test_tl_tensor_sort1d_by_key_cuda)
 {
     const int N = 65536;
     int h_input[N];
@@ -1136,9 +1137,9 @@ START_TEST(test_tl_tensor_sort1d_by_key_cuda)
     tl_tensor_free_data_too_cuda(src);
     tl_tensor_free_data_too_cuda(index);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_pick1d_cuda)
+LN_TEST_START(test_tl_tensor_pick1d_cuda)
 {
     const int N = 65536;
     int M;
@@ -1188,9 +1189,9 @@ START_TEST(test_tl_tensor_pick1d_cuda)
     tl_free(h_selected_index);
     tl_free(h_output);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_tensor_submean_cuda)
+LN_TEST_START(test_tl_tensor_submean_cuda)
 {
     uint8_t src_data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     uint8_t *src_data_d;
@@ -1226,53 +1227,43 @@ START_TEST(test_tl_tensor_submean_cuda)
     tl_tensor_free(src_d);
     tl_tensor_free(true_tensor);
 }
-END_TEST
+LN_TEST_END
 /* end of tests */
 
-Suite *make_tensor_cuda_suite(void)
+LN_TEST_TCASE_START_TIMEOUT(tensor_cuda, checked_setup, checked_teardown, 3000)
 {
-    Suite *s;
-    TCase *tc_tensor_cuda;
-
-    s = suite_create("tensor_cuda");
-    tc_tensor_cuda = tcase_create("tensor_cuda");
-    tcase_add_checked_fixture(tc_tensor_cuda, setup, teardown);
-    tcase_set_timeout(tc_tensor_cuda, 3000);
-
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_zeros_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_free_data_too_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_h2d);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_d2h);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_clone_d2d);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_h2d);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_d2d);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_repeat_d2h);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_arange_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_rearange_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_fprint_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_print_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_save_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_zeros_slice_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_slice_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_maxreduce_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_elew_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_dot_product_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_convert_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_transpose_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_lrelu_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_transform_bboxSQD_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_detect_yolov3_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_resize_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_sort1d_by_key_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_pick1d_cuda);
-    tcase_add_test(tc_tensor_cuda, test_tl_tensor_submean_cuda);
-    /* end of adding tests */
-
-    suite_add_tcase(s, tc_tensor_cuda);
-
-    return s;
+    LN_TEST_ADD_TEST(test_tl_tensor_zeros_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_free_data_too_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_clone_h2d);
+    LN_TEST_ADD_TEST(test_tl_tensor_clone_d2h);
+    LN_TEST_ADD_TEST(test_tl_tensor_clone_d2d);
+    LN_TEST_ADD_TEST(test_tl_tensor_repeat_h2d);
+    LN_TEST_ADD_TEST(test_tl_tensor_repeat_d2d);
+    LN_TEST_ADD_TEST(test_tl_tensor_repeat_d2h);
+    LN_TEST_ADD_TEST(test_tl_tensor_arange_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_rearange_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_fprint_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_print_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_save_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_zeros_slice_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_slice_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_maxreduce_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_elew_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_dot_product_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_convert_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_transpose_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_lrelu_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_resize_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_transform_bboxSQD_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_detect_yolov3_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_sort1d_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_sort1d_by_key_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_pick1d_cuda);
+    LN_TEST_ADD_TEST(test_tl_tensor_submean_cuda);
 }
+LN_TEST_TCASE_END
+
+LN_TEST_ADD_TCASE(tensor_cuda);
 
 #endif /* TL_CUDA */
 

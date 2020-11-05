@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhixu Zhao
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,73 @@
  * SOFTWARE.
  */
 
+#include <getopt.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <check.h>
+#include "lightnettest/ln_test.h"
 
-#include "test_tensorlight.h"
+static void print_test_usage_exit(void)
+{
+    const char *usage = "\
+Usage: test_tensorlight [OPTION...]\n\
+Test tensorlight.\n\
+\n\
+Options:\n\
+  -h, --help               display this message\n\
+  -f, --filter=SUITE1[|SUITE2...]\n\
+                           specify test suites to be run;\n\
+                           SUITE can contain '*' for glob matching;\n\
+                           add '!' before the glob to take the complement;\n\
+                           use '|' between SUITEs to do multiple matches;\n\
+                           run all tests if omit this option\n\
+";
+    fputs(usage, stderr);
+    exit(EXIT_SUCCESS);
+}
 
 int main(int argc, char **argv)
 {
-     int number_failed;
-     int status;
-     SRunner *sr;
+    int optindex, opt, num_failed;
+    const char *filter = "*";
+    const struct option longopts[] = {
+        {"help",   no_argument, NULL, 'h'},
+        {"filter", required_argument, NULL, 'f'},
+        {"verbose", required_argument, NULL, 'v'},
+        {0, 0, 0, 0}
+    };
 
-     sr = srunner_create(make_master_suite());
-     srunner_add_suite(sr, make_util_suite());
-     srunner_add_suite(sr, make_type_suite());
-     srunner_add_suite(sr, make_tensor_suite());
-     /* end of adding normal suites */
+    optind = 1;
+    while ((opt = getopt_long_only(argc, argv, ":hf:v", longopts,
+                                   &optindex)) != -1) {
+        switch (opt) {
+        case 0:
+            break;
+        case 'h':
+            print_test_usage_exit();
+            break;
+        case 'f':
+            filter = optarg;
+            break;
+        case 'v':
+            ln_test_set_verbose(1);
+            break;
+        case ':':
+            fprintf(stderr, "option %s needs a value\n", argv[optind-1]);
+            exit(EXIT_FAILURE);
+            break;
+        case '?':
+            fprintf(stderr, "unknown option %s\n", argv[optind-1]);
+            exit(EXIT_FAILURE);
+            break;
+        default:
+            fprintf(stderr, "getopt_long_only() returned character code %d\n",
+                    opt);
+            exit(EXIT_FAILURE);
+            break;
+        }
+    }
 
-#ifdef TL_CUDA
-     srunner_add_suite(sr, make_util_cuda_suite());
-     srunner_add_suite(sr, make_tensor_cuda_suite());
-#endif /* TL_CUDA */
+    num_failed = ln_test_run_tests(filter);
 
-     srunner_set_xml (sr, "result/check_output.xml");
-     srunner_run_all(sr, CK_NORMAL);
-     number_failed = srunner_ntests_failed(sr);
-     srunner_free(sr);
-     status = system("sed -i 's,http://check.sourceforge.net/xml/check_unittest.xslt,check_unittest.xslt,g' result/check_output.xml");
-     if (status < 0)
-          fprintf(stderr, "system() error\n");
-
-     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (num_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

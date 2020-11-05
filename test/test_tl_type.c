@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Zhao Zhixu
+ * Copyright (c) 2018-2020 Zhixu Zhao
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,20 @@
 
 #include <float.h>
 #include "test_tensorlight.h"
-#include "../src/tl_type.h"
-#include "../src/tl_util.h"
-#include "../src/tl_check.h"
+#include "lightnettest/ln_test.h"
+#include "tl_type.h"
+#include "tl_util.h"
+#include "tl_check.h"
 
-static void setup(void)
+static void checked_setup(void)
 {
 }
 
-static void teardown(void)
+static void checked_teardown(void)
 {
 }
 
-START_TEST(test_tl_size_of)
+LN_TEST_START(test_tl_size_of)
 {
     ck_assert_int_eq(tl_size_of(TL_DOUBLE), sizeof(double));
     ck_assert_int_eq(tl_size_of(TL_FLOAT), sizeof(float));
@@ -46,9 +47,9 @@ START_TEST(test_tl_size_of)
     ck_assert_int_eq(tl_size_of(TL_UINT8), sizeof(uint8_t));
     ck_assert_int_eq(tl_size_of(TL_BOOL), sizeof(tl_bool_t));
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_psub)
+LN_TEST_START(test_tl_psub)
 {
     double p_double[2];
     float p_float[2];
@@ -96,9 +97,9 @@ START_TEST(test_tl_psub)
     ck_assert_int_eq(tl_psub(&p_bool[0], &p_bool[1], tl_size_of(TL_BOOL)), -1);
     ck_assert_int_eq(tl_psub(&p_bool[0], &p_bool[0], tl_size_of(TL_BOOL)), 0);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_padd)
+LN_TEST_START(test_tl_padd)
 {
     double p_double[3];
     float p_float[3];
@@ -146,9 +147,9 @@ START_TEST(test_tl_padd)
     ck_assert_ptr_eq(tl_padd(&p_bool[1], -1, tl_size_of(TL_BOOL)), &p_bool[0]);
     ck_assert_ptr_eq(tl_padd(&p_bool[1], 0, tl_size_of(TL_BOOL)), &p_bool[1]);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_passign)
+LN_TEST_START(test_tl_passign)
 {
     double p_double[2] = {0, 1};
     float p_float[2] = {0, 1};
@@ -187,9 +188,9 @@ START_TEST(test_tl_passign)
     tl_passign(p_bool, 0, p_bool, 1, tl_size_of(TL_BOOL));
     ck_assert(p_bool[0] == p_bool[1]);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_dtype_fmt)
+LN_TEST_START(test_tl_dtype_fmt)
 {
     const char *fmt;
 
@@ -220,9 +221,9 @@ START_TEST(test_tl_dtype_fmt)
     fmt = tl_dtype_fmt(TL_BOOL);
     ck_assert_str_eq(fmt, "%d");
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_dtype_max)
+LN_TEST_START(test_tl_dtype_max)
 {
     void *max;
     tl_dtype dtype;
@@ -281,9 +282,9 @@ START_TEST(test_tl_dtype_max)
     ck_assert_int_eq(*(tl_bool_t *)max, TL_TRUE);
     tl_free(max);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_dtype_min)
+LN_TEST_START(test_tl_dtype_min)
 {
     void *min;
     tl_dtype dtype;
@@ -342,9 +343,9 @@ START_TEST(test_tl_dtype_min)
     ck_assert_int_eq(*(tl_bool_t *)min, TL_FALSE);
     tl_free(min);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_dtype_max_double)
+LN_TEST_START(test_tl_dtype_max_double)
 {
     tl_dtype dtype;
     double max;
@@ -385,9 +386,9 @@ START_TEST(test_tl_dtype_max_double)
     max = tl_dtype_max_double(dtype);
     ck_assert_double_eq_tol(max, (double)TL_TRUE, 1e-6);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_dtype_min_double)
+LN_TEST_START(test_tl_dtype_min_double)
 {
     tl_dtype dtype;
     double min;
@@ -428,9 +429,9 @@ START_TEST(test_tl_dtype_min_double)
     min = tl_dtype_min_double(dtype);
     ck_assert_double_eq_tol(min, (double)TL_FALSE, 1e-6);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_pointer_sub)
+LN_TEST_START(test_tl_pointer_sub)
 {
     double p_double[2];
     float p_float[2];
@@ -478,9 +479,9 @@ START_TEST(test_tl_pointer_sub)
     ck_assert_int_eq(tl_pointer_sub(&p_bool[0], &p_bool[1], (TL_BOOL)), -1);
     ck_assert_int_eq(tl_pointer_sub(&p_bool[0], &p_bool[0], (TL_BOOL)), 0);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_pointer_add)
+LN_TEST_START(test_tl_pointer_add)
 {
     double p_double[3];
     float p_float[3];
@@ -528,9 +529,9 @@ START_TEST(test_tl_pointer_add)
     ck_assert_ptr_eq(tl_pointer_add(&p_bool[1], -1, (TL_BOOL)), &p_bool[0]);
     ck_assert_ptr_eq(tl_pointer_add(&p_bool[1], 0, (TL_BOOL)), &p_bool[1]);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_pointer_assign)
+LN_TEST_START(test_tl_pointer_assign)
 {
     double p_double[2] = {0, 1};
     float p_float[2] = {0, 1};
@@ -569,9 +570,9 @@ START_TEST(test_tl_pointer_assign)
     tl_pointer_assign(p_bool, 0, p_bool, 1, (TL_BOOL));
     ck_assert(p_bool[0] == p_bool[1]);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_fprintf)
+LN_TEST_START(test_tl_fprintf)
 {
     FILE *fp;
     double val_double = 0.12345;
@@ -673,9 +674,9 @@ START_TEST(test_tl_fprintf)
     ck_assert_str_eq(s, "1");
     fclose(fp);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_fprintf_getfunc)
+LN_TEST_START(test_tl_fprintf_getfunc)
 {
     FILE *fp;
     double val_double = 0.12345;
@@ -789,9 +790,9 @@ START_TEST(test_tl_fprintf_getfunc)
     ck_assert_str_eq(s, "1");
     fclose(fp);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_cmp)
+LN_TEST_START(test_tl_cmp)
 {
     double val1_double = 1, val2_double = 2;
     float val1_float = 1, val2_float = 2;
@@ -839,9 +840,9 @@ START_TEST(test_tl_cmp)
     ck_assert(tl_cmp(&val2_bool, &val1_bool, TL_BOOL) > 0);
     ck_assert(tl_cmp(&val1_bool, &val1_bool, TL_BOOL) == 0);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_cmp_getfunc)
+LN_TEST_START(test_tl_cmp_getfunc)
 {
     double val1_double = 1, val2_double = 2;
     float val1_float = 1, val2_float = 2;
@@ -899,9 +900,9 @@ START_TEST(test_tl_cmp_getfunc)
     ck_assert(gcmp_func(&val2_bool, &val1_bool) > 0);
     ck_assert(gcmp_func(&val1_bool, &val1_bool) == 0);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_elew)
+LN_TEST_START(test_tl_elew)
 {
     double val1_double = 1, val2_double = 2, val3_double;
     float val1_float = 1, val2_float = 2, val3_float;
@@ -1109,9 +1110,9 @@ START_TEST(test_tl_elew)
     tl_elew(&val2_bool, &val1_bool, &val3_bool, TL_POW, TL_BOOL);
     ck_assert(val3_bool == 1);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_elew_getfunc)
+LN_TEST_START(test_tl_elew_getfunc)
 {
     double val1_double = 1, val2_double = 2, val3_double;
     float val1_float = 1, val2_float = 2, val3_float;
@@ -1160,9 +1161,9 @@ START_TEST(test_tl_elew_getfunc)
     elew_func(&val2_bool, &val1_bool, &val3_bool, TL_MUL);
     ck_assert(val3_bool == TL_FALSE);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_convert)
+LN_TEST_START(test_tl_convert)
 {
     double val_d;
     float val_f;
@@ -1633,18 +1634,18 @@ START_TEST(test_tl_convert)
     tl_convert(&val_b, TL_BOOL, &val_b_false, TL_BOOL);
     ck_assert(val_b == val_b_false);
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_sort_dir_name)
+LN_TEST_START(test_tl_sort_dir_name)
 {
     ck_assert_str_eq(tl_sort_dir_name(TL_SORT_DIR_ASCENDING),
                      "TL_SORT_DIR_ASCENDING");
     ck_assert_str_eq(tl_sort_dir_name(TL_SORT_DIR_DESCENDING),
                      "TL_SORT_DIR_DESCENDING");
 }
-END_TEST
+LN_TEST_END
 
-START_TEST(test_tl_sort_dir_from_str)
+LN_TEST_START(test_tl_sort_dir_from_str)
 {
     ck_assert_int_eq(tl_sort_dir_from_str("TL_SORT_DIR_ASCENDING"),
                      TL_SORT_DIR_ASCENDING);
@@ -1652,42 +1653,33 @@ START_TEST(test_tl_sort_dir_from_str)
                      TL_SORT_DIR_DESCENDING);
     ck_assert_int_eq(tl_sort_dir_from_str("sdf"), -1);
 }
-END_TEST
+LN_TEST_END
 /* end of tests */
 
-Suite *make_type_suite(void)
+LN_TEST_TCASE_START(type, checked_setup, checked_teardown)
 {
-    Suite *s;
-    TCase *tc_type;
-
-    s = suite_create("type");
-    tc_type = tcase_create("type");
-    tcase_add_checked_fixture(tc_type, setup, teardown);
-
-    tcase_add_test(tc_type, test_tl_size_of);
-    tcase_add_test(tc_type, test_tl_psub);
-    tcase_add_test(tc_type, test_tl_padd);
-    tcase_add_test(tc_type, test_tl_passign);
-    tcase_add_test(tc_type, test_tl_dtype_fmt);
-    tcase_add_test(tc_type, test_tl_dtype_max);
-    tcase_add_test(tc_type, test_tl_dtype_min);
-    tcase_add_test(tc_type, test_tl_dtype_max_double);
-    tcase_add_test(tc_type, test_tl_dtype_min_double);
-    tcase_add_test(tc_type, test_tl_pointer_sub);
-    tcase_add_test(tc_type, test_tl_pointer_add);
-    tcase_add_test(tc_type, test_tl_pointer_assign);
-    tcase_add_test(tc_type, test_tl_fprintf);
-    tcase_add_test(tc_type, test_tl_fprintf_getfunc);
-    tcase_add_test(tc_type, test_tl_cmp);
-    tcase_add_test(tc_type, test_tl_cmp_getfunc);
-    tcase_add_test(tc_type, test_tl_elew);
-    tcase_add_test(tc_type, test_tl_elew_getfunc);
-    tcase_add_test(tc_type, test_tl_convert);
-    tcase_add_test(tc_type, test_tl_sort_dir_name);
-    tcase_add_test(tc_type, test_tl_sort_dir_from_str);
-    /* end of adding tests */
-
-    suite_add_tcase(s, tc_type);
-
-    return s;
+    LN_TEST_ADD_TEST(test_tl_size_of);
+    LN_TEST_ADD_TEST(test_tl_psub);
+    LN_TEST_ADD_TEST(test_tl_padd);
+    LN_TEST_ADD_TEST(test_tl_passign);
+    LN_TEST_ADD_TEST(test_tl_dtype_fmt);
+    LN_TEST_ADD_TEST(test_tl_dtype_max);
+    LN_TEST_ADD_TEST(test_tl_dtype_min);
+    LN_TEST_ADD_TEST(test_tl_dtype_max_double);
+    LN_TEST_ADD_TEST(test_tl_dtype_min_double);
+    LN_TEST_ADD_TEST(test_tl_pointer_sub);
+    LN_TEST_ADD_TEST(test_tl_pointer_add);
+    LN_TEST_ADD_TEST(test_tl_pointer_assign);
+    LN_TEST_ADD_TEST(test_tl_fprintf);
+    LN_TEST_ADD_TEST(test_tl_fprintf_getfunc);
+    LN_TEST_ADD_TEST(test_tl_cmp);
+    LN_TEST_ADD_TEST(test_tl_cmp_getfunc);
+    LN_TEST_ADD_TEST(test_tl_elew);
+    LN_TEST_ADD_TEST(test_tl_elew_getfunc);
+    LN_TEST_ADD_TEST(test_tl_convert);
+    LN_TEST_ADD_TEST(test_tl_sort_dir_name);
+    LN_TEST_ADD_TEST(test_tl_sort_dir_from_str);
 }
+LN_TEST_TCASE_END
+
+LN_TEST_ADD_TCASE(type);

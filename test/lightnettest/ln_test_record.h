@@ -20,29 +20,40 @@
  * SOFTWARE.
  */
 
-#ifndef _TEST_TSL_H_
-#define _TEST_TSL_H_
+#ifndef _LN_TEST_RECORD_H_
+#define _LN_TEST_RECORD_H_
 
-#include <stdio.h>
-#include <check.h>
+#include "ln_test_util.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-Suite *make_master_suite(void);
-Suite *make_util_suite(void);
-Suite *make_type_suite(void);
-Suite *make_tensor_suite(void);
-/* end of normal declarations */
-
-#ifdef TL_CUDA
-Suite *make_util_cuda_suite(void);
-Suite *make_tensor_cuda_suite(void);
-#endif /* TL_CUDA */
+struct ln_test_record {
+    const char ***test_names_array;
+    int          *test_nums;
+    const char  **suite_names;
+    const void  **suite_ptrs;
+    int           suites_num;
+};
+typedef struct ln_test_record ln_test_record;
 
 #ifdef __cplusplus
-}
+LN_TEST_CPPSTART
 #endif
 
-#endif /* _TEST_TSL_H_ */
+void ln_test_record_init(ln_test_record *record);
+ln_test_record *ln_test_record_create(void);
+void ln_test_record_finalize(ln_test_record *record);
+void ln_test_record_free(ln_test_record *record);
+int ln_test_record_add_suite(ln_test_record *record, const char *suite_name,
+                             const void *suite_ptr);
+int ln_test_record_add_test(ln_test_record *record, const char *suite_name,
+                            const char *test_name);
+const void *ln_test_record_find_suite_ptr(const ln_test_record *record,
+                                          const char *name);
+ln_test_record *ln_test_record_create_filtered(const ln_test_record *record,
+                                               const char *glob);
+void ln_test_record_print(const ln_test_record *record);
+
+#ifdef __cplusplus
+LN_TEST_CPPEND
+#endif
+
+#endif  /* _LN_TEST_RECORD_H_ */

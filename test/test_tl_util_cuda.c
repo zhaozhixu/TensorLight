@@ -22,7 +22,6 @@
 
 #ifdef TL_CUDA
 
-#include "test_tensorlight.h"
 #include "lightnettest/ln_test.h"
 #include "tl_util.h"
 
